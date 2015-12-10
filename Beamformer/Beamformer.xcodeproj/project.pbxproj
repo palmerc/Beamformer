@@ -1,0 +1,507 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */; };
+		C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959411C19FBEC0075EF90 /* ViewController.swift */; };
+		C7C959451C19FBEC0075EF90 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959431C19FBEC0075EF90 /* Main.storyboard */; };
+		C7C959471C19FBEC0075EF90 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C7C959461C19FBEC0075EF90 /* Assets.xcassets */; };
+		C7C9594A1C19FBEC0075EF90 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */; };
+		C7C959551C19FBEC0075EF90 /* BeamformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959541C19FBEC0075EF90 /* BeamformerTests.swift */; };
+		C7C959601C19FBEC0075EF90 /* BeamformerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C7C959511C19FBEC0075EF90 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C7C959341C19FBEC0075EF90 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C7C9593B1C19FBEC0075EF90;
+			remoteInfo = Beamformer;
+		};
+		C7C9595C1C19FBEC0075EF90 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C7C959341C19FBEC0075EF90 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C7C9593B1C19FBEC0075EF90;
+			remoteInfo = Beamformer;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		C7C9593C1C19FBEC0075EF90 /* Beamformer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Beamformer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		C7C959411C19FBEC0075EF90 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		C7C959441C19FBEC0075EF90 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		C7C959461C19FBEC0075EF90 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C7C959491C19FBEC0075EF90 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		C7C9594B1C19FBEC0075EF90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C7C959501C19FBEC0075EF90 /* BeamformerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeamformerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C7C959541C19FBEC0075EF90 /* BeamformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamformerTests.swift; sourceTree = "<group>"; };
+		C7C959561C19FBEC0075EF90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C7C9595B1C19FBEC0075EF90 /* BeamformerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeamformerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamformerUITests.swift; sourceTree = "<group>"; };
+		C7C959611C19FBEC0075EF90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C7C959391C19FBEC0075EF90 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7C9594D1C19FBEC0075EF90 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7C959581C19FBEC0075EF90 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C7C959331C19FBEC0075EF90 = {
+			isa = PBXGroup;
+			children = (
+				C7C9593E1C19FBEC0075EF90 /* Beamformer */,
+				C7C959531C19FBEC0075EF90 /* BeamformerTests */,
+				C7C9595E1C19FBEC0075EF90 /* BeamformerUITests */,
+				C7C9593D1C19FBEC0075EF90 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C7C9593D1C19FBEC0075EF90 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C7C9593C1C19FBEC0075EF90 /* Beamformer.app */,
+				C7C959501C19FBEC0075EF90 /* BeamformerTests.xctest */,
+				C7C9595B1C19FBEC0075EF90 /* BeamformerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C7C9593E1C19FBEC0075EF90 /* Beamformer */ = {
+			isa = PBXGroup;
+			children = (
+				C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */,
+				C7C959411C19FBEC0075EF90 /* ViewController.swift */,
+				C7C959431C19FBEC0075EF90 /* Main.storyboard */,
+				C7C959461C19FBEC0075EF90 /* Assets.xcassets */,
+				C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */,
+				C7C9594B1C19FBEC0075EF90 /* Info.plist */,
+			);
+			path = Beamformer;
+			sourceTree = "<group>";
+		};
+		C7C959531C19FBEC0075EF90 /* BeamformerTests */ = {
+			isa = PBXGroup;
+			children = (
+				C7C959541C19FBEC0075EF90 /* BeamformerTests.swift */,
+				C7C959561C19FBEC0075EF90 /* Info.plist */,
+			);
+			path = BeamformerTests;
+			sourceTree = "<group>";
+		};
+		C7C9595E1C19FBEC0075EF90 /* BeamformerUITests */ = {
+			isa = PBXGroup;
+			children = (
+				C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */,
+				C7C959611C19FBEC0075EF90 /* Info.plist */,
+			);
+			path = BeamformerUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C7C9593B1C19FBEC0075EF90 /* Beamformer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C7C959641C19FBEC0075EF90 /* Build configuration list for PBXNativeTarget "Beamformer" */;
+			buildPhases = (
+				C7C959381C19FBEC0075EF90 /* Sources */,
+				C7C959391C19FBEC0075EF90 /* Frameworks */,
+				C7C9593A1C19FBEC0075EF90 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Beamformer;
+			productName = Beamformer;
+			productReference = C7C9593C1C19FBEC0075EF90 /* Beamformer.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C7C9594F1C19FBEC0075EF90 /* BeamformerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C7C959671C19FBEC0075EF90 /* Build configuration list for PBXNativeTarget "BeamformerTests" */;
+			buildPhases = (
+				C7C9594C1C19FBEC0075EF90 /* Sources */,
+				C7C9594D1C19FBEC0075EF90 /* Frameworks */,
+				C7C9594E1C19FBEC0075EF90 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C7C959521C19FBEC0075EF90 /* PBXTargetDependency */,
+			);
+			name = BeamformerTests;
+			productName = BeamformerTests;
+			productReference = C7C959501C19FBEC0075EF90 /* BeamformerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		C7C9595A1C19FBEC0075EF90 /* BeamformerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C7C9596A1C19FBEC0075EF90 /* Build configuration list for PBXNativeTarget "BeamformerUITests" */;
+			buildPhases = (
+				C7C959571C19FBEC0075EF90 /* Sources */,
+				C7C959581C19FBEC0075EF90 /* Frameworks */,
+				C7C959591C19FBEC0075EF90 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C7C9595D1C19FBEC0075EF90 /* PBXTargetDependency */,
+			);
+			name = BeamformerUITests;
+			productName = BeamformerUITests;
+			productReference = C7C9595B1C19FBEC0075EF90 /* BeamformerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C7C959341C19FBEC0075EF90 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0720;
+				LastUpgradeCheck = 0720;
+				ORGANIZATIONNAME = NTNU;
+				TargetAttributes = {
+					C7C9593B1C19FBEC0075EF90 = {
+						CreatedOnToolsVersion = 7.2;
+					};
+					C7C9594F1C19FBEC0075EF90 = {
+						CreatedOnToolsVersion = 7.2;
+						TestTargetID = C7C9593B1C19FBEC0075EF90;
+					};
+					C7C9595A1C19FBEC0075EF90 = {
+						CreatedOnToolsVersion = 7.2;
+						TestTargetID = C7C9593B1C19FBEC0075EF90;
+					};
+				};
+			};
+			buildConfigurationList = C7C959371C19FBEC0075EF90 /* Build configuration list for PBXProject "Beamformer" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = C7C959331C19FBEC0075EF90;
+			productRefGroup = C7C9593D1C19FBEC0075EF90 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C7C9593B1C19FBEC0075EF90 /* Beamformer */,
+				C7C9594F1C19FBEC0075EF90 /* BeamformerTests */,
+				C7C9595A1C19FBEC0075EF90 /* BeamformerUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C7C9593A1C19FBEC0075EF90 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7C9594A1C19FBEC0075EF90 /* LaunchScreen.storyboard in Resources */,
+				C7C959471C19FBEC0075EF90 /* Assets.xcassets in Resources */,
+				C7C959451C19FBEC0075EF90 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7C9594E1C19FBEC0075EF90 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7C959591C19FBEC0075EF90 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C7C959381C19FBEC0075EF90 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */,
+				C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7C9594C1C19FBEC0075EF90 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7C959551C19FBEC0075EF90 /* BeamformerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7C959571C19FBEC0075EF90 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7C959601C19FBEC0075EF90 /* BeamformerUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C7C959521C19FBEC0075EF90 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C7C9593B1C19FBEC0075EF90 /* Beamformer */;
+			targetProxy = C7C959511C19FBEC0075EF90 /* PBXContainerItemProxy */;
+		};
+		C7C9595D1C19FBEC0075EF90 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C7C9593B1C19FBEC0075EF90 /* Beamformer */;
+			targetProxy = C7C9595C1C19FBEC0075EF90 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		C7C959431C19FBEC0075EF90 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C7C959441C19FBEC0075EF90 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C7C959491C19FBEC0075EF90 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C7C959621C19FBEC0075EF90 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C7C959631C19FBEC0075EF90 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C7C959651C19FBEC0075EF90 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = Beamformer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.Beamformer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C7C959661C19FBEC0075EF90 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = Beamformer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.Beamformer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		C7C959681C19FBEC0075EF90 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = BeamformerTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Beamformer.app/Beamformer";
+			};
+			name = Debug;
+		};
+		C7C959691C19FBEC0075EF90 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = BeamformerTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Beamformer.app/Beamformer";
+			};
+			name = Release;
+		};
+		C7C9596B1C19FBEC0075EF90 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = BeamformerUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = Beamformer;
+				USES_XCTRUNNER = YES;
+			};
+			name = Debug;
+		};
+		C7C9596C1C19FBEC0075EF90 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = BeamformerUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = Beamformer;
+				USES_XCTRUNNER = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C7C959371C19FBEC0075EF90 /* Build configuration list for PBXProject "Beamformer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C7C959621C19FBEC0075EF90 /* Debug */,
+				C7C959631C19FBEC0075EF90 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C7C959641C19FBEC0075EF90 /* Build configuration list for PBXNativeTarget "Beamformer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C7C959651C19FBEC0075EF90 /* Debug */,
+				C7C959661C19FBEC0075EF90 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		C7C959671C19FBEC0075EF90 /* Build configuration list for PBXNativeTarget "BeamformerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C7C959681C19FBEC0075EF90 /* Debug */,
+				C7C959691C19FBEC0075EF90 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		C7C9596A1C19FBEC0075EF90 /* Build configuration list for PBXNativeTarget "BeamformerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C7C9596B1C19FBEC0075EF90 /* Debug */,
+				C7C9596C1C19FBEC0075EF90 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C7C959341C19FBEC0075EF90 /* Project object */;
+}
