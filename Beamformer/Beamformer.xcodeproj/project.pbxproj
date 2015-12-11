@@ -14,6 +14,7 @@
 		C7C9594A1C19FBEC0075EF90 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */; };
 		C7C959551C19FBEC0075EF90 /* BeamformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959541C19FBEC0075EF90 /* BeamformerTests.swift */; };
 		C7C959601C19FBEC0075EF90 /* BeamformerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */; };
+		C7C9596E1C1ACF260075EF90 /* Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9596D1C1ACF260075EF90 /* Connection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		C7C9595B1C19FBEC0075EF90 /* BeamformerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeamformerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamformerUITests.swift; sourceTree = "<group>"; };
 		C7C959611C19FBEC0075EF90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C7C9596D1C1ACF260075EF90 /* Connection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +101,7 @@
 			children = (
 				C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */,
 				C7C959411C19FBEC0075EF90 /* ViewController.swift */,
+				C7C9596D1C1ACF260075EF90 /* Connection.swift */,
 				C7C959431C19FBEC0075EF90 /* Main.storyboard */,
 				C7C959461C19FBEC0075EF90 /* Assets.xcassets */,
 				C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */,
@@ -193,6 +196,7 @@
 				TargetAttributes = {
 					C7C9593B1C19FBEC0075EF90 = {
 						CreatedOnToolsVersion = 7.2;
+						DevelopmentTeam = U2NS98MY5H;
 					};
 					C7C9594F1C19FBEC0075EF90 = {
 						CreatedOnToolsVersion = 7.2;
@@ -256,6 +260,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C7C9596E1C1ACF260075EF90 /* Connection.swift in Sources */,
 				C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */,
 				C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */,
 			);
@@ -399,10 +404,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = Beamformer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.Beamformer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -410,10 +418,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = Beamformer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.Beamformer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};

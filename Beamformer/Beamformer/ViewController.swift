@@ -9,17 +9,37 @@
 import UIKit
 
 class ViewController: UIViewController {
+    @IBOutlet weak var ConnectButton: UIButton!
+
+    private let connection = Connection()
+
+    var isConnected: Bool?
+    var connect: Bool {
+        get {
+            return self.isConnected!
+        }
+        set {
+            if (newValue) {
+                self.connection.connect()
+            } else {
+                self.connection.disconnect()
+            }
+            self.isConnected = newValue
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+
+        self.connect = false
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
-
+    @IBAction func didPressConnectButton(sender: AnyObject) {
+        self.connect = !self.connect
+    }
 }
 
