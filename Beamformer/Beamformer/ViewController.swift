@@ -7,11 +7,12 @@
 //
 
 import UIKit
+import SwiftWebSocket
 
 class ViewController: UIViewController {
     @IBOutlet weak var ConnectButton: UIButton!
 
-    private let connection = Connection()
+    lazy var webSocket = WebSocket()
 
     var isConnected: Bool?
     var connect: Bool {
@@ -20,9 +21,9 @@ class ViewController: UIViewController {
         }
         set {
             if (newValue) {
-                self.connection.connect()
+                self.webSocket.open(url: "ws://127.0.0.1:9000")
             } else {
-                self.connection.disconnect()
+                self.webSocket.close()
             }
             self.isConnected = newValue
         }
@@ -30,6 +31,12 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        self.webSocket.event.message = { message in
+            if let text = message as? String {
+                print("\(text)")
+            }
+        }
 
         self.connect = false
     }
