@@ -8,6 +8,7 @@
 
 import UIKit
 import SwiftWebSocket
+import ObjectMapper
 
 class ViewController: UIViewController {
     @IBOutlet weak var ConnectButton: UIButton!
@@ -34,7 +35,9 @@ class ViewController: UIViewController {
 
         self.webSocket.event.message = { message in
             if let text = message as? String {
-                print("\(text)")
+                let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
+                let identifier = verasonicsFrame!.identifier
+                print("\(identifierq)")
             }
         }
 

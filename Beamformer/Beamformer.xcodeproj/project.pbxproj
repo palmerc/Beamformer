@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7A7789441E15BA48B374191B /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68453FC83C16B34314D8C95F /* Pods.framework */; };
+		C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */; };
 		C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */; };
 		C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959411C19FBEC0075EF90 /* ViewController.swift */; };
 		C7C959451C19FBEC0075EF90 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959431C19FBEC0075EF90 /* Main.storyboard */; };
@@ -38,6 +39,7 @@
 		68453FC83C16B34314D8C95F /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7AB3DCB252275546B1EDA957 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "../Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		BE3040FDA7737D61741D012B /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "../Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrame.swift; sourceTree = "<group>"; };
 		C7C9593C1C19FBEC0075EF90 /* Beamformer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Beamformer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C7C959411C19FBEC0075EF90 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 				C7C959461C19FBEC0075EF90 /* Assets.xcassets */,
 				C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */,
 				C7C9594B1C19FBEC0075EF90 /* Info.plist */,
+				C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */,
 			);
 			path = Beamformer;
 			sourceTree = "<group>";
@@ -332,6 +335,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */,
 				C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */,
 				C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */,
 			);
