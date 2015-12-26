@@ -37,7 +37,7 @@ class ViewController: UIViewController {
             if let text = message as? String {
                 let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
                 let identifier = verasonicsFrame!.identifier
-                print("\(identifierq)")
+                print("\(identifier)")
             }
         }
 
