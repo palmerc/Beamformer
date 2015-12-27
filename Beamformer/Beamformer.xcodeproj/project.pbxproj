@@ -17,6 +17,7 @@
 		C7C9594A1C19FBEC0075EF90 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */; };
 		C7C959551C19FBEC0075EF90 /* BeamformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959541C19FBEC0075EF90 /* BeamformerTests.swift */; };
 		C7C959601C19FBEC0075EF90 /* BeamformerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */; };
+		C7D163F11C300DBF0081631B /* VerasonicsLinearInterpolation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D163F01C300DBF0081631B /* VerasonicsLinearInterpolation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +56,7 @@
 		C7C9595B1C19FBEC0075EF90 /* BeamformerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeamformerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamformerUITests.swift; sourceTree = "<group>"; };
 		C7C959611C19FBEC0075EF90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C7D163F01C300DBF0081631B /* VerasonicsLinearInterpolation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsLinearInterpolation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +127,7 @@
 				C7C9594B1C19FBEC0075EF90 /* Info.plist */,
 				C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */,
 				C734E6911C2EEEC8006972A0 /* VerasonicsDelay.swift */,
+				C7D163F01C300DBF0081631B /* VerasonicsLinearInterpolation.swift */,
 			);
 			path = Beamformer;
 			sourceTree = "<group>";
@@ -342,6 +345,7 @@
 				C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */,
 				C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */,
 				C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */,
+				C7D163F11C300DBF0081631B /* VerasonicsLinearInterpolation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

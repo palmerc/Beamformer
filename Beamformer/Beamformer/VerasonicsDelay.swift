@@ -101,7 +101,8 @@ class VerasonicsDelay: NSObject {
     var delays: [[Double]]?
     let angle: Double = 0
 
-    func calculate() {
+    func calculate()
+    {
         for (i = 0; i < nbr_xs; i += 1) {
             xs[i] = x_img_start + Double(i + 1) * x_pixel_spacing
         }
