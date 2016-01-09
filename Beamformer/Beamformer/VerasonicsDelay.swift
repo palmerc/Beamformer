@@ -150,8 +150,9 @@ class VerasonicsDelay: NSObject {
             let complexImageVector = complexImageVectorWithIQData(IQData, width: self.imageXPixelCount, height: imageZPixelCount)!
             let imageAmplitudes = imageAmplitudesFromComplexImageVector(complexImageVector)
 
-            let imageRef = imageFromPixelValues(imageAmplitudes, width: self.imageXPixelCount, height: self.imageZPixelCount)
-            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: UIImageOrientation.Up)
+            // Because X and Z are swapped currently the image is rotated 90 degrees counter-clockwise. This should be corrected
+            let imageRef = imageFromPixelValues(imageAmplitudes, width: self.imageZPixelCount, height: self.imageXPixelCount)
+            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: UIImageOrientation.Right)
         }
 
         return image
@@ -228,6 +229,7 @@ class VerasonicsDelay: NSObject {
             var minimumDecibels: Double = Double(MAXFLOAT)
             var maximumDecibels: Double = 0
             var decibelValues = [Double]()
+            decibelValues.reserveCapacity(imageAmplitudes.count) 
             for imageAmplitude in imageAmplitudes {
                 // The range is 1..256 because 0 will cause a -Inf value.
                 let scaledImageAmplitude = (((imageAmplitude - minimumValue) / (maximumValue - minimumValue)) * 255.0) + 1.0
@@ -243,7 +245,8 @@ class VerasonicsDelay: NSObject {
             }
 
             // scale the values from 0..255
-            imageIntensities = [UInt8](count: imageAmplitudes.count, repeatedValue: 0)
+            imageIntensities = [UInt8]()
+            imageIntensities?.reserveCapacity(decibelValues.count)
             for decibels in decibelValues {
                 let intensity = round((decibels - minimumDecibels) / (maximumDecibels - minimumDecibels) * 255)
                 imageIntensities?.append(UInt8(intensity))
