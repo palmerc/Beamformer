@@ -11,26 +11,14 @@ import UIKit
 import CoreGraphics
 
 class VerasonicsDelay: NSObject {
-    var i: Int = 0
-    var x: Int = 0
-    var z: Int = 0
-    var elmt: Int = 0
+    private let speedOfUltrasound: Double = 1540 * 1000
+    private let samplingFrequencyHertz: Double = 7813000
+    private let lensCorrection: Double = 14.14423409
+    private let numberOfTransducerElements: Int = 192
+    private let imageZStartInMM: Double = 0.0
+    private let imageZStopInMM: Double = 50.0
 
-    let speedOfUltrasound: Double = 1540 * 1000 // Speed of sound mm/s
-    let samplingFrequencyHertz: Double = 7813000    // Samping frequency in Hertz
-    var f0: Double {
-        get {
-            return samplingFrequencyHertz
-        }
-    }
-    let no_elements: Int = 192
-    var lambda: Double {
-        get {
-            return self.speedOfUltrasound / (1.0 * self.f0)
-        }
-    }
-    let lensCorrection: Double = 14.14423409 // Lens correction and so on as of 14.12.15
-    let element_position: [Double] = [
+    static let defaultDelays: [Double] = [
         -19.10, -18.90, -18.70, -18.50, -18.30, -18.10,
         -17.90, -17.70, -17.50, -17.30, -17.10, -16.90,
         -16.70, -16.50, -16.30, -16.10, -15.90, -15.70,
@@ -39,226 +27,264 @@ class VerasonicsDelay: NSObject {
         -13.10, -12.90, -12.70, -12.50, -12.30, -12.10,
         -11.90, -11.70, -11.50, -11.30, -11.10, -10.90,
         -10.70, -10.50, -10.30, -10.10,  -9.90,  -9.70,
-         -9.50,  -9.30,  -9.10,  -8.90,  -8.70,  -8.50,
-         -8.30,  -8.10,  -7.90,  -7.70,  -7.50,  -7.30,
-         -7.10,  -6.90,  -6.70,  -6.50,  -6.30,  -6.10,
-         -5.90,  -5.70,  -5.50,  -5.30,  -5.10,  -4.90,
-         -4.70,  -4.50,  -4.30,  -4.10,  -3.90,  -3.70,
-         -3.50,  -3.30,  -3.10,  -2.90,  -2.70,  -2.50,
-         -2.30,  -2.10,  -1.90,  -1.70,  -1.50,  -1.30,
-         -1.10,  -0.90,  -0.70,  -0.50,  -0.30,  -0.10,
-          0.10,   0.30,   0.50,   0.70,   0.90,   1.10,
-          1.30,   1.50,   1.70,   1.90,   2.10,   2.30,
-          2.50,   2.70,   2.90,   3.10,   3.30,   3.50,
-          3.70,   3.90,   4.10,   4.30,   4.50,   4.70,
-          4.90,   5.10,   5.30,   5.50,   5.70,   5.90,
-          6.10,   6.30,   6.50,   6.70,   6.90,   7.10,
-          7.30,   7.50,   7.70,   7.90,   8.10,   8.30,
-          8.50,   8.70,   8.90,   9.10,   9.30,   9.50,
-          9.70,   9.90,  10.10,  10.30,  10.50,  10.70,
-         10.90,  11.10,  11.30,  11.50,  11.70,  11.90,
-         12.10,  12.30,  12.50,  12.70,  12.90,  13.10,
-         13.30,  13.50,  13.70,  13.90,  14.10,  14.30,
-         14.50,  14.70,  14.90,  15.10,  15.30,  15.50,
-         15.70,  15.90,  16.10,  16.30,  16.50,  16.70,
-         16.90,  17.10,  17.30,  17.50,  17.70,  17.90,
-         18.10,  18.30,  18.50,  18.70,  18.90,  19.10
+        -9.50,  -9.30,  -9.10,  -8.90,  -8.70,  -8.50,
+        -8.30,  -8.10,  -7.90,  -7.70,  -7.50,  -7.30,
+        -7.10,  -6.90,  -6.70,  -6.50,  -6.30,  -6.10,
+        -5.90,  -5.70,  -5.50,  -5.30,  -5.10,  -4.90,
+        -4.70,  -4.50,  -4.30,  -4.10,  -3.90,  -3.70,
+        -3.50,  -3.30,  -3.10,  -2.90,  -2.70,  -2.50,
+        -2.30,  -2.10,  -1.90,  -1.70,  -1.50,  -1.30,
+        -1.10,  -0.90,  -0.70,  -0.50,  -0.30,  -0.10,
+        0.10,   0.30,   0.50,   0.70,   0.90,   1.10,
+        1.30,   1.50,   1.70,   1.90,   2.10,   2.30,
+        2.50,   2.70,   2.90,   3.10,   3.30,   3.50,
+        3.70,   3.90,   4.10,   4.30,   4.50,   4.70,
+        4.90,   5.10,   5.30,   5.50,   5.70,   5.90,
+        6.10,   6.30,   6.50,   6.70,   6.90,   7.10,
+        7.30,   7.50,   7.70,   7.90,   8.10,   8.30,
+        8.50,   8.70,   8.90,   9.10,   9.30,   9.50,
+        9.70,   9.90,  10.10,  10.30,  10.50,  10.70,
+        10.90,  11.10,  11.30,  11.50,  11.70,  11.90,
+        12.10,  12.30,  12.50,  12.70,  12.90,  13.10,
+        13.30,  13.50,  13.70,  13.90,  14.10,  14.30,
+        14.50,  14.70,  14.90,  15.10,  15.30,  15.50,
+        15.70,  15.90,  16.10,  16.30,  16.50,  16.70,
+        16.90,  17.10,  17.30,  17.50,  17.70,  17.90,
+        18.10,  18.30,  18.50,  18.70,  18.90,  19.10
     ]
 
-    var x_pixel_spacing: Double {
+    var f0: Double {
+        get {
+            return samplingFrequencyHertz
+        }
+    }
+    var lambda: Double {
+        get {
+            return self.speedOfUltrasound / (1.0 * self.f0)
+        }
+    }
+
+    var imageXPixelSpacing: Double {
         get {
             return lambda / 2.0 // Spacing between pixels in x_direction
         }
     }
-    var z_pixel_spacing: Double {
+    var imageZPixelSpacing: Double {
         get {
             return lambda / 2.0  // Spacing between pixels in z_direction
         }
     }
 
-    let z_img_start: Double = 0.0 // Start of image in mm
-    let z_img_stop: Double = 50.0 // End of image in mm
-    var x_img_start: Double {
+    var imageXStartInMM: Double {
         get {
-            return element_position.first!
+            return VerasonicsDelay.defaultDelays.first!
         }
     }
-    var x_img_stop: Double {
+    var imageXStopInMM: Double {
         get {
-            return element_position.last!
+            return VerasonicsDelay.defaultDelays.last!
         }
     }
-    var nbr_xs: Int {
+    var imageXPixelCount: Int {
         get {
-            return Int(round((x_img_stop - x_img_start) / x_pixel_spacing))
+            return Int(round((imageXStopInMM - imageXStartInMM) / imageXPixelSpacing))
         }
     }
-    var nbr_zs: Int {
+    var imageZPixelCount: Int {
         get {
-            return Int(round((z_img_stop - z_img_start) / z_pixel_spacing))
+            return Int(round((imageZStopInMM - imageZStartInMM) / imageZPixelSpacing))
         }
     }
-    var xs = [Double]()
-    var zs = [Double]()
-    var delays: [[Double]]?
-    let angle: Double = 0
 
-    func setupDelays()
+    var elementDelayValues: [Double]
+    private var calculatedDelayValues: [[Double]]?
+    var delays: [[Double]]? {
+        get {
+            let angle: Double = 0
+
+            if self.calculatedDelayValues == nil {
+                var xs = [Double](count: self.imageXPixelCount, repeatedValue: 0)
+                for i in 0..<self.imageXPixelCount {
+                    xs[i] = imageXStartInMM + Double(i + 1) * self.imageXPixelSpacing
+                }
+
+                var zs = [Double](count: self.imageZPixelCount, repeatedValue: 0)
+                for i in 0..<self.imageZPixelCount {
+                    zs[i] = imageZStartInMM + Double(i + 1) * self.imageZPixelSpacing
+                }
+
+                self.calculatedDelayValues = [[Double]](count: self.numberOfTransducerElements, repeatedValue: [Double]())
+                for (var element = 0; element < self.numberOfTransducerElements; element++) {
+                    print("Initializing \(self.imageXPixelCount * self.imageZPixelCount) delays for element \(element + 1)")
+                    for(var x = 0; x < self.imageXPixelCount; x += 1) {
+                        for (var z = 0; z < self.imageZPixelCount; z += 1) {
+                            let zCosineAlpha = zs[z] * cos(angle)
+                            let xSineAlpha = xs[x] * sin(angle)
+                            let tauEcho = (zCosineAlpha + xSineAlpha) / self.speedOfUltrasound
+
+                            let zSquared = pow(zs[z], 2)
+                            let xDifferenceSquared = pow(xs[x] - self.elementDelayValues[element], 2)
+                            let tauReceive = sqrt(zSquared + xDifferenceSquared) / self.speedOfUltrasound
+
+                            let delay = (tauEcho + tauReceive) * self.samplingFrequencyHertz + self.lensCorrection
+                            self.calculatedDelayValues![element].append(delay)
+                        }
+                    }
+                }
+            }
+
+            return self.calculatedDelayValues
+        }
+    }
+
+    init(withDelays: [Double])
     {
-        for (var i = 0; i < self.nbr_xs; i += 1) {
-            self.xs.append(x_img_start + Double(i + 1) * self.x_pixel_spacing)
+        self.elementDelayValues = withDelays
+    }
+
+    func imageFromVerasonicsFrame(frame :VerasonicsFrame?) -> UIImage?
+    {
+        var image: UIImage?
+        if frame != nil {
+            let IQData = IQDataWithVerasonicsFrame(frame)!
+            let complexImageVector = complexImageVectorWithIQData(IQData, width: self.imageXPixelCount, height: imageZPixelCount)!
+            let imageAmplitudes = imageAmplitudesFromComplexImageVector(complexImageVector)
+
+            let imageRef = imageFromPixelValues(imageAmplitudes, width: self.imageXPixelCount, height: self.imageZPixelCount)
+            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: UIImageOrientation.Up)
         }
 
-        for (var i = 0; i < self.nbr_zs; i += 1) {
-            self.zs.append(z_img_start + Double(i + 1) * self.z_pixel_spacing)
-        }
+        return image
+    }
 
-        self.delays = [[Double]](count: self.no_elements, repeatedValue: [Double]())
-        for (var elmt = 0; elmt < self.no_elements; elmt++) {
-            print("Initializing \(self.nbr_xs * self.nbr_zs) delays for element \(elmt + 1)")
-            for(var x = 0; x < self.nbr_xs; x += 1) {
-                for (var z = 0; z < self.nbr_zs; z += 1) {
-                    let zCosineAlpha = self.zs[z] * cos(self.angle)
-                    let xSineAlpha = self.xs[x] * sin(self.angle)
-                    let tauEcho = (zCosineAlpha + xSineAlpha) / self.speedOfUltrasound
-
-                    let zSquared = pow(self.zs[z], 2)
-                    let xDifferenceSquared = pow(self.xs[x] - self.element_position[elmt], 2)
-                    let tauReceive = sqrt(zSquared + xDifferenceSquared) / self.speedOfUltrasound
-
-                    let delay = (tauEcho + tauReceive) * self.samplingFrequencyHertz + self.lensCorrection
-                    self.delays![elmt].append(delay)
+    private func IQDataWithVerasonicsFrame(frame: VerasonicsFrame?) -> [[Complex<Double>]]?
+    {
+        var IQData: [[Complex<Double>]]?
+        if let channelData = frame?.channelData {
+            let numberOfElements = channelData.count
+            IQData = [[Complex<Double>]](count: numberOfElements, repeatedValue: [Complex<Double>]())
+            for element in 0 ..< numberOfElements {
+                for var sample = 0; sample < 800; sample += 2 {
+                    /*Getting the IQ data, the first sample is the real sample, the second sample is the
+                    complex*/
+                    let real: Double = Double(channelData[element][sample])
+                    let imaginary: Double = Double(channelData[element][sample + 1])
+                    let complexNumber: Complex<Double> = real + imaginary.i
+                    IQData?[element].append(complexNumber)
                 }
             }
         }
+
+        return IQData
     }
 
-    func createImage(frame :VerasonicsFrame)
-    {
-        let iq_data: [[Complex<Double>]] = calculateIQData(frame)
-        let img_vector: [Complex<Double>] = interpolateImage(iq_data)
-        let (imageAmplitudes, minimumValue, maximumValue) = imageAmplitudesFromVector(img_vector)
-        let scaledImageAmplitudes = scaledImageAmplitudeFromImageAmplitude(imageAmplitudes, minimumValue: minimumValue, maximumValue: maximumValue)
-        let imageRef = imageFromData(scaledImageAmplitudes)
-        let image = UIImage(CGImage: imageRef!)
-
-        let imageData = NSData(data:UIImagePNGRepresentation(image)!)
-        let paths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
-        let documentsURL =  NSURL(string: paths[0])
-
-        let fullPath = documentsURL?.URLByAppendingPathComponent("ultrasound.png")
-        let result = imageData.writeToURL(fullPath!, atomically: true)
-        
-        print(fullPath)
-    }
-
-    func calculateIQData(frame: VerasonicsFrame) -> [[Complex<Double>
-        ]]
-    {
-        let numberOfElements = frame.channelData!.count
-        var iq_data = [[Complex<Double>]](count: numberOfElements, repeatedValue: [Complex<Double>]())
-        for elmt in 0 ..< numberOfElements {
-            for var sample = 0; sample < 800; sample += 2 {
-                /*Getting the IQ data, the first sample is the real sample, the second sample is the
-                complex*/
-                let real: Double = Double(frame.channelData![elmt][sample])
-                let imaginary: Double = Double(frame.channelData![elmt][sample + 1])
-                let complexNumber: Complex<Double> = real + imaginary.i
-                iq_data[elmt].append(complexNumber)
-            }
-        }
-
-        return iq_data
-    }
-
-    func interpolateImage(iq_data: [[Complex<Double>]]) -> [Complex<Double>]
+    private func complexImageVectorWithIQData(IQData: [[Complex<Double>]]?, width: Int, height: Int) -> [Complex<Double>]?
     {
         /* Interpolate the image*/
-        let iterations = self.nbr_xs * self.nbr_zs
-        var img_vector = [Complex<Double>](count: iterations, repeatedValue: 0 + 0.i)
-        for elmt in 0 ..< iq_data.count {
-            for sample in 0 ..< iterations {
-                let x_n = Int(floor(self.delays![elmt][sample]))
-                let x_n1 = Int(ceil(self.delays![elmt][sample]))
-                if (x_n < iq_data[elmt].count && x_n1 < iq_data[elmt].count) {
-                    let alpha = Double(x_n1) - self.delays![elmt][sample]
-                    let partA = exp((2 * M_PI * self.f0 * self.delays![elmt][sample]).i / self.samplingFrequencyHertz)
-                    let partB1 = alpha * iq_data[elmt][x_n - 1]
-                    let partB2 = (1.0 - alpha) * iq_data[elmt][x_n1 - 1]
-                    let partB = partB1 + partB2
-
-                    img_vector[sample] = img_vector[sample] + partA * partB
+        let totalNumberOfDataPoints = width * height
+        var interpolatedImage = [Complex<Double>](count: totalNumberOfDataPoints, repeatedValue: 0 + 0.i)
+        if IQData != nil {
+            let data = IQData!
+            for element in 0 ..< data.count {
+                for sample in 0 ..< totalNumberOfDataPoints {
+                    let x_n = Int(floor(self.delays![element][sample]))
+                    let x_n1 = Int(ceil(self.delays![element][sample]))
+                    if (x_n < data[element].count && x_n1 < data[element].count) {
+                        let alpha = Double(x_n1) - self.delays![element][sample]
+                        let partA = exp((2.i * M_PI * self.f0 * self.delays![element][sample]) / self.samplingFrequencyHertz)
+                        let partB = alpha * data[element][x_n - 1] + (1.0 - alpha) * data[element][x_n1 - 1]
+                        let interpolatedImageValue = interpolatedImage[sample] + partA * partB
+                        interpolatedImage[sample] = interpolatedImageValue
+                    }
                 }
             }
         }
 
-        return img_vector
+        return interpolatedImage
     }
 
-    func imageAmplitudesFromVector(img_vector: [Complex<Double>]) -> (image: [Double], minimumValue: Double, maximumValue: Double)
+    private func imageAmplitudesFromComplexImageVector(complexImageVector: [Complex<Double>]?) -> [UInt8]?
     {
-        var minimumValue: Double = Double(MAXFLOAT)
-        var maximumValue: Double = 0
-        let numberOfAmplitudes = self.nbr_xs * self.nbr_zs
-        var img_amplitudes = [Double](count: numberOfAmplitudes, repeatedValue: 0)
-        for sample in 0 ..< numberOfAmplitudes {
-            let amplitude = abs(img_vector[sample])
-            if amplitude < minimumValue {
-                minimumValue = amplitude
-            }
-            if amplitude > maximumValue {
-                maximumValue = amplitude
+        var imageIntensities: [UInt8]?
+        if let imageVector = complexImageVector {
+            // convert complex value to double
+            var minimumValue: Double = Double(MAXFLOAT)
+            var maximumValue: Double = 0
+            let numberOfAmplitudes = imageVector.count
+            var imageAmplitudes = [Double](count: numberOfAmplitudes, repeatedValue: 0)
+            for sample in 0 ..< numberOfAmplitudes {
+                let amplitude = abs(complexImageVector![sample])
+                if amplitude < minimumValue {
+                    minimumValue = amplitude
+                }
+                if amplitude > maximumValue {
+                    maximumValue = amplitude
+                }
+
+                imageAmplitudes[sample] = amplitude
             }
 
-            img_amplitudes[sample] = amplitude
+            // convert double to decibel
+            var minimumDecibels: Double = Double(MAXFLOAT)
+            var maximumDecibels: Double = 0
+            var decibelValues = [Double]()
+            for imageAmplitude in imageAmplitudes {
+                // The range is 1..256 because 0 will cause a -Inf value.
+                let scaledImageAmplitude = (((imageAmplitude - minimumValue) / (maximumValue - minimumValue)) * 255.0) + 1.0
+
+                let decibels = 10 * log10(scaledImageAmplitude)
+                if decibels < minimumDecibels {
+                    minimumDecibels = decibels
+                }
+                if decibels > maximumDecibels {
+                    maximumDecibels = decibels
+                }
+                decibelValues.append(decibels)
+            }
+
+            // scale the values from 0..255
+            imageIntensities = [UInt8](count: imageAmplitudes.count, repeatedValue: 0)
+            for decibels in decibelValues {
+                let intensity = round((decibels - minimumDecibels) / (maximumDecibels - minimumDecibels) * 255)
+                imageIntensities?.append(UInt8(intensity))
+            }
         }
 
-        return (img_amplitudes, minimumValue, maximumValue)
+        return imageIntensities
     }
 
-    func scaledImageAmplitudeFromImageAmplitude(imageAmplitudes: [Double], minimumValue: Double, maximumValue: Double) -> [UInt8]
-        {
-            var scaledImageAmplitudes = [UInt8]()
-            for imageAmplitude in imageAmplitudes {
-                let intensity = round(((imageAmplitude + minimumValue) / maximumValue) * 255)
-                scaledImageAmplitudes.append(UInt8(intensity))
-            }
-
-            return scaledImageAmplitudes
-    }
-
-    func imageFromData(imageData: [UInt8]) -> CGImage?
+    private func imageFromPixelValues(pixelValues: [UInt8]?, width: Int, height: Int) -> CGImage?
     {
-        let imageRef: CGImage?
-        let colorSpace = CGColorSpaceCreateDeviceGray()
+        var image: CGImage?
 
-        let bitsPerComponent = 8
-        let width = self.nbr_xs
-        let height = self.nbr_zs
+        if (pixelValues != nil) {
+            let imageDataPointer = UnsafeMutablePointer<UInt8>(pixelValues!)
 
-        let bitmapInfo: CGBitmapInfo = .ByteOrderDefault
-        let renderingIntent: CGColorRenderingIntent = .RenderingIntentDefault
+            let colorSpaceRef = CGColorSpaceCreateDeviceGray()
 
-        let bitsPerPixel = 8;
-        let bytesPerRow = self.nbr_xs;
-        let provider: CGDataProviderRef = CGDataProviderCreateWithData(nil,
-            UnsafePointer<Void>(imageData),
-            imageData.count,
-            nil)!
+            let bitsPerComponent = 8
+            let bytesPerPixel = 1
+            let bitsPerPixel = bytesPerPixel * bitsPerComponent
+            let bytesPerRow = bytesPerPixel * width
+            let totalBytes = height * bytesPerRow
 
-        imageRef = CGImageCreate(width,
-            height,
-            bitsPerComponent,
-            bitsPerPixel,
-            bytesPerRow,
-            colorSpace,
-            bitmapInfo,
-            provider,
-            nil,
-            false,
-            renderingIntent)
+            let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.None.rawValue)
+                .union(CGBitmapInfo.ByteOrderDefault)
 
-        return imageRef
+            let providerRef = CGDataProviderCreateWithData(nil, imageDataPointer, totalBytes, nil)
+            image = CGImageCreate(width,
+                height,
+                bitsPerComponent,
+                bitsPerPixel,
+                bytesPerRow,
+                colorSpaceRef,
+                bitmapInfo,
+                providerRef,
+                nil,
+                false,
+                CGColorRenderingIntent.RenderingIntentDefault)
+        }
+
+        return image
     }
-
 }

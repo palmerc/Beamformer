@@ -33,11 +33,12 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        let processor = VerasonicsDelay(withDelays: VerasonicsDelay.defaultDelays)
         self.webSocket.event.message = { message in
             if let text = message as? String {
                 let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
-                let identifier = verasonicsFrame!.identifier
-                print("\(identifier)")
+                let image = processor.imageFromVerasonicsFrame(verasonicsFrame)
+                print("\(image)")
             }
         }
 
