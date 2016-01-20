@@ -96,12 +96,12 @@ class VerasonicsDelay: NSObject {
             if self.calculatedDelayValues == nil {
                 var xs = [Double](count: self.imageXPixelCount, repeatedValue: 0)
                 for i in 0..<self.imageXPixelCount {
-                    xs[i] = imageXStartInMM + Double(i + 1) * self.imageXPixelSpacing
+                    xs[i] = imageXStartInMM + Double(i) * self.imageXPixelSpacing
                 }
 
                 var zs = [Double](count: self.imageZPixelCount, repeatedValue: 0)
                 for i in 0..<self.imageZPixelCount {
-                    zs[i] = imageZStartInMM + Double(i + 1) * self.imageZPixelSpacing
+                    zs[i] = imageZStartInMM + Double(i) * self.imageZPixelSpacing
                 }
 
                 self.calculatedDelayValues = [[Double]](count: self.numberOfActiveTransducerElements, repeatedValue: [Double]())
@@ -154,14 +154,15 @@ class VerasonicsDelay: NSObject {
         var IQData: [[Complex<Double>]]?
         if let channelData = frame?.channelData {
             let numberOfElements = channelData.count
-            let numberOfSamples = channelData.first?.count
+            let numberOfSamples = channelData.first!.count
             IQData = [[Complex<Double>]](count: numberOfElements, repeatedValue: [Complex<Double>]())
             for element in 0 ..< numberOfElements {
-                for var sample = 0; sample < numberOfSamples; sample += 2 {
+                for var sampleIndex = 0; sampleIndex < (numberOfSamples / 2); sampleIndex += 1 {
                     /*Getting the IQ data, the first sample is the real sample, the second sample is the
                     complex*/
-                    let real: Double = Double(channelData[element][sample])
-                    let imaginary: Double = Double(channelData[element][sample + 1])
+                    let sampleOffset = 2 * sampleIndex
+                    let real = Double(channelData[element][sampleOffset])
+                    let imaginary = Double(channelData[element][sampleOffset + 1])
                     let complexNumber: Complex<Double> = real + imaginary.i
                     IQData?[element].append(complexNumber)
                 }
@@ -186,7 +187,7 @@ class VerasonicsDelay: NSObject {
                         let alpha = Double(x_n1) - self.delays![element][sample]
                         // Shift frequency by reintroducing the carrier signal
                         let partA = conj(exp(((2 * M_PI * self.centralFrequency * self.delays![element][sample]) / self.samplingFrequencyHertz).i))
-                        let partB = alpha * data[element][x_n - 1] + (1.0 - alpha) * data[element][x_n1 - 1]
+                        let partB = alpha * data[element][x_n] + (1.0 - alpha) * data[element][x_n1]
                         let interpolatedImageValue = interpolatedImage[sample] + partA * partB
                         interpolatedImage[sample] = interpolatedImageValue
                     }
