@@ -10,7 +10,6 @@
 		7A7789441E15BA48B374191B /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68453FC83C16B34314D8C95F /* Pods.framework */; };
 		C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */; };
 		C734E6921C2EEEC8006972A0 /* VerasonicsDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E6911C2EEEC8006972A0 /* VerasonicsDelay.swift */; };
-		C763C04A1C503AED00AA2471 /* complex.swift in Sources */ = {isa = PBXBuildFile; fileRef = C763C0491C503AED00AA2471 /* complex.swift */; };
 		C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */; };
 		C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959411C19FBEC0075EF90 /* ViewController.swift */; };
 		C7C959451C19FBEC0075EF90 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959431C19FBEC0075EF90 /* Main.storyboard */; };
@@ -18,6 +17,7 @@
 		C7C9594A1C19FBEC0075EF90 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */; };
 		C7C959551C19FBEC0075EF90 /* BeamformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959541C19FBEC0075EF90 /* BeamformerTests.swift */; };
 		C7C959601C19FBEC0075EF90 /* BeamformerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */; };
+		C7F3B1D11C523327006FC55D /* complex.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F3B1D01C523327006FC55D /* complex.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,7 +43,6 @@
 		BE3040FDA7737D61741D012B /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "../Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrame.swift; sourceTree = "<group>"; };
 		C734E6911C2EEEC8006972A0 /* VerasonicsDelay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsDelay.swift; sourceTree = "<group>"; };
-		C763C0491C503AED00AA2471 /* complex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = complex.swift; sourceTree = "<group>"; };
 		C7C9593C1C19FBEC0075EF90 /* Beamformer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Beamformer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C7C959411C19FBEC0075EF90 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -57,6 +56,7 @@
 		C7C9595B1C19FBEC0075EF90 /* BeamformerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeamformerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamformerUITests.swift; sourceTree = "<group>"; };
 		C7C959611C19FBEC0075EF90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C7F3B1D01C523327006FC55D /* complex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = complex.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,14 +94,6 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
-		C7021F521C3729BB00F6FF12 /* complex */ = {
-			isa = PBXGroup;
-			children = (
-				C763C0491C503AED00AA2471 /* complex.swift */,
-			);
-			path = complex;
-			sourceTree = "<group>";
-		};
 		C7C959331C19FBEC0075EF90 = {
 			isa = PBXGroup;
 			children = (
@@ -127,7 +119,6 @@
 		C7C9593E1C19FBEC0075EF90 /* Beamformer */ = {
 			isa = PBXGroup;
 			children = (
-				C7021F521C3729BB00F6FF12 /* complex */,
 				C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */,
 				C7C959411C19FBEC0075EF90 /* ViewController.swift */,
 				C7C959431C19FBEC0075EF90 /* Main.storyboard */,
@@ -136,6 +127,7 @@
 				C7C9594B1C19FBEC0075EF90 /* Info.plist */,
 				C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */,
 				C734E6911C2EEEC8006972A0 /* VerasonicsDelay.swift */,
+				C7F3B1D01C523327006FC55D /* complex.swift */,
 			);
 			path = Beamformer;
 			sourceTree = "<group>";
@@ -349,7 +341,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C763C04A1C503AED00AA2471 /* complex.swift in Sources */,
+				C7F3B1D11C523327006FC55D /* complex.swift in Sources */,
 				C734E6921C2EEEC8006972A0 /* VerasonicsDelay.swift in Sources */,
 				C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */,
 				C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */,

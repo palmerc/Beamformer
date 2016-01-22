@@ -9,6 +9,53 @@
 import Foundation
 import UIKit
 import CoreGraphics
+import Accelerate
+
+public struct ElementIQData
+{
+    var channelIdentifier: Int
+    var real: [Double]
+    var imaginary: [Double]
+    var numberOfSamples: Int
+    {
+        get {
+            return self.real.count
+        }
+    }
+
+    private var _complexData: [Complex<Double>]?
+    var complexData: [Complex<Double>]
+    {
+        mutating get {
+            if (self._complexData == nil) {
+                self._complexData = real.enumerate().map({ (index: Int, real: Double) -> Complex<Double> in
+                    return Complex<Double>(real + imaginary[index].i)
+                })
+            }
+
+            return self._complexData!
+        }
+    }
+
+    public init(channelIdentifier: Int, numberOfSamples: Int)
+    {
+        self.channelIdentifier = channelIdentifier
+        self.real = [Double](count: numberOfSamples, repeatedValue: 0)
+        self.imaginary = [Double](count: numberOfSamples, repeatedValue: 0)
+    }
+}
+
+public struct ElementDelayData
+{
+    var channelIdentifier: Int
+    var delays: [Double]
+
+    public init(channelIdentifier: Int, numberOfDelays: Int)
+    {
+        self.channelIdentifier = channelIdentifier
+        self.delays = [Double](count: numberOfDelays, repeatedValue: 0)
+    }
+}
 
 class VerasonicsDelay: NSObject {
     private let speedOfUltrasound: Double = 1540 * 1000
@@ -88,12 +135,12 @@ class VerasonicsDelay: NSObject {
     }
 
     var elementDelayValues: [Double]
-    private var calculatedDelayValues: [[Double]]?
-    var delays: [[Double]]? {
+    private var calculatedElementDelays: [ElementDelayData]?
+    var elementDelayData: [ElementDelayData]? {
         get {
             let angle: Double = 0
 
-            if self.calculatedDelayValues == nil {
+            if self.calculatedElementDelays == nil {
                 var xs = [Double](count: self.imageXPixelCount, repeatedValue: 0)
                 for i in 0..<self.imageXPixelCount {
                     xs[i] = imageXStartInMM + Double(i) * self.imageXPixelSpacing
@@ -104,9 +151,13 @@ class VerasonicsDelay: NSObject {
                     zs[i] = imageZStartInMM + Double(i) * self.imageZPixelSpacing
                 }
 
-                self.calculatedDelayValues = [[Double]](count: self.numberOfActiveTransducerElements, repeatedValue: [Double]())
+                var calculatedElementDelays = [ElementDelayData]()
+                calculatedElementDelays.reserveCapacity(self.numberOfActiveTransducerElements)
                 for (var element = 0; element < self.numberOfActiveTransducerElements; element++) {
                     print("Initializing \(self.imageXPixelCount * self.imageZPixelCount) delays for element \(element + 1)")
+                    let numberOfDelays = self.imageXPixelCount * self.imageZPixelCount
+                    var elementDelay = ElementDelayData(channelIdentifier: element, numberOfDelays: numberOfDelays)
+
                     for(var x = 0; x < self.imageXPixelCount; x += 1) {
                         for (var z = 0; z < self.imageZPixelCount; z += 1) {
                             let zCosineAlpha = zs[z] * cos(angle)
@@ -118,13 +169,16 @@ class VerasonicsDelay: NSObject {
                             let tauReceive = sqrt(zSquared + xDifferenceSquared) / self.speedOfUltrasound
 
                             let delay = (tauEcho + tauReceive) * self.samplingFrequencyHertz + self.lensCorrection
-                            self.calculatedDelayValues![element].append(delay)
+                            let delayIndex = x * self.imageXPixelCount + z
+                            elementDelay.delays[delayIndex] = delay
                         }
                     }
+                    calculatedElementDelays.append(elementDelay)
                 }
+                self.calculatedElementDelays = calculatedElementDelays
             }
 
-            return self.calculatedDelayValues
+            return self.calculatedElementDelays
         }
     }
 
@@ -139,73 +193,110 @@ class VerasonicsDelay: NSObject {
         if frame != nil {
             let IQData = IQDataWithVerasonicsFrame(frame)!
             let complexImageVector = complexImageVectorWithIQData(IQData, width: self.imageXPixelCount, height: imageZPixelCount)!
-            let imageAmplitudes = imageAmplitudesFromComplexImageVector(complexImageVector)
+            let imageAmplitudes = imageAmplitudesFromComplexImageVector(complexImageVector, width: self.imageXPixelCount, height: self.imageZPixelCount)
 
             // Because X and Z are swapped currently the image is rotated 90 degrees counter-clockwise. This should be corrected
-            let imageRef = imageFromPixelValues(imageAmplitudes, width: self.imageZPixelCount, height: self.imageXPixelCount)
-            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: UIImageOrientation.Right)
+            let imageRef = imageFromPixelValues(imageAmplitudes, width: self.imageXPixelCount, height: self.imageZPixelCount)
+            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: UIImageOrientation.Up)
         }
 
         return image
     }
 
-    private func IQDataWithVerasonicsFrame(frame: VerasonicsFrame?) -> [[Complex<Double>]]?
+    private func IQDataWithVerasonicsFrame(frame: VerasonicsFrame?) -> [ElementIQData]?
     {
-        var IQData: [[Complex<Double>]]?
+        var IQData: [ElementIQData]?
         if let channelData = frame?.channelData {
             let numberOfElements = channelData.count
-            let numberOfSamples = channelData.first!.count
-            IQData = [[Complex<Double>]](count: numberOfElements, repeatedValue: [Complex<Double>]())
+            IQData = [ElementIQData]()
             for element in 0 ..< numberOfElements {
+                let numberOfSamples = channelData[element].count
+                var elementIQData = ElementIQData(channelIdentifier: element, numberOfSamples: numberOfSamples)
                 for var sampleIndex = 0; sampleIndex < (numberOfSamples / 2); sampleIndex += 1 {
                     /*Getting the IQ data, the first sample is the real sample, the second sample is the
-                    complex*/
+                    complex*/ // Room for improvement, why is it this way?
                     let sampleOffset = 2 * sampleIndex
                     let real = Double(channelData[element][sampleOffset])
                     let imaginary = Double(channelData[element][sampleOffset + 1])
-                    let complexNumber: Complex<Double> = real + imaginary.i
-                    IQData?[element].append(complexNumber)
+                    elementIQData.real[sampleIndex] = real
+                    elementIQData.imaginary[sampleIndex] = imaginary
                 }
+                IQData?.append(elementIQData)
             }
         }
 
         return IQData
     }
 
-    private func complexImageVectorWithIQData(IQData: [[Complex<Double>]]?, width: Int, height: Int) -> [Complex<Double>]?
+    private func complexImageVectorWithIQData(elementIQData: [ElementIQData]?, width: Int, height: Int) -> [Complex<Double>]?
     {
         /* Interpolate the image*/
-        let totalNumberOfDataPoints = width * height
-        var interpolatedImage = [Complex<Double>](count: totalNumberOfDataPoints, repeatedValue: 0 + 0.i)
-        if IQData != nil {
-            let data = IQData!
-            for element in 0 ..< data.count {
-                for sample in 0 ..< totalNumberOfDataPoints {
-                    let x_n = Int(floor(self.delays![element][sample]))
-                    let x_n1 = Int(ceil(self.delays![element][sample]))
-                    if (x_n < data[element].count && x_n1 < data[element].count) {
-                        let alpha = Double(x_n1) - self.delays![element][sample]
-                        // Shift frequency by reintroducing the carrier signal
-                        let partA = conj(exp(((2 * M_PI * self.centralFrequency * self.delays![element][sample]) / self.samplingFrequencyHertz).i))
-                        let partB = alpha * data[element][x_n] + (1.0 - alpha) * data[element][x_n1]
-                        let interpolatedImageValue = interpolatedImage[sample] + partA * partB
-                        interpolatedImage[sample] = interpolatedImageValue
-                    }
-                }
+        var interpolatedImage: [Complex<Double>]?
+        if elementIQData != nil {
+            let numberOfElements = elementIQData!.count
+            let numberOfPixels = width * height
+            interpolatedImage = [Complex<Double>](count: numberOfPixels, repeatedValue: 0+0.i)
+            for elementIdentifier in 0 ..< numberOfElements {
+                let complexImageValues = interpolatedImageDataForElement(elementIdentifier,
+                    elementDelayDatum: self.elementDelayData![elementIdentifier],
+                    elementIQDatum: elementIQData![elementIdentifier])
+                interpolatedImage = interpolatedImage?.enumerate().map({
+                    (index: Int, interpolatedImageValue: Complex<Double>) -> Complex<Double> in
+                    return interpolatedImageValue + complexImageValues[index]
+                })
             }
         }
 
         return interpolatedImage
     }
 
-    private func imageAmplitudesFromComplexImageVector(complexImageVector: [Complex<Double>]?) -> [UInt8]?
+    private func interpolatedImageDataForElement(elementIdentifier: Int,
+        elementDelayDatum: ElementDelayData,
+        var elementIQDatum: ElementIQData) -> [Complex<Double>]
+    {
+        let elementDelays = elementDelayDatum.delays.map({ (delay: Double) -> Double in
+            return 2 * M_PI * self.centralFrequency * delay / self.samplingFrequencyHertz
+        })
+        let x_ns = elementDelayDatum.delays.map({ (delay: Double) -> Double in
+            return Double(floor(delay))
+        })
+        let x_n1s = elementDelayDatum.delays.map({ (delay: Double) -> Double in
+            return Double(ceil(delay))
+        })
+
+        let alphas: [Double] = x_n1s.enumerate().map({ (index: Int, x_n1: Double) -> Double in
+            return x_n1 - elementDelayDatum.delays[index]
+        })
+
+        let oneMinusAlphas: [Double] = alphas.map({ (alpha: Double) -> Double in
+            return 1 - alpha
+        })
+
+        let partBs: [Complex<Double>] = x_ns.enumerate().map({ (index: Int, x_n: Double) -> Complex<Double> in
+            let lower = elementIQDatum.complexData[Int(x_n)]
+            let upper = elementIQDatum.complexData[Int(x_n1s[index])]
+            return (alphas[index] * lower) + (oneMinusAlphas[index] * upper)
+        })
+
+        let partAs: [Complex<Double>] = elementDelays.map({ (elementDelay: Double) -> Complex<Double> in
+            return conj(exp(elementDelay.i))
+        })
+
+        let partATimesPartBs: [Complex<Double>] = partAs.enumerate().map({ (index: Int, partA: Complex<Double>) -> Complex<Double> in
+            return partA * partBs[index]
+        })
+
+        return partATimesPartBs
+    }
+
+    private func imageAmplitudesFromComplexImageVector(complexImageVector: [Complex<Double>]?, width: Int, height: Int) -> [UInt8]?
     {
         var imageIntensities: [UInt8]?
-        if let imageVector = complexImageVector {
+        if var imageVector = complexImageVector {
             // convert complex value to double
             var minimumValue: Double = Double(MAXFLOAT)
             var maximumValue: Double = 0
-            let numberOfAmplitudes = imageVector.count
+            let numberOfAmplitudes = width * height
             var imageAmplitudes = [Double](count: numberOfAmplitudes, repeatedValue: 0)
             for sample in 0 ..< numberOfAmplitudes {
                 let amplitude = abs(complexImageVector![sample])
@@ -223,7 +314,7 @@ class VerasonicsDelay: NSObject {
             var minimumDecibels: Double = Double(MAXFLOAT)
             var maximumDecibels: Double = 0
             var decibelValues = [Double]()
-            decibelValues.reserveCapacity(imageAmplitudes.count) 
+            decibelValues.reserveCapacity(imageAmplitudes.count)
             for imageAmplitude in imageAmplitudes {
                 // The range is 1..256 because 0 will cause a -Inf value.
                 let scaledImageAmplitude = (((imageAmplitude - minimumValue) / (maximumValue - minimumValue)) * 255.0) + 1.0
@@ -246,7 +337,6 @@ class VerasonicsDelay: NSObject {
                 imageIntensities?.append(UInt8(intensity))
             }
         }
-
         return imageIntensities
     }
 
@@ -255,7 +345,7 @@ class VerasonicsDelay: NSObject {
         var image: CGImage?
 
         if (pixelValues != nil) {
-            let imageDataPointer = UnsafeMutablePointer<UInt8>(pixelValues!)
+            var imageDataPointer = pixelValues!
 
             let colorSpaceRef = CGColorSpaceCreateDeviceGray()
 
@@ -268,7 +358,7 @@ class VerasonicsDelay: NSObject {
             let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.None.rawValue)
                 .union(CGBitmapInfo.ByteOrderDefault)
 
-            let providerRef = CGDataProviderCreateWithData(nil, imageDataPointer, totalBytes, nil)
+            let providerRef = CGDataProviderCreateWithData(nil, &imageDataPointer, totalBytes, nil)
             image = CGImageCreate(width,
                 height,
                 bitsPerComponent,

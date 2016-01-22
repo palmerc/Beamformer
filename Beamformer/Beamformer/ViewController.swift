@@ -11,8 +11,8 @@ import SwiftWebSocket
 import ObjectMapper
 
 class ViewController: UIViewController {
-    @IBOutlet weak var UltrasoundImageView: UIImageView!
-    @IBOutlet weak var ConnectButton: UIButton!
+    @IBOutlet weak var ultrasoundImageView: UIImageView!
+    @IBOutlet weak var connectButton: UIButton!
 
     lazy var webSocket = WebSocket()
 
@@ -39,7 +39,7 @@ class ViewController: UIViewController {
             if let text = message as? String {
                 let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
                 let image = processor.imageFromVerasonicsFrame(verasonicsFrame)
-                self.UltrasoundImageView.image = image
+                self.ultrasoundImageView.image = image
             }
         }
 
