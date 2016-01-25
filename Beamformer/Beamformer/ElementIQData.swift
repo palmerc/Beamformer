@@ -4,10 +4,10 @@ import Foundation
 
 public struct ElementIQData
 {
-    var channelIdentifier: Int
-    var real: [Double]
-    var imaginary: [Double]
-    var numberOfSamples: Int
+    public var channelIdentifier: Int
+    public var real: [Double]
+    public var imaginary: [Double]
+    public var numberOfSamples: Int
         {
         get {
             return self.real.count
@@ -15,7 +15,7 @@ public struct ElementIQData
     }
 
     private var generatedComplexData: [Complex<Double>]?
-    var complexData: [Complex<Double>]
+    public var complexIQVector: [Complex<Double>]
         {
         mutating get {
             if (self.generatedComplexData == nil) {

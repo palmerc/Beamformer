@@ -10,15 +10,20 @@ import Foundation
 import ObjectMapper
 
 
-class VerasonicsFrame: NSObject, Mappable {
+public class VerasonicsFrame: NSObject, Mappable
+{
     var channelData: [[Int]]?
     var identifier: UInt?
+//    override var description: String
+//    {
+//        return 
+//    }
 
-    required init?(_ map: Map) {
+    required public init?(_ map: Map) {
 
     }
 
-    func mapping(map: Map) {
+    public func mapping(map: Map) {
         channelData    <- map["channel_data"]
         identifier     <- map["identifier"]
     }

@@ -23,7 +23,7 @@ class ViewController: UIViewController {
         }
         set {
             if (newValue) {
-                self.webSocket.open(url: "ws://127.0.0.1:9000")
+                self.webSocket.open("ws://127.0.0.1:9000")
             } else {
                 self.webSocket.close()
             }
@@ -34,9 +34,11 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let processor = VerasonicsDelay(withDelays: VerasonicsDelay.defaultDelays)
+        let processor = VerasonicsFrameProcessor(withDelays: VerasonicsFrameProcessor.defaultDelays)
         self.webSocket.event.message = { message in
             if let text = message as? String {
+//                let data: NSData = text.dataUsingEncoding(NSUTF8StringEncoding)!
+//                data.writeToFile("/Users/palmerc/frame.json", atomically: true)
                 let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
                 let image = processor.imageFromVerasonicsFrame(verasonicsFrame)
                 self.UltrasoundImageView.image = image
