@@ -6,18 +6,18 @@ import ObjectMapper
 
 class BeamformerTests: XCTestCase
 {
-    private var verasonicsProcessor: VerasonicsDelay?
+    private var verasonicsProcessor: VerasonicsFrameProcessor?
     private var verasonicsFrame: VerasonicsFrame?
 
-    private var complexVector: [[Complex<Double>]]?
-    private var complexImageVector: [Complex<Double>]?
+    private var elementIQData: [ChannelData]?
+    private var complexImageVector: ChannelData?
     private var imageAmplitudes: [UInt8]?
     
     override func setUp()
     {
         super.setUp()
 
-        self.verasonicsProcessor = VerasonicsDelay(withDelays: VerasonicsDelay.defaultDelays)
+        self.verasonicsProcessor = VerasonicsFrameProcessor(withDelays: VerasonicsFrameProcessor.defaultDelays)
 
         var frameJSON: String?
         let bundle = NSBundle(forClass: self.dynamicType)
@@ -32,10 +32,7 @@ class BeamformerTests: XCTestCase
             }
         }
 
-        var token: dispatch_once_t = 0
-        dispatch_once(&token) { () -> Void in
-            self.processVerasonicsFrame(frameJSON)
-        }
+        self.processVerasonicsFrame(frameJSON)
     }
 
     override func tearDown()
@@ -47,9 +44,9 @@ class BeamformerTests: XCTestCase
     {
         let executionTime = self.executionTimeInterval {
             self.verasonicsFrame = Mapper<VerasonicsFrame>().map(frameJSON)
-            self.complexVector = (self.verasonicsProcessor?.IQDataWithVerasonicsFrame(self.verasonicsFrame))!
-            self.complexImageVector = self.verasonicsProcessor?.complexImageVectorWithIQData(self.complexVector, width: self.verasonicsProcessor!.imageXPixelCount, height: self.verasonicsProcessor!.imageZPixelCount)
-            self.imageAmplitudes = self.verasonicsProcessor?.imageAmplitudesFromComplexImageVector(self.complexImageVector)
+            self.elementIQData = (self.verasonicsProcessor?.IQDataWithVerasonicsFrame(self.verasonicsFrame))!
+            self.complexImageVector = self.verasonicsProcessor?.complexImageVectorWithIQData(self.elementIQData, width: self.verasonicsProcessor!.imageXPixelCount, height: self.verasonicsProcessor!.imageZPixelCount)
+            self.imageAmplitudes = self.verasonicsProcessor?.imageAmplitudesFromComplexImageVector(self.complexImageVector, width: self.verasonicsProcessor!.imageXPixelCount, height: self.verasonicsProcessor!.imageZPixelCount)
         }
 
         print("Execution time: \(executionTime) seconds")
@@ -62,36 +59,41 @@ class BeamformerTests: XCTestCase
         let end = CACurrentMediaTime()
         return end - start
     }
-    
+
+    func testAAAComplexImageVectorForElement()
+    {
+
+    }
+
     func testIQDataWithVerasonicsFrame()
     {
-        XCTAssertEqual(self.complexVector![60][200], Complex<Double>(-53.0+21.0.i))
-        XCTAssertEqual(self.complexVector![60][201], Complex<Double>(9.0+5.0.i))
-        XCTAssertEqual(self.complexVector![60][202], Complex<Double>(11.0+1.0.i))
+        XCTAssertEqual(self.elementIQData![60].complexIQVector[200], Complex<Double>(-53.0+21.0.i))
+        XCTAssertEqual(self.elementIQData![60].complexIQVector[201], Complex<Double>(9.0+5.0.i))
+        XCTAssertEqual(self.elementIQData![60].complexIQVector[202], Complex<Double>(11.0+1.0.i))
 
-        XCTAssertEqual(self.complexVector![61][200], Complex<Double>(0.0+14.0.i))
-        XCTAssertEqual(self.complexVector![61][201], Complex<Double>(-23.0-6.0.i))
-        XCTAssertEqual(self.complexVector![61][202], Complex<Double>(-15.0+11.0.i))
+        XCTAssertEqual(self.elementIQData![61].complexIQVector[200], Complex<Double>(0.0+14.0.i))
+        XCTAssertEqual(self.elementIQData![61].complexIQVector[201], Complex<Double>(-23.0-6.0.i))
+        XCTAssertEqual(self.elementIQData![61].complexIQVector[202], Complex<Double>(-15.0+11.0.i))
 
-        XCTAssertEqual(self.complexVector![62][200], Complex<Double>(34.0+31.0.i))
-        XCTAssertEqual(self.complexVector![62][201], Complex<Double>(13.0+2.0.i))
-        XCTAssertEqual(self.complexVector![62][202], Complex<Double>(11.0-16.0.i))
+        XCTAssertEqual(self.elementIQData![62].complexIQVector[200], Complex<Double>(34.0+31.0.i))
+        XCTAssertEqual(self.elementIQData![62].complexIQVector[201], Complex<Double>(13.0+2.0.i))
+        XCTAssertEqual(self.elementIQData![62].complexIQVector[202], Complex<Double>(11.0-16.0.i))
     }
 
     func testComplexImageVectorWithIQData()
     {
-        let complexImageVector2030Real = trunc(self.complexImageVector![2030].real)
-        let complexImageVector2030Imaginary = trunc(self.complexImageVector![2030].imag)
+        let complexImageVector2030Real = trunc(self.complexImageVector!.real[2030])
+        let complexImageVector2030Imaginary = trunc(self.complexImageVector!.imaginary[2030])
         XCTAssertEqual(complexImageVector2030Real, 77.0)
         XCTAssertEqual(complexImageVector2030Imaginary, 281.0)
 
-        let complexImageVector3050Real = trunc(self.complexImageVector![3050].real)
-        let complexImageVector3050Imaginary = trunc(self.complexImageVector![3050].imag)
+        let complexImageVector3050Real = trunc(self.complexImageVector!.real[3050])
+        let complexImageVector3050Imaginary = trunc(self.complexImageVector!.imaginary[3050])
         XCTAssertEqual(complexImageVector3050Real, 205.0)
         XCTAssertEqual(complexImageVector3050Imaginary, -5.0)
 
-        let complexImageVector8650Real = trunc(self.complexImageVector![8650].real)
-        let complexImageVector8650Imaginary = trunc(self.complexImageVector![8650].imag)
+        let complexImageVector8650Real = trunc(self.complexImageVector!.real[8650])
+        let complexImageVector8650Imaginary = trunc(self.complexImageVector!.imaginary[8650])
         XCTAssertEqual(complexImageVector8650Real, -397.0)
         XCTAssertEqual(complexImageVector8650Imaginary, -808.0)
     }

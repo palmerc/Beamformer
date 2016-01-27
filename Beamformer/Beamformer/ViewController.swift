@@ -1,14 +1,8 @@
-//
-//  ViewController.swift
-//  Beamformer
-//
-//  Created by Cameron Palmer on 10.12.2015.
-//  Copyright © 2015 NTNU. All rights reserved.
-//
-
 import UIKit
 import SwiftWebSocket
 import ObjectMapper
+
+
 
 class ViewController: UIViewController {
     @IBOutlet weak var UltrasoundImageView: UIImageView!
