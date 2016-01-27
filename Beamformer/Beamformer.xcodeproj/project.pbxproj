@@ -11,7 +11,6 @@
 		7A7789441E15BA48B374191B /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68453FC83C16B34314D8C95F /* Pods.framework */; };
 		C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */; };
 		C734E6921C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E6911C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift */; };
-		C763C04A1C503AED00AA2471 /* complex.swift in Sources */ = {isa = PBXBuildFile; fileRef = C763C0491C503AED00AA2471 /* complex.swift */; };
 		C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */; };
 		C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959411C19FBEC0075EF90 /* ViewController.swift */; };
 		C7C959451C19FBEC0075EF90 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959431C19FBEC0075EF90 /* Main.storyboard */; };
@@ -429,7 +428,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C763C04A1C503AED00AA2471 /* complex.swift in Sources */,
 				C734E6921C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift in Sources */,
 				C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */,
 				C7EB50B31C560A6C0050C582 /* ElementDelayData.swift in Sources */,

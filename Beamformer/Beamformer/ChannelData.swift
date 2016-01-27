@@ -15,19 +15,19 @@ public struct ChannelData
         }
     }
 
-    private var generatedComplexData: [Complex<Double>]?
-    public var complexIQVector: [Complex<Double>]
-    {
-        mutating get {
-            if (self.generatedComplexData == nil) {
-                self.generatedComplexData = real.enumerate().map({ (index: Int, real: Double) -> Complex<Double> in
-                    return Complex<Double>(real + imaginary[index].i)
-                })
-            }
-
-            return self.generatedComplexData!
-        }
-    }
+//    private var generatedComplexData: [Complex<Double>]?
+//    public var complexIQVector: [Complex<Double>]
+//    {
+//        mutating get {
+//            if (self.generatedComplexData == nil) {
+//                self.generatedComplexData = real.enumerate().map({ (index: Int, real: Double) -> Complex<Double> in
+//                    return Complex<Double>(real + imaginary[index].i)
+//                })
+//            }
+//
+//            return self.generatedComplexData!
+//        }
+//    }
 
     public init(channelIdentifier: Int, numberOfSamples: Int)
     {
