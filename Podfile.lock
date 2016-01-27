@@ -1,13 +1,13 @@
 PODS:
-  - ObjectMapper (1.0.1)
-  - SwiftWebSocket (2.4.0)
+  - ObjectMapper (1.1.1)
+  - SwiftWebSocket (2.4.3)
 
 DEPENDENCIES:
   - ObjectMapper
   - SwiftWebSocket
 
 SPEC CHECKSUMS:
-  ObjectMapper: 98524bac0dca46c6b3d5ee02cd410fc700ec6ce2
-  SwiftWebSocket: 6ca0d5e0947ebc62b47fc31d9cd078f6212aa5b2
+  ObjectMapper: 4143abed1dbd49b73d75092fe8fa1c88ed6434b7
+  SwiftWebSocket: 74640406a3fb403969b89e5d7c945754ef9e5607
 
 COCOAPODS: 0.39.0
