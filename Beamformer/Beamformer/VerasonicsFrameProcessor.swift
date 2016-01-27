@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 import CoreGraphics
+import Accelerate
 
 
 
@@ -146,26 +147,25 @@ public class VerasonicsFrameProcessor: NSObject
         if frame != nil {
             let IQData = IQDataWithVerasonicsFrame(frame)!
             let complexImageVector = complexImageVectorWithIQData(IQData, width: self.imageXPixelCount, height: imageZPixelCount)!
-            let imageAmplitudes = imageAmplitudesFromComplexImageVector(complexImageVector)
-
+            let imageAmplitudes = imageAmplitudesFromComplexImageVector(complexImageVector, width: self.imageXPixelCount, height: imageZPixelCount)
             // Because X and Z are swapped currently the image is rotated 90 degrees counter-clockwise. This should be corrected
-            let imageRef = imageFromPixelValues(imageAmplitudes, width: self.imageZPixelCount, height: self.imageXPixelCount)
-            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: UIImageOrientation.Right)
+            image = imageFromPixelValues(imageAmplitudes, width: self.imageZPixelCount, height: self.imageXPixelCount)
         }
 
+        print("Frame \(frame?.identifier!) complete")
         return image
     }
 
-    public func IQDataWithVerasonicsFrame(frame: VerasonicsFrame?) -> [ElementIQData]?
+    public func IQDataWithVerasonicsFrame(frame: VerasonicsFrame?) -> [ChannelData]?
     {
-        var IQData: [ElementIQData]?
+        var IQData: [ChannelData]?
         if let channelData = frame?.channelData {
             let numberOfElements = channelData.count
-            IQData = [ElementIQData]()
+            IQData = [ChannelData]()
             for element in 0 ..< numberOfElements {
-                let numberOfSamples = channelData[element].count
-                var elementIQData = ElementIQData(channelIdentifier: element, numberOfSamples: numberOfSamples)
-                for var sampleIndex = 0; sampleIndex < (numberOfSamples / 2); sampleIndex += 1 {
+                let numberOfSamples = channelData[element].count / 2
+                var elementIQData = ChannelData(channelIdentifier: element, numberOfSamples: numberOfSamples)
+                for var sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex += 1 {
                     /*Getting the IQ data, the first sample is the real sample, the second sample is the
                     complex*/ // Room for improvement, why is it this way?
                     let sampleOffset = 2 * sampleIndex
@@ -181,125 +181,161 @@ public class VerasonicsFrameProcessor: NSObject
         return IQData
     }
 
-    public func complexImageVectorWithIQData(elementIQData: [ElementIQData]?, width: Int, height: Int) -> [Complex<Double>]?
+    public func complexImageVectorWithIQData(elementIQData: [ChannelData]?, width: Int, height: Int) -> ChannelData?
     {
         /* Interpolate the image*/
-        var interpolatedImage: [Complex<Double>]?
+        var complexImageVector: ChannelData?
         if elementIQData != nil {
             let numberOfElements = elementIQData!.count
             let numberOfPixels = width * height
-            interpolatedImage = [Complex<Double>](count: numberOfPixels, repeatedValue: 0+0.i)
+
+            complexImageVector = ChannelData(channelIdentifier: 0, numberOfSamples: numberOfPixels)
+            var interpolatedImageWrapper = DSPDoubleSplitComplex(realp: &complexImageVector!.real, imagp: &complexImageVector!.imaginary)
             for elementIdentifier in 0 ..< numberOfElements {
-                let complexImageValues = interpolatedImageDataForElement(elementIdentifier,
+                var aComplexImageVector = complexImageVectorForElement(elementIdentifier,
                     elementDelayDatum: self.elementDelayData![elementIdentifier],
                     elementIQDatum: elementIQData![elementIdentifier])
-                interpolatedImage = interpolatedImage?.enumerate().map({
-                    (index: Int, interpolatedImageValue: Complex<Double>) -> Complex<Double> in
-                    return interpolatedImageValue + complexImageValues[index]
-                })
+                var complexWrapper = DSPDoubleSplitComplex(realp: &aComplexImageVector.real, imagp: &aComplexImageVector.imaginary)
+                vDSP_zvaddD(&interpolatedImageWrapper, 1, &complexWrapper, 1, &interpolatedImageWrapper, 1, UInt(numberOfPixels))
             }
         }
 
-        return interpolatedImage
+        return complexImageVector
     }
 
-    private func interpolatedImageDataForElement(elementIdentifier: Int,
+    public func complexImageVectorForElement(elementIdentifier: Int,
         elementDelayDatum: ElementDelayData,
-        var elementIQDatum: ElementIQData) -> [Complex<Double>]
+        var elementIQDatum: ChannelData) -> ChannelData
     {
-        let elementDelays = elementDelayDatum.delays.map({ (delay: Double) -> Double in
-            return 2 * M_PI * self.centralFrequency * delay / self.samplingFrequencyHertz
-        })
-        let x_ns = elementDelayDatum.delays.map({ (delay: Double) -> Double in
+        let numberOfDelays = elementDelayDatum.delays.count
+        let delays = elementDelayDatum.delays
+        let x_ns = delays.map({
+            (delay: Double) -> Double in
             return Double(floor(delay))
         })
-        let x_n1s = elementDelayDatum.delays.map({ (delay: Double) -> Double in
+        var x_n1s = delays.map({
+            (delay: Double) -> Double in
             return Double(ceil(delay))
         })
 
-        let alphas: [Double] = x_n1s.enumerate().map({ (index: Int, x_n1: Double) -> Double in
-            return x_n1 - elementDelayDatum.delays[index]
-        })
+        var alphas = [Double](count: numberOfDelays, repeatedValue: 0)
+        vDSP_vsubD(delays, 1, &x_n1s, 1, &alphas, 1, UInt(numberOfDelays))
 
-        let oneMinusAlphas: [Double] = alphas.map({ (alpha: Double) -> Double in
-            return 1 - alpha
-        })
+        var ones = [Double](count: numberOfDelays, repeatedValue: 1)
+        var oneMinusAlphas = [Double](count: numberOfDelays, repeatedValue: 0)
+        vDSP_vsubD(&alphas, 1, &ones, 1, &oneMinusAlphas, 1, UInt(numberOfDelays))
 
-        let partBs: [Complex<Double>] = x_ns.enumerate().map({ (index: Int, x_n: Double) -> Complex<Double> in
-            let lower = elementIQDatum.complexIQVector[Int(x_n)]
-            let upper = elementIQDatum.complexIQVector[Int(x_n1s[index])]
-            return (alphas[index] * lower) + (oneMinusAlphas[index] * upper)
-        })
-
-        let partAs: [Complex<Double>] = elementDelays.map({ (elementDelay: Double) -> Complex<Double> in
-            return conj(exp(elementDelay.i))
-        })
-
-        let partATimesPartBs: [Complex<Double>] = partAs.enumerate().map({ (index: Int, partA: Complex<Double>) -> Complex<Double> in
-            return partA * partBs[index]
-        })
-
-        return partATimesPartBs
-    }
-
-    public func imageAmplitudesFromComplexImageVector(complexImageVector: [Complex<Double>]?) -> [UInt8]?
-    {
-        var imageIntensities: [UInt8]?
-        if let imageVector = complexImageVector {
-            // convert complex value to double
-            var minimumValue: Double = Double(MAXFLOAT)
-            var maximumValue: Double = 0
-            let numberOfAmplitudes = imageVector.count
-            var imageAmplitudes = [Double](count: numberOfAmplitudes, repeatedValue: 0)
-            for sample in 0 ..< numberOfAmplitudes {
-                let amplitude = abs(complexImageVector![sample])
-                if amplitude < minimumValue {
-                    minimumValue = amplitude
-                }
-                if amplitude > maximumValue {
-                    maximumValue = amplitude
-                }
-
-                imageAmplitudes[sample] = amplitude
-            }
-
-            // convert double to decibel
-            var minimumDecibels: Double = Double(MAXFLOAT)
-            var maximumDecibels: Double = 0
-            var decibelValues = [Double]()
-            decibelValues.reserveCapacity(imageAmplitudes.count) 
-            for imageAmplitude in imageAmplitudes {
-                // The range is 1..256 because 0 will cause a -Inf value.
-                let scaledImageAmplitude = (((imageAmplitude - minimumValue) / (maximumValue - minimumValue)) * 255.0) + 1.0
-
-                let decibels = 10 * log10(scaledImageAmplitude)
-                if decibels < minimumDecibels {
-                    minimumDecibels = decibels
-                }
-                if decibels > maximumDecibels {
-                    maximumDecibels = decibels
-                }
-                decibelValues.append(decibels)
-            }
-
-            // scale the values from 0..255
-            imageIntensities = [UInt8]()
-            imageIntensities?.reserveCapacity(decibelValues.count)
-            for decibels in decibelValues {
-                let intensity = round((decibels - minimumDecibels) / (maximumDecibels - minimumDecibels) * 255)
-                imageIntensities?.append(UInt8(intensity))
+        var lowerReals = x_ns.enumerate().map {
+            (index: Int, x_n: Double) -> Double in
+            let index = Int(x_n)
+            if (index < 400) {
+                return elementIQDatum.real[index]
+            } else {
+                return 0
             }
         }
+        var lowerImaginaries = x_ns.enumerate().map {
+            (index: Int, x_n: Double) -> Double in
+            let index = Int(x_n)
+            if (index < 400) {
+                return elementIQDatum.imaginary[index]
+            } else {
+                return 0
+            }
+        }
+        var lowers = DSPDoubleSplitComplex(realp: &lowerReals, imagp: &lowerImaginaries)
+        vDSP_zrvmulD(&lowers, 1, &alphas, 1, &lowers, 1, UInt(numberOfDelays))
 
+        var upperReals = x_n1s.enumerate().map {
+            (index: Int, x_n1: Double) -> Double in
+            let index = Int(x_n1)
+            if (index < 400) {
+                return elementIQDatum.real[index]
+            } else {
+                return 0
+            }
+        }
+        var upperImaginaries = x_n1s.enumerate().map {
+            (index: Int, x_n1: Double) -> Double in
+            let index = Int(x_n1)
+            if (index < 400) {
+                return elementIQDatum.imaginary[index]
+            } else {
+                return 0
+            }
+        }
+        var uppers = DSPDoubleSplitComplex(realp: &upperReals, imagp: &upperImaginaries)
+        vDSP_zrvmulD(&uppers, 1, &oneMinusAlphas, 1, &uppers, 1, UInt(numberOfDelays))
+
+        var partBData = ChannelData(channelIdentifier: elementIQDatum.channelIdentifier, numberOfSamples: numberOfDelays)
+        var partBs = DSPDoubleSplitComplex(realp: &partBData.real, imagp: &partBData.imaginary)
+        vDSP_zvaddD(&lowers, 1, &uppers, 1, &partBs, 1, UInt(numberOfDelays))
+
+        let elementDelays = elementDelayDatum.delays.map({
+            (delay: Double) -> Double in
+            return 2 * M_PI * self.centralFrequency * delay / self.samplingFrequencyHertz
+        })
+
+        var partARealConjugates = elementDelays.map({ (delay: Double) -> Double in
+            let r = Foundation.exp(0.0)
+            return r * cos(delay)
+        })
+
+        var partAImaginaryConjugates = elementDelays.map({ (delay: Double) -> Double in
+            let r = Foundation.exp(0.0)
+            return -1.0 * r * sin(delay)
+        })
+        var partAs = DSPDoubleSplitComplex(realp: &partARealConjugates, imagp: &partAImaginaryConjugates)
+
+        var complexImageVector = ChannelData(channelIdentifier: elementIQDatum.channelIdentifier, numberOfSamples: numberOfDelays)
+        var complexImageWrapper = DSPDoubleSplitComplex(realp: &complexImageVector.real, imagp: &complexImageVector.imaginary)
+        vDSP_zvmulD(&partAs, 1, &partBs, 1, &complexImageWrapper, 1, UInt(numberOfDelays), 1)
+
+        return complexImageVector
+    }
+
+    public func imageAmplitudesFromComplexImageVector(complexImageVector: ChannelData?, width: Int, height: Int) -> [UInt8]?
+    {
+        var imageIntensities: [UInt8]?
+        if var imageVector = complexImageVector {
+            var complexImageWrapper = DSPDoubleSplitComplex(realp: &imageVector.real, imagp: &imageVector.imaginary)
+
+            // convert complex value to double
+            let numberOfAmplitudes = width * height
+            var imageAmplitudes = [Double](count: numberOfAmplitudes, repeatedValue: 0)
+            vDSP_zvabsD(&complexImageWrapper, 1, &imageAmplitudes, 1, UInt(numberOfAmplitudes))
+
+            let minimumValue = imageAmplitudes.minElement()!
+            let maximumValue = imageAmplitudes.maxElement()!
+            var scaledImageAmplitudes = imageAmplitudes.map({
+                (imageAmplitude: Double) -> Double in
+                return (((imageAmplitude - minimumValue) / (maximumValue - minimumValue)) * 255.0) + 1.0
+            })
+
+            var decibelValues = [Double](count: numberOfAmplitudes, repeatedValue: 0)
+            var one: Double = 1;
+            vDSP_vdbconD(&scaledImageAmplitudes, 1, &one, &decibelValues, 1, UInt(numberOfAmplitudes), 1)
+
+            let decibelMinimumValues = decibelValues.minElement()!
+            let decibelMaximumValues = decibelValues.maxElement()!
+            var scaledDecibelValues = decibelValues.map({
+                (decibelValue: Double) -> Double in
+                return ((decibelValue - decibelMinimumValues) / (decibelMaximumValues - decibelMinimumValues)) * 255.0
+            })
+
+            // convert double to decibeL
+            imageIntensities = [UInt8](count: numberOfAmplitudes, repeatedValue: 0)
+            vDSP_vfixu8D(&scaledDecibelValues, 1, &imageIntensities!, 1, UInt(numberOfAmplitudes))
+        }
         return imageIntensities
     }
 
-    private func imageFromPixelValues(pixelValues: [UInt8]?, width: Int, height: Int) -> CGImage?
+    private func imageFromPixelValues(pixelValues: [UInt8]?, width: Int, height: Int) -> UIImage?
     {
-        var image: CGImage?
+        var image: UIImage?
 
         if (pixelValues != nil) {
-            let imageDataPointer = UnsafeMutablePointer<UInt8>(pixelValues!)
+            var data = pixelValues!
 
             let colorSpaceRef = CGColorSpaceCreateDeviceGray()
 
@@ -312,8 +348,8 @@ public class VerasonicsFrameProcessor: NSObject
             let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.None.rawValue)
                 .union(CGBitmapInfo.ByteOrderDefault)
 
-            let providerRef = CGDataProviderCreateWithData(nil, imageDataPointer, totalBytes, nil)
-            image = CGImageCreate(width,
+            let providerRef = CGDataProviderCreateWithData(nil, &data, totalBytes, nil)
+            let imageRef = CGImageCreate(width,
                 height,
                 bitsPerComponent,
                 bitsPerPixel,
@@ -324,6 +360,8 @@ public class VerasonicsFrameProcessor: NSObject
                 nil,
                 false,
                 CGColorRenderingIntent.RenderingIntentDefault)
+
+            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: UIImageOrientation.Right)
         }
 
         return image
