@@ -2,7 +2,7 @@ import Foundation
 
 
 
-public struct ElementDelayData
+public struct ChannelDelayData
 {
     public var channelIdentifier: Int
     public var delays: [Double]
