@@ -82,10 +82,13 @@ public class VerasonicsFrameProcessor: NSObject
             return Int(round((imageZStopInMM - imageZStartInMM) / imageZPixelSpacing))
         }
     }
+    var numberOfPixels: Int {
+        return self.channelDelayData!.first!.delays.count
+    }
 
-    var elementDelayValues: [Double]
+    var channelDelayValues: [Double]
     private var calculatedDelayValues: [ChannelDelayData]?
-    var elementDelayData: [ChannelDelayData]? {
+    var channelDelayData: [ChannelDelayData]? {
         get {
             let angle: Double = 0
 
@@ -116,10 +119,10 @@ public class VerasonicsFrameProcessor: NSObject
                     var elementDelay = ChannelDelayData(channelIdentifier: element, numberOfDelays: imagePixelCount)
 
                     print("Initializing \(self.imageXPixelCount * self.imageZPixelCount) delays for element \(element + 1)")
-                    for(var x = 0; x < self.imageXPixelCount; x += 1) {
-                        let xDifferenceSquared = pow(xs[x] - self.elementDelayValues[element], 2)
+                    for (var z = 0; z < self.imageZPixelCount; z += 1) {
+                        for(var x = 0; x < self.imageXPixelCount; x += 1) {
+                            let xDifferenceSquared = pow(xs[x] - self.channelDelayValues[element], 2)
 
-                        for (var z = 0; z < self.imageZPixelCount; z += 1) {
                             let delayIndex = x * self.imageZPixelCount + z
                             let tauReceive = sqrt(zSquareds[z] + xDifferenceSquared) / self.speedOfUltrasound
                             let tauEcho = (zCosineAlphas[z] + xSineAlphas[x]) / self.speedOfUltrasound
@@ -138,17 +141,19 @@ public class VerasonicsFrameProcessor: NSObject
 
     init(withDelays: [Double])
     {
-        self.elementDelayValues = withDelays
+        self.channelDelayValues = withDelays
     }
 
     public func imageFromVerasonicsFrame(verasonicsFrame :VerasonicsFrame?) -> UIImage?
     {
         var image: UIImage?
         if let channelData: [ChannelData]? = verasonicsFrame!.channelData {
-            let complexImageVector = complexImageVectorWithChannelData(channelData, width: self.imageXPixelCount, height: imageZPixelCount)!
-            let imageAmplitudes = imageAmplitudesFromComplexImageVector(complexImageVector, width: self.imageXPixelCount, height: imageZPixelCount)
-            // Because X and Z are swapped currently the image is rotated 90 degrees counter-clockwise. This should be corrected
-            image = imageFromPixelValues(imageAmplitudes, width: self.imageZPixelCount, height: self.imageXPixelCount)
+            let complexImageVector = complexImageVectorWithChannelData(channelData)!
+            let imageAmplitudes = imageAmplitudesFromComplexImageVector(complexImageVector)
+            image = grayscaleImageFromPixelValues(imageAmplitudes,
+                width: self.imageZPixelCount,
+                height: self.imageXPixelCount,
+                imageOrientation: .Right)
 
             print("Frame \(verasonicsFrame!.identifier!) complete")
         }
@@ -156,23 +161,22 @@ public class VerasonicsFrameProcessor: NSObject
         return image
     }
 
-    public func complexImageVectorWithChannelData(channelData: [ChannelData]?, width: Int, height: Int) -> ComplexVector?
+    public func complexImageVectorWithChannelData(channelData: [ChannelData]?) -> ComplexVector?
     {
         /* Interpolate the image*/
         var complexImageVector: ComplexVector?
         if channelData != nil {
             let numberOfChannels = channelData!.count
-            let numberOfPixels = width * height
 
-            complexImageVector = ComplexVector(count: numberOfPixels, repeatedValue: 0)
+            complexImageVector = ComplexVector(count: self.numberOfPixels, repeatedValue: 0)
             var complexImageVectorWrapper = DSPDoubleSplitComplex(realp: &complexImageVector!.real!, imagp: &complexImageVector!.imaginary!)
             for channelIdentifier in 0 ..< numberOfChannels {
-                let channelDelays = self.elementDelayData![channelIdentifier].delays
+                let channelDelays = self.channelDelayData![channelIdentifier].delays
                 let complexVector = channelData![channelIdentifier].complexVector
                 var aComplexImageVector = complexImageVectorWithComplexChannelVector(complexVector,
                     channelDelays: channelDelays)
                 var aComplexImageVectorWrapper = DSPDoubleSplitComplex(realp: &aComplexImageVector.real!, imagp: &aComplexImageVector.imaginary!)
-                vDSP_zvaddD(&aComplexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, UInt(numberOfPixels))
+                vDSP_zvaddD(&aComplexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, UInt(self.numberOfPixels))
             }
         }
 
@@ -184,7 +188,7 @@ public class VerasonicsFrameProcessor: NSObject
     {
         let numberOfSamplesPerChannel = complexChannelVector.count
         let numberOfDelays = channelDelays.count
-        
+
         let x_ns = channelDelays.map({
             (channelDelay: Double) -> Double in
             return Double(floor(channelDelay))
@@ -272,7 +276,7 @@ public class VerasonicsFrameProcessor: NSObject
         return complexImageVector
     }
 
-    public func imageAmplitudesFromComplexImageVector(complexImageVector: ComplexVector?, width: Int, height: Int) -> [UInt8]?
+    public func imageAmplitudesFromComplexImageVector(complexImageVector: ComplexVector?) -> [UInt8]?
     {
         var imageIntensities: [UInt8]?
         if complexImageVector != nil {
@@ -280,7 +284,7 @@ public class VerasonicsFrameProcessor: NSObject
             var complexImageWrapper = DSPDoubleSplitComplex(realp: &imageVector.real!, imagp: &imageVector.imaginary!)
 
             // convert complex value to double
-            let numberOfAmplitudes = width * height
+            let numberOfAmplitudes = self.numberOfPixels
             var imageAmplitudes = [Double](count: numberOfAmplitudes, repeatedValue: 0)
             vDSP_zvabsD(&complexImageWrapper, 1, &imageAmplitudes, 1, UInt(numberOfAmplitudes))
 
@@ -309,7 +313,7 @@ public class VerasonicsFrameProcessor: NSObject
         return imageIntensities
     }
 
-    private func imageFromPixelValues(pixelValues: [UInt8]?, width: Int, height: Int) -> UIImage?
+    private func grayscaleImageFromPixelValues(pixelValues: [UInt8]?, width: Int, height: Int, imageOrientation: UIImageOrientation) -> UIImage?
     {
         var image: UIImage?
 
@@ -340,7 +344,7 @@ public class VerasonicsFrameProcessor: NSObject
                 false,
                 CGColorRenderingIntent.RenderingIntentDefault)
 
-            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: UIImageOrientation.Right)
+            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: imageOrientation)
         }
 
         return image
