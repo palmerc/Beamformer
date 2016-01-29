@@ -10,7 +10,7 @@ public struct ComplexVector
         get {
             var count = 0
             if self.real != nil {
-                count = self.real!.count / 2
+                count = self.real!.count
             }
             return count
         }
