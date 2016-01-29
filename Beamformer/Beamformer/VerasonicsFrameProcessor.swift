@@ -101,35 +101,46 @@ public class VerasonicsFrameProcessor: NSObject
                 for i in 0..<self.imageZPixelCount {
                     zs[i] = imageZStartInMM + Double(i) * self.imageZPixelSpacing
                 }
-                let xSineAlphas: [Double] = xs.map({ (x: Double) -> Double in
-                    return x * sin(angle)
-                })
-                let zCosineAlphas: [Double] = zs.map({ (z: Double) -> Double in
-                    return z * cos(angle)
-                })
-                let zSquareds: [Double] = zs.map({ (z: Double) -> Double in
-                    return pow(z, 2)
-                })
 
-                let imagePixelCount = self.imageXPixelCount * self.imageZPixelCount
                 self.calculatedDelayValues = [ChannelDelayData]()
                 self.calculatedDelayValues?.reserveCapacity(self.numberOfActiveTransducerElements)
 
-                for (var element = 0; element < self.numberOfActiveTransducerElements; element++) {
-                    var elementDelay = ChannelDelayData(channelIdentifier: element, numberOfDelays: imagePixelCount)
+                let numberOfPixels = self.imageXPixelCount * self.imageZPixelCount
+                var xIndices = [Int](count: numberOfPixels, repeatedValue: 0)
+                var zIndices = [Int](count: numberOfPixels, repeatedValue: 0)
+                var delayIndices = [Int](count: numberOfPixels, repeatedValue: 0)
+                var zSquareds = [Double](count: numberOfPixels, repeatedValue: 0)
+                var unrolledXs = [Double](count: numberOfPixels, repeatedValue: 0)
+                var xSineAlphas = [Double](count: numberOfPixels, repeatedValue: 0)
+                var zCosineAlphas = [Double](count: numberOfPixels, repeatedValue: 0)
+                for index in 0..<numberOfPixels {
+                    let xIndex = index % self.imageXPixelCount
+                    let zIndex = index / self.imageXPixelCount
+                    xIndices[index] = xIndex
+                    zIndices[index] = zIndex
+                    unrolledXs[index] = xs[xIndex]
+                    delayIndices[index] = xIndex * self.imageZPixelCount + zIndex
+                    zSquareds[index] = pow(Double(zs[zIndex]), 2)
+                    xSineAlphas[index] = Double(xs[xIndex]) * sin(angle)
+                    zCosineAlphas[index] = Double(zs[zIndex]) * cos(angle)
+                }
+                let tauEchos = zCosineAlphas.enumerate().map({
+                    (index: Int, zCosineAlpha: Double) -> Double in
+                    return (zCosineAlpha + xSineAlphas[index]) / self.speedOfUltrasound
+                })
 
+                for element in 0..<self.numberOfActiveTransducerElements {
+                    var elementDelay = ChannelDelayData(channelIdentifier: element, numberOfDelays: numberOfPixels)
+                    let channelDelayValue = self.channelDelayValues[element]
                     print("Initializing \(self.imageXPixelCount * self.imageZPixelCount) delays for element \(element + 1)")
-                    for (var z = 0; z < self.imageZPixelCount; z += 1) {
-                        for(var x = 0; x < self.imageXPixelCount; x += 1) {
-                            let xDifferenceSquared = pow(xs[x] - self.channelDelayValues[element], 2)
+                    for index in 0..<numberOfPixels {
+                        let xDifferenceSquared = pow(unrolledXs[index] - channelDelayValue, 2)
+                        let tauReceive = sqrt(zSquareds[index] + xDifferenceSquared) / self.speedOfUltrasound
 
-                            let delayIndex = x * self.imageZPixelCount + z
-                            let tauReceive = sqrt(zSquareds[z] + xDifferenceSquared) / self.speedOfUltrasound
-                            let tauEcho = (zCosineAlphas[z] + xSineAlphas[x]) / self.speedOfUltrasound
+                        let delay = (tauEchos[index] + tauReceive) * self.samplingFrequencyHertz + self.lensCorrection
 
-                            let delay = (tauEcho + tauReceive) * self.samplingFrequencyHertz + self.lensCorrection
-                            elementDelay.delays[delayIndex] = delay
-                        }
+                        let delayIndex = delayIndices[index]
+                        elementDelay.delays[delayIndex] = delay
                     }
                     self.calculatedDelayValues?.append(elementDelay)
                 }
