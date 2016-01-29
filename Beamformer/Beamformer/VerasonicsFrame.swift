@@ -31,7 +31,7 @@ public class VerasonicsFrame: NSObject, Mappable
                 if self.numberOfChannels > 0 {
                     channelData = [ChannelData](count: self.numberOfChannels,
                         repeatedValue: ChannelData(channelIdentifier: 0, numberOfSamples: self.numberOfSamplesPerChannel))
-                    for channelIndex in 0 ..< numberOfChannels {
+                    for channelIndex in 0 ..< self.numberOfChannels {
                         channelData![channelIndex].channelIdentifier = channelIndex
 //                        var real = [Double]()
 //                        real.reserveCapacity(self.numberOfSamplesPerChannel)
