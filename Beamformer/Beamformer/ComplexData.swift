@@ -2,10 +2,10 @@ import Foundation
 
 
 
-public struct ComplexVector
+public struct ComplexVector : Equatable
 {
-    public var real: [Double]?
-    public var imaginary: [Double]?
+    public var real: [Float]?
+    public var imaginary: [Float]?
     public var count: Int {
         get {
             var count = 0
@@ -22,9 +22,21 @@ public struct ComplexVector
         self.imaginary = nil
     }
 
-    init(count: Int, repeatedValue: Double)
+    init(count: Int, repeatedValue: Float)
     {
-        self.real = [Double](count: count, repeatedValue: repeatedValue)
-        self.imaginary = [Double](count: count, repeatedValue: repeatedValue)
+        self.real = [Float](count: count, repeatedValue: repeatedValue)
+        self.imaginary = [Float](count: count, repeatedValue: repeatedValue)
     }
+}
+
+extension ComplexVector : ByteCountable
+{
+    func byteCount() -> Int {
+        return sizeofValue(self.real) + sizeofValue(self.imaginary) * self.count * 2
+    }
+}
+
+public func ==(lhs: ComplexVector, rhs: ComplexVector) -> Bool
+{
+    return lhs.real! == rhs.real! && lhs.imaginary! == rhs.imaginary!
 }

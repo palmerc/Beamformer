@@ -33,28 +33,28 @@ public class VerasonicsFrame: NSObject, Mappable
                         repeatedValue: ChannelData(channelIdentifier: 0, numberOfSamples: self.numberOfSamplesPerChannel))
                     for channelIndex in 0 ..< self.numberOfChannels {
                         channelData![channelIndex].channelIdentifier = channelIndex
-//                        var real = [Double]()
+//                        var real = [Float]()
 //                        real.reserveCapacity(self.numberOfSamplesPerChannel)
-//                        var imaginary = [Double]()
+//                        var imaginary = [Float]()
 //                        imaginary.reserveCapacity(self.numberOfSamplesPerChannel)
 //                        for (index, rawChannelData) in self.rawChannelData[channelIndex].enumerate() {
 //                            if index % 2 == 0 {
-//                                real.append(Double(rawChannelData))
+//                                real.append(Float(rawChannelData))
 //                            } else {
-//                                imaginary.append(Double(rawChannelData))
+//                                imaginary.append(Float(rawChannelData))
 //                            }
 //                        }
                         let real = self.rawChannelData[channelIndex].enumerate().filter({
                             (index: Int, element: Int) -> Bool in
                             return index % 2 == 0
-                        }).map({ (_: Int, element: Int) -> Double in
-                            return Double(element)
+                        }).map({ (_: Int, element: Int) -> Float in
+                            return Float(element)
                         })
                         let imaginary = self.rawChannelData[channelIndex].enumerate().filter({
                             (index: Int, element: Int) -> Bool in
                             return index % 2 != 0
-                        }).map({ (_: Int, element: Int) -> Double in
-                            return Double(element)
+                        }).map({ (_: Int, element: Int) -> Float in
+                            return Float(element)
                         })
 
                         channelData![channelIndex].complexVector.real = real
