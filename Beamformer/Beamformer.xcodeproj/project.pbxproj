@@ -11,6 +11,10 @@
 		7A7789441E15BA48B374191B /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68453FC83C16B34314D8C95F /* Pods.framework */; };
 		C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */; };
 		C734E6921C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E6911C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift */; };
+		C775071B1C64D3A500FF9F70 /* Beamformer.metal in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50D11C58E50E0050C582 /* Beamformer.metal */; };
+		C77C01E31C64D2CD00600B51 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C77C01E21C64D2CD00600B51 /* Metal.framework */; };
+		C77C01E51C64D31A00600B51 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C77C01E41C64D31A00600B51 /* UIKit.framework */; };
+		C77C01E71C64D32200600B51 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C77C01E61C64D32200600B51 /* QuartzCore.framework */; };
 		C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */; };
 		C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959411C19FBEC0075EF90 /* ViewController.swift */; };
 		C7C959451C19FBEC0075EF90 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959431C19FBEC0075EF90 /* Main.storyboard */; };
@@ -23,8 +27,11 @@
 		C7EB50AD1C556D410050C582 /* ImageAmplitudes.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50AC1C556D410050C582 /* ImageAmplitudes.json */; };
 		C7EB50AF1C5573880050C582 /* ComplexImageVector.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50AE1C5573880050C582 /* ComplexImageVector.json */; };
 		C7EB50B11C55FC250050C582 /* ComplexVector.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50B01C55FC250050C582 /* ComplexVector.json */; };
-		C7EB50B31C560A6C0050C582 /* ElementDelayData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50B21C560A6C0050C582 /* ElementDelayData.swift */; };
+		C7EB50B31C560A6C0050C582 /* ChannelDelayData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50B21C560A6C0050C582 /* ChannelDelayData.swift */; };
 		C7EB50B71C578C9F0050C582 /* CalculatedDelays.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50B61C578C9E0050C582 /* CalculatedDelays.json */; };
+		C7EB50CF1C58DEE30050C582 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50CE1C58DEE30050C582 /* Async.swift */; };
+		C7EB50D41C5900DD0050C582 /* ComplexData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50D31C5900DD0050C582 /* ComplexData.swift */; };
+		C7EB50D61C60C9D40050C582 /* ByteCountable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50D51C60C9D30050C582 /* ByteCountable.swift */; };
 		D6B6E929C1A4D7C78F0A3C81 /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68453FC83C16B34314D8C95F /* Pods.framework */; };
 /* End PBXBuildFile section */
 
@@ -52,6 +59,9 @@
 		C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrame.swift; sourceTree = "<group>"; };
 		C734E6911C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrameProcessor.swift; sourceTree = "<group>"; };
 		C763C0491C503AED00AA2471 /* complex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = complex.swift; sourceTree = "<group>"; };
+		C77C01E21C64D2CD00600B51 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		C77C01E41C64D31A00600B51 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		C77C01E61C64D32200600B51 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		C7C9593C1C19FBEC0075EF90 /* Beamformer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Beamformer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C7C959411C19FBEC0075EF90 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -70,8 +80,12 @@
 		C7EB50AC1C556D410050C582 /* ImageAmplitudes.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = ImageAmplitudes.json; sourceTree = "<group>"; };
 		C7EB50AE1C5573880050C582 /* ComplexImageVector.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = ComplexImageVector.json; sourceTree = "<group>"; };
 		C7EB50B01C55FC250050C582 /* ComplexVector.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = ComplexVector.json; sourceTree = "<group>"; };
-		C7EB50B21C560A6C0050C582 /* ElementDelayData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ElementDelayData.swift; sourceTree = "<group>"; };
+		C7EB50B21C560A6C0050C582 /* ChannelDelayData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelDelayData.swift; sourceTree = "<group>"; };
 		C7EB50B61C578C9E0050C582 /* CalculatedDelays.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = CalculatedDelays.json; sourceTree = "<group>"; };
+		C7EB50CE1C58DEE30050C582 /* Async.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Async.swift; path = ../../../../ParticleLab/MetalParticles/Async.swift; sourceTree = "<group>"; };
+		C7EB50D11C58E50E0050C582 /* Beamformer.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Beamformer.metal; sourceTree = "<group>"; };
+		C7EB50D31C5900DD0050C582 /* ComplexData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComplexData.swift; sourceTree = "<group>"; };
+		C7EB50D51C60C9D30050C582 /* ByteCountable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteCountable.swift; sourceTree = "<group>"; };
 		DE5AE6D1B09C2E6BB2D03AAB /* Pods_BeamformerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BeamformerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -80,6 +94,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C77C01E71C64D32200600B51 /* QuartzCore.framework in Frameworks */,
+				C77C01E51C64D31A00600B51 /* UIKit.framework in Frameworks */,
+				C77C01E31C64D2CD00600B51 /* Metal.framework in Frameworks */,
 				7A7789441E15BA48B374191B /* Pods.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -145,6 +162,8 @@
 		C7C9593E1C19FBEC0075EF90 /* Beamformer */ = {
 			isa = PBXGroup;
 			children = (
+				C7EB50D01C58E50E0050C582 /* Metal */,
+				C7EB50CE1C58DEE30050C582 /* Async.swift */,
 				C7021F521C3729BB00F6FF12 /* complex */,
 				C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */,
 				C7C959411C19FBEC0075EF90 /* ViewController.swift */,
@@ -155,7 +174,9 @@
 				C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */,
 				C734E6911C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift */,
 				C7EB50AA1C53832A0050C582 /* ChannelData.swift */,
-				C7EB50B21C560A6C0050C582 /* ElementDelayData.swift */,
+				C7EB50D31C5900DD0050C582 /* ComplexData.swift */,
+				C7EB50B21C560A6C0050C582 /* ChannelDelayData.swift */,
+				C7EB50D51C60C9D30050C582 /* ByteCountable.swift */,
 			);
 			path = Beamformer;
 			sourceTree = "<group>";
@@ -183,9 +204,20 @@
 			path = BeamformerUITests;
 			sourceTree = "<group>";
 		};
+		C7EB50D01C58E50E0050C582 /* Metal */ = {
+			isa = PBXGroup;
+			children = (
+				C7EB50D11C58E50E0050C582 /* Beamformer.metal */,
+			);
+			path = Metal;
+			sourceTree = "<group>";
+		};
 		E6E83AA8AB6131D3D59D59C3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C77C01E61C64D32200600B51 /* QuartzCore.framework */,
+				C77C01E41C64D31A00600B51 /* UIKit.framework */,
+				C77C01E21C64D2CD00600B51 /* Metal.framework */,
 				68453FC83C16B34314D8C95F /* Pods.framework */,
 				DE5AE6D1B09C2E6BB2D03AAB /* Pods_BeamformerTests.framework */,
 			);
@@ -428,9 +460,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C7EB50D61C60C9D40050C582 /* ByteCountable.swift in Sources */,
 				C734E6921C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift in Sources */,
 				C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */,
-				C7EB50B31C560A6C0050C582 /* ElementDelayData.swift in Sources */,
+				C7EB50D41C5900DD0050C582 /* ComplexData.swift in Sources */,
+				C7EB50B31C560A6C0050C582 /* ChannelDelayData.swift in Sources */,
+				C775071B1C64D3A500FF9F70 /* Beamformer.metal in Sources */,
+				C7EB50CF1C58DEE30050C582 /* Async.swift in Sources */,
 				C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */,
 				C7EB50AB1C53832A0050C582 /* ChannelData.swift in Sources */,
 				C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */,
@@ -584,7 +620,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.Beamformer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
