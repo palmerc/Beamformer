@@ -31,7 +31,6 @@
 		C7EB50B71C578C9F0050C582 /* CalculatedDelays.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50B61C578C9E0050C582 /* CalculatedDelays.json */; };
 		C7EB50CF1C58DEE30050C582 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50CE1C58DEE30050C582 /* Async.swift */; };
 		C7EB50D41C5900DD0050C582 /* ComplexData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50D31C5900DD0050C582 /* ComplexData.swift */; };
-		C7EB50D61C60C9D40050C582 /* ByteCountable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50D51C60C9D30050C582 /* ByteCountable.swift */; };
 		D6B6E929C1A4D7C78F0A3C81 /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68453FC83C16B34314D8C95F /* Pods.framework */; };
 /* End PBXBuildFile section */
 
@@ -85,7 +84,6 @@
 		C7EB50CE1C58DEE30050C582 /* Async.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Async.swift; path = ../../../../ParticleLab/MetalParticles/Async.swift; sourceTree = "<group>"; };
 		C7EB50D11C58E50E0050C582 /* Beamformer.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Beamformer.metal; sourceTree = "<group>"; };
 		C7EB50D31C5900DD0050C582 /* ComplexData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComplexData.swift; sourceTree = "<group>"; };
-		C7EB50D51C60C9D30050C582 /* ByteCountable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteCountable.swift; sourceTree = "<group>"; };
 		DE5AE6D1B09C2E6BB2D03AAB /* Pods_BeamformerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BeamformerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -176,7 +174,6 @@
 				C7EB50AA1C53832A0050C582 /* ChannelData.swift */,
 				C7EB50D31C5900DD0050C582 /* ComplexData.swift */,
 				C7EB50B21C560A6C0050C582 /* ChannelDelayData.swift */,
-				C7EB50D51C60C9D30050C582 /* ByteCountable.swift */,
 			);
 			path = Beamformer;
 			sourceTree = "<group>";
@@ -460,7 +457,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C7EB50D61C60C9D40050C582 /* ByteCountable.swift in Sources */,
 				C734E6921C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift in Sources */,
 				C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */,
 				C7EB50D41C5900DD0050C582 /* ComplexData.swift in Sources */,

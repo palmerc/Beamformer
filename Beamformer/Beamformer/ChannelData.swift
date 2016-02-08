@@ -24,14 +24,6 @@ public struct ChannelData : CustomStringConvertible, Equatable
     }
 }
 
-extension ChannelData : ByteCountable
-{
-    func byteCount() -> Int
-    {
-        return sizeofValue(self.channelIdentifier) + self.complexVector.byteCount()
-    }
-}
-
 public func ==(lhs: ChannelData, rhs: ChannelData) -> Bool
 {
     return lhs.channelIdentifier == rhs.channelIdentifier && lhs.complexVector == rhs.complexVector

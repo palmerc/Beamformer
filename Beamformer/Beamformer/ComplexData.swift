@@ -29,13 +29,6 @@ public struct ComplexVector : Equatable
     }
 }
 
-extension ComplexVector : ByteCountable
-{
-    func byteCount() -> Int {
-        return sizeofValue(self.real) + sizeofValue(self.imaginary) * self.count * 2
-    }
-}
-
 public func ==(lhs: ComplexVector, rhs: ComplexVector) -> Bool
 {
     return lhs.real! == rhs.real! && lhs.imaginary! == rhs.imaginary!
