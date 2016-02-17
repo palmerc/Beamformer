@@ -2,7 +2,7 @@ import Foundation
 
 
 
-public struct ChannelDelayData
+public struct ChannelDelay
 {
     public var channelIdentifier: Int
     public var delays: [Float]
