@@ -39,6 +39,7 @@ public class VerasonicsFrameProcessor: NSObject
     private var region: MTLRegion!
     private var textureA: MTLTexture!
     private var textureB: MTLTexture!
+    private var queue: dispatch_queue_t!
     
 
 
@@ -241,6 +242,7 @@ public class VerasonicsFrameProcessor: NSObject
 
         super.init()
 
+        self.queue = dispatch_queue_create("no.uio.Beamformer", DISPATCH_QUEUE_CONCURRENT)
         let (metalDevice, metalLibrary, metalCommandQueue) = self.setupMetalDevice()
         if metalDevice != nil {
             let (metalKernelFunction, metalPipelineState) = self.setupShaderInMetalPipelineWithName("echo", withDevice: metalDevice, inLibrary: metalLibrary)
@@ -311,12 +313,14 @@ public class VerasonicsFrameProcessor: NSObject
 
             complexImageVector = ComplexVector(count: self.numberOfPixels, repeatedValue: 0)
             var complexImageVectorWrapper = DSPSplitComplex(realp: &complexImageVector!.reals!, imagp: &complexImageVector!.imaginaries!)
-            for channelIdentifier in 0 ..< numberOfChannels {
+
+            dispatch_apply(numberOfChannels, self.queue, {
+                (channelIdentifier: Int) -> Void in
                 let channelDatum = channelData![channelIdentifier]
-                var aComplexImageVector = complexImageVectorWithChannelDatum(channelDatum)
+                var aComplexImageVector = self.complexImageVectorWithChannelDatum(channelDatum)
                 var aComplexImageVectorWrapper = DSPSplitComplex(realp: &aComplexImageVector.reals!, imagp: &aComplexImageVector.imaginaries!)
                 vDSP_zvadd(&aComplexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, UInt(self.numberOfPixels))
-            }
+            })
         }
 
         return complexImageVector
