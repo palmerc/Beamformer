@@ -18,10 +18,10 @@ public class VerasonicsFrameProcessor: NSObject
     private let imageZStopInMM: Float = 50.0
 
     private var channelDataPointer: UnsafeMutablePointer<Void> = nil
-    private var channelDataBufferPointer: UnsafeMutableBufferPointer<UInt8>?
+    private var channelDataBufferPointer: UnsafeMutableBufferPointer<[(Float, Float)]>?
 
     private var ultrasoundBitmapPointer: UnsafeMutablePointer<Void> = nil
-    private var ultrasoundBitmapBufferPointer: UnsafeMutableBufferPointer<UInt8>?
+    private var ultrasoundBitmapBufferPointer: UnsafeMutableBufferPointer<[(Float, Float)]>?
 
     // F***ing Metal
     private var metalDevice: MTLDevice! = nil
@@ -110,16 +110,21 @@ public class VerasonicsFrameProcessor: NSObject
         }
     }
     var numberOfPixels: Int {
-        return self.channelDelayData!.first!.delays.count
+        return self.channelDelays!.first!.delays.count
     }
 
-    var channelDelayValues: [Float]
-    private var calculatedDelayValues: [ChannelDelayData]?
-    var channelDelayData: [ChannelDelayData]? {
+    var x_ns: [[Float]]? = nil
+    var x_n1s: [[Float]]? = nil
+    var alphas: [[Float]]? = nil
+    var oneMinusAlphas: [[Float]]? = nil
+    var partAs: [ComplexVector]? = nil
+    var rawChannelDelays: [Float]
+    private var _calculatedChannelDelays: [ChannelDelay]?
+    var channelDelays: [ChannelDelay]? {
         get {
             let angle: Float = 0
 
-            if self.calculatedDelayValues == nil {
+            if self._calculatedChannelDelays == nil {
                 var xs = [Float](count: self.imageXPixelCount, repeatedValue: 0)
                 for i in 0..<self.imageXPixelCount {
                     xs[i] = imageXStartInMM + Float(i) * self.imageXPixelSpacing
@@ -129,8 +134,8 @@ public class VerasonicsFrameProcessor: NSObject
                     zs[i] = imageZStartInMM + Float(i) * self.imageZPixelSpacing
                 }
 
-                self.calculatedDelayValues = [ChannelDelayData]()
-                self.calculatedDelayValues?.reserveCapacity(self.numberOfActiveTransducerElements)
+                var calculatedDelayValues = [ChannelDelay]()
+                calculatedDelayValues.reserveCapacity(self.numberOfActiveTransducerElements)
 
                 let numberOfPixels = self.imageXPixelCount * self.imageZPixelCount
                 var xIndices = [Int](count: numberOfPixels, repeatedValue: 0)
@@ -156,30 +161,83 @@ public class VerasonicsFrameProcessor: NSObject
                     return (zCosineAlpha + xSineAlphas[index]) / self.speedOfUltrasound
                 })
 
-                for element in 0..<self.numberOfActiveTransducerElements {
-                    var elementDelay = ChannelDelayData(channelIdentifier: element, numberOfDelays: numberOfPixels)
-                    let channelDelayValue = self.channelDelayValues[element]
-                    print("Initializing \(self.imageXPixelCount * self.imageZPixelCount) delays for element \(element + 1)")
+                for channelIdentifier in 0..<self.numberOfActiveTransducerElements {
+                    var channelDelay = ChannelDelay(channelIdentifier: channelIdentifier, numberOfDelays: numberOfPixels)
+                    let channelDelays = self.rawChannelDelays[channelIdentifier]
+                    print("Initializing \(self.imageXPixelCount * self.imageZPixelCount) delays for channel \(channelIdentifier + 1)")
                     for index in 0..<numberOfPixels {
-                        let xDifferenceSquared = pow(unrolledXs[index] - channelDelayValue, 2)
+                        let xDifferenceSquared = pow(unrolledXs[index] - channelDelays, 2)
                         let tauReceive = sqrt(zSquareds[index] + xDifferenceSquared) / self.speedOfUltrasound
 
                         let delay = (tauEchos[index] + tauReceive) * self.samplingFrequencyHertz + self.lensCorrection
 
                         let delayIndex = delayIndices[index]
-                        elementDelay.delays[delayIndex] = delay
+                        channelDelay.delays[delayIndex] = delay
                     }
-                    self.calculatedDelayValues?.append(elementDelay)
+                    calculatedDelayValues.append(channelDelay)
                 }
+
+                for channelIdentifier in 0..<self.numberOfActiveTransducerElements {
+                    let channelDelays = calculatedDelayValues[channelIdentifier].delays
+                    let numberOfDelays = channelDelays.count
+
+                    let x_ns = channelDelays.map({
+                        (channelDelay: Float) -> Float in
+                        return Float(floor(channelDelay))
+                    })
+                    let x_n1s = channelDelays.map({
+                        (channelDelay: Float) -> Float in
+                        return Float(ceil(channelDelay))
+                    })
+
+                    var alphas = [Float](count: numberOfDelays, repeatedValue: 0)
+                    vDSP_vsub(channelDelays, 1, x_n1s, 1, &alphas, 1, UInt(numberOfDelays))
+
+                    let ones = [Float](count: numberOfDelays, repeatedValue: 1)
+                    var oneMinusAlphas = [Float](count: numberOfDelays, repeatedValue: 0)
+                    vDSP_vsub(alphas, 1, ones, 1, &oneMinusAlphas, 1, UInt(numberOfDelays))
+
+                    let calculatedDelays = channelDelays.map({
+                        (channelDelay: Float) -> Float in
+                        return 2 * Float(M_PI) * self.centralFrequency * channelDelay / self.samplingFrequencyHertz
+                    })
+
+                    let realConjugates = calculatedDelays.map({
+                        (calculatedDelay: Float) -> Float in
+                        let r = Foundation.exp(Float(0))
+                        return r * cos(calculatedDelay)
+                    })
+
+                    let imaginaryConjugates = calculatedDelays.map({
+                        (calculatedDelay: Float) -> Float in
+                        let r = Foundation.exp(Float(0))
+                        return -1.0 * r * sin(calculatedDelay)
+                    })
+                    
+                    let partAs = ComplexVector(reals: realConjugates, imaginaries: imaginaryConjugates)
+
+                    self.x_ns![channelIdentifier] = x_ns
+                    self.x_n1s![channelIdentifier] = x_n1s
+                    self.alphas![channelIdentifier] = alphas
+                    self.oneMinusAlphas![channelIdentifier] = oneMinusAlphas
+                    self.partAs![channelIdentifier] = partAs
+                }
+
+                self._calculatedChannelDelays = calculatedDelayValues
             }
 
-            return self.calculatedDelayValues
+            return self._calculatedChannelDelays
         }
     }
 
     init(withDelays: [Float])
     {
-        self.channelDelayValues = withDelays
+        self.rawChannelDelays = withDelays
+        self.x_ns = [[Float]](count: self.numberOfActiveTransducerElements, repeatedValue: [Float]())
+        self.x_n1s = [[Float]](count: self.numberOfActiveTransducerElements, repeatedValue: [Float]())
+        self.alphas = [[Float]](count: self.numberOfActiveTransducerElements, repeatedValue: [Float]())
+        self.oneMinusAlphas = [[Float]](count: self.numberOfActiveTransducerElements, repeatedValue: [Float]())
+        self.partAs = [ComplexVector](count: self.numberOfActiveTransducerElements, repeatedValue: ComplexVector())
 
         super.init()
 
@@ -199,11 +257,11 @@ public class VerasonicsFrameProcessor: NSObject
 
     deinit
     {
-        if self.channelDataBufferPointer != nil {
-            free(self.channelDataBufferPointer!.baseAddress)
+        if self.channelDataPointer != nil {
+            free(self.channelDataPointer)
         }
-        if self.ultrasoundBitmapBufferPointer != nil {
-            free(self.ultrasoundBitmapBufferPointer!.baseAddress)
+        if self.ultrasoundBitmapPointer != nil {
+            free(self.ultrasoundBitmapPointer)
         }
     }
 
@@ -212,21 +270,19 @@ public class VerasonicsFrameProcessor: NSObject
         var image: UIImage?
         if let channelData: [ChannelData]? = verasonicsFrame!.channelData {
             if self.metalDevice != nil {
-                let horse = UIImage(named: "Horse07")
-                let (_, width, height) = pixelValuesFromImage(horse?.CGImage)
-                let byteCount = width * height * sizeof(UInt8)
+                let byteCount = 128 * 400 * sizeof((Float, Float))
                 if self.channelDataBufferPointer == nil {
                     let (pointer, memoryWrapper) = setupSharedMemoryWithSize(byteCount)
                     self.channelDataPointer = pointer
 
-                    let unsafeMutablePointer = UnsafeMutablePointer<UInt8>(memoryWrapper)
-                    self.channelDataBufferPointer = UnsafeMutableBufferPointer(start: unsafeMutablePointer, count: byteCount)
+                    let unsafePointer = UnsafeMutablePointer<[(Float, Float)]>(memoryWrapper)
+                    self.channelDataBufferPointer = UnsafeMutableBufferPointer(start: unsafePointer, count: channelData!.count)
                 }
                 if self.ultrasoundBitmapBufferPointer == nil {
                     let (pointer, memoryWrapper) = setupSharedMemoryWithSize(byteCount)
                     self.ultrasoundBitmapPointer = pointer
 
-                    let unsafeMutablePointer = UnsafeMutablePointer<UInt8>(memoryWrapper)
+                    let unsafeMutablePointer = UnsafeMutablePointer<[(Float, Float)]>(memoryWrapper)
                     self.ultrasoundBitmapBufferPointer = UnsafeMutableBufferPointer(start: unsafeMutablePointer, count: byteCount)
                 }
 
@@ -254,13 +310,11 @@ public class VerasonicsFrameProcessor: NSObject
             let numberOfChannels = channelData!.count
 
             complexImageVector = ComplexVector(count: self.numberOfPixels, repeatedValue: 0)
-            var complexImageVectorWrapper = DSPSplitComplex(realp: &complexImageVector!.real!, imagp: &complexImageVector!.imaginary!)
+            var complexImageVectorWrapper = DSPSplitComplex(realp: &complexImageVector!.reals!, imagp: &complexImageVector!.imaginaries!)
             for channelIdentifier in 0 ..< numberOfChannels {
-                let channelDelays = self.channelDelayData![channelIdentifier].delays
-                let complexVector = channelData![channelIdentifier].complexVector
-                var aComplexImageVector = complexImageVectorWithComplexChannelVector(complexVector,
-                    channelDelays: channelDelays)
-                var aComplexImageVectorWrapper = DSPSplitComplex(realp: &aComplexImageVector.real!, imagp: &aComplexImageVector.imaginary!)
+                let channelDatum = channelData![channelIdentifier]
+                var aComplexImageVector = complexImageVectorWithChannelDatum(channelDatum)
+                var aComplexImageVectorWrapper = DSPSplitComplex(realp: &aComplexImageVector.reals!, imagp: &aComplexImageVector.imaginaries!)
                 vDSP_zvadd(&aComplexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, UInt(self.numberOfPixels))
             }
         }
@@ -268,95 +322,64 @@ public class VerasonicsFrameProcessor: NSObject
         return complexImageVector
     }
 
-    public func complexImageVectorWithComplexChannelVector(complexChannelVector: ComplexVector,
-        channelDelays: [Float]) -> ComplexVector
+    public func complexImageVectorWithChannelDatum(channelDatum: ChannelData) -> ComplexVector
     {
+        let channelIdentifier = channelDatum.channelIdentifier
+        let complexChannelVector = channelDatum.complexVector
         let numberOfSamplesPerChannel = complexChannelVector.count
-        let numberOfDelays = channelDelays.count
+        let numberOfDelays = self.partAs![channelIdentifier].count
 
-        let x_ns = channelDelays.map({
-            (channelDelay: Float) -> Float in
-            return Float(floor(channelDelay))
-        })
-        var x_n1s = channelDelays.map({
-            (channelDelay: Float) -> Float in
-            return Float(ceil(channelDelay))
-        })
-
-        var alphas = [Float](count: numberOfDelays, repeatedValue: 0)
-        vDSP_vsub(channelDelays, 1, &x_n1s, 1, &alphas, 1, UInt(numberOfDelays))
-
-        var ones = [Float](count: numberOfDelays, repeatedValue: 1)
-        var oneMinusAlphas = [Float](count: numberOfDelays, repeatedValue: 0)
-        vDSP_vsub(&alphas, 1, &ones, 1, &oneMinusAlphas, 1, UInt(numberOfDelays))
-
-        var lowerReals = x_ns.enumerate().map {
+        var lowerReals = self.x_ns![channelIdentifier].enumerate().map {
             (index: Int, x_n: Float) -> Float in
             let index = Int(x_n)
             if (index < numberOfSamplesPerChannel) {
-                return complexChannelVector.real![index]
+                return complexChannelVector.reals![index]
             } else {
                 return 0
             }
         }
-        var lowerImaginaries = x_ns.enumerate().map {
+        var lowerImaginaries = self.x_ns![channelIdentifier].enumerate().map {
             (index: Int, x_n: Float) -> Float in
             let index = Int(x_n)
             if (index < numberOfSamplesPerChannel) {
-                return complexChannelVector.imaginary![index]
+                return complexChannelVector.imaginaries![index]
             } else {
                 return 0
             }
         }
         var lowers = DSPSplitComplex(realp: &lowerReals, imagp: &lowerImaginaries)
-        vDSP_zrvmul(&lowers, 1, &alphas, 1, &lowers, 1, UInt(numberOfDelays))
+        vDSP_zrvmul(&lowers, 1, self.alphas![channelIdentifier], 1, &lowers, 1, UInt(numberOfDelays))
 
-        var upperReals = x_n1s.enumerate().map {
+        var upperReals = x_n1s![channelIdentifier].enumerate().map {
             (index: Int, x_n1: Float) -> Float in
             let index = Int(x_n1)
             if (index < numberOfSamplesPerChannel) {
-                return complexChannelVector.real![index]
+                return complexChannelVector.reals![index]
             } else {
                 return 0
             }
         }
-        var upperImaginaries = x_n1s.enumerate().map {
+        var upperImaginaries = x_n1s![channelIdentifier].enumerate().map {
             (index: Int, x_n1: Float) -> Float in
             let index = Int(x_n1)
             if (index < numberOfSamplesPerChannel) {
-                return complexChannelVector.imaginary![index]
+                return complexChannelVector.imaginaries![index]
             } else {
                 return 0
             }
         }
         var uppers = DSPSplitComplex(realp: &upperReals, imagp: &upperImaginaries)
-        vDSP_zrvmul(&uppers, 1, &oneMinusAlphas, 1, &uppers, 1, UInt(numberOfDelays))
+        vDSP_zrvmul(&uppers, 1, self.oneMinusAlphas![channelIdentifier], 1, &uppers, 1, UInt(numberOfDelays))
 
         var partBData = ComplexVector(count: numberOfDelays, repeatedValue: 0)
-        var partBs = DSPSplitComplex(realp: &partBData.real!, imagp: &partBData.imaginary!)
+        var partBs = DSPSplitComplex(realp: &partBData.reals!, imagp: &partBData.imaginaries!)
         vDSP_zvadd(&lowers, 1, &uppers, 1, &partBs, 1, UInt(numberOfDelays))
 
-        let calculatedDelays = channelDelays.map({
-            (channelDelay: Float) -> Float in
-            return 2 * Float(M_PI) * self.centralFrequency * channelDelay / self.samplingFrequencyHertz
-        })
-
-        var realConjugates = calculatedDelays.map({
-            (calculatedDelay: Float) -> Float in
-            let r = Foundation.exp(Float(0))
-            return r * cos(calculatedDelay)
-        })
-
-        var imaginaryConjugates = calculatedDelays.map({
-            (calculatedDelay: Float) -> Float in
-            let r = Foundation.exp(Float(0))
-            return -1.0 * r * sin(calculatedDelay)
-        })
-        var partAs = DSPSplitComplex(realp: &realConjugates, imagp: &imaginaryConjugates)
-
+        var partA = self.partAs![channelIdentifier]
+        var partAWrapper = DSPSplitComplex(realp: &partA.reals!, imagp: &partA.imaginaries!)
         var complexImageVector = ComplexVector(count: numberOfDelays, repeatedValue: 0)
-        var complexImageWrapper = DSPSplitComplex(realp: &complexImageVector.real!, imagp: &complexImageVector.imaginary!)
-        vDSP_zvmul(&partAs, 1, &partBs, 1, &complexImageWrapper, 1, UInt(numberOfDelays), 1)
+        var complexImageWrapper = DSPSplitComplex(realp: &complexImageVector.reals!, imagp: &complexImageVector.imaginaries!)
+        vDSP_zvmul(&partAWrapper, 1, &partBs, 1, &complexImageWrapper, 1, UInt(numberOfDelays), 1)
 
         return complexImageVector
     }
@@ -365,8 +388,10 @@ public class VerasonicsFrameProcessor: NSObject
     {
         var imageIntensities: [UInt8]?
         if complexImageVector != nil {
-            var imageVector = complexImageVector!
-            var complexImageWrapper = DSPSplitComplex(realp: &imageVector.real!, imagp: &imageVector.imaginary!)
+            let imageVector = complexImageVector!
+            var reals = imageVector.reals!
+            var imaginaries = imageVector.imaginaries!
+            var complexImageWrapper = DSPSplitComplex(realp: &reals, imagp: &imaginaries)
 
             // convert complex value to double
             let numberOfAmplitudes = self.numberOfPixels
@@ -448,17 +473,13 @@ public class VerasonicsFrameProcessor: NSObject
 
     private func processChannelDataWithMetal(channelData: [ChannelData]?) -> UIImage?
     {
-        let horse = UIImage(named: "Horse07")
-        let (pixelValues, width, height) = pixelValuesFromImage(horse?.CGImage)
-        let pixelCount = width * height
-        let pixelByteCount = pixelCount * sizeof(UInt8)
-        let alignedPixelByteCount = byteSizeWithAlignment(0x1000, size: pixelByteCount)
 
-//        let channelAlignedByteCount = byteSizeWithAlignment(0x1000, size: 128 * sizeof(UInt8))
+        let byteCount = 128 * 400 * sizeof((Float, Float))
+        let channelAlignedByteCount = byteSizeWithAlignment(0x1000, size: byteCount)
 
-//        let imageWidth = self.imageXPixelCount
-//        let imageHeight = self.imageZPixelCount
-//        let imageAlignedByteCount = byteSizeWithAlignment(0x1000, size: imageWidth * imageHeight * sizeof(UInt8))
+        let imageWidth = self.imageXPixelCount
+        let imageHeight = self.imageZPixelCount
+        let imageAlignedByteCount = byteSizeWithAlignment(0x1000, size: imageWidth * imageHeight * sizeof(UInt8))
 
         let metalCommandBuffer = self.metalCommandQueue.commandBuffer()
         let commandEncoder = metalCommandBuffer.computeCommandEncoder()
@@ -469,43 +490,33 @@ public class VerasonicsFrameProcessor: NSObject
 
         for index in self.channelDataBufferPointer!.startIndex ..< self.channelDataBufferPointer!.endIndex
         {
-            self.channelDataBufferPointer![index] = pixelValues![index]
+            let complexObject = channelData![index].complexVector.zip
+            self.channelDataBufferPointer![index] = complexObject!
         }
 
-        let inputVector = self.metalDevice.newBufferWithBytesNoCopy(self.channelDataPointer, length: alignedPixelByteCount, options: MTLResourceOptions(rawValue: 0), deallocator: nil)
+        let inputVector = self.metalDevice.newBufferWithBytesNoCopy(self.channelDataPointer, length: channelAlignedByteCount, options: MTLResourceOptions(rawValue: 0), deallocator: nil)
         commandEncoder.setBuffer(inputVector, offset: 0, atIndex: 0)
 
-        let outputVector = self.metalDevice.newBufferWithBytesNoCopy(self.ultrasoundBitmapPointer, length: alignedPixelByteCount, options: MTLResourceOptions(rawValue: 0), deallocator: nil)
+        let outputVector = self.metalDevice.newBufferWithBytesNoCopy(self.ultrasoundBitmapPointer, length: channelAlignedByteCount, options: MTLResourceOptions(rawValue: 0), deallocator: nil)
         commandEncoder.setBuffer(outputVector, offset: 0, atIndex: 1)
 
-        //        // Grab the processed image
-        //        var resultdata =  [Particle](count:particles.count, repeatedValue: Particle(positionX: 0, positionY: 0, velocityX: 0, velocityY: 0))
-        //        let outVectorBuffer = device.newBufferWithBytes(&resultdata, length: particleVectorByteLength, options: MTLResourceOptions(rawValue: 0))
-        //        commandEncoder.setBuffer(outVectorBuffer, offset: 0, atIndex: 1)
-        //
-        //        var gravityWellParticle = Particle(positionX: Float(gravityWell.x), positionY: Float(gravityWell.y), velocityX: 0, velocityY: 0)
-        //
-        //        let inGravityWell = device.newBufferWithBytes(&gravityWellParticle, length: sizeofValue(gravityWellParticle), options: MTLResourceOptions(rawValue: 0))
-        //        commandEncoder.setBuffer(inGravityWell, offset: 0, atIndex: 2)
-        //
-        //        commandEncoder.setTexture(textureB, atIndex: 0)
-        //
         let threadExecutionWidth = metalPipelineState!.threadExecutionWidth
         let threadGroupCount = MTLSize(width: threadExecutionWidth, height: 1, depth: 1)
-        let threadGroups = MTLSize(width: pixelCount / threadGroupCount.width, height: 1, depth:1)
+        let threadGroups = MTLSize(width: 128 / threadGroupCount.width, height: 1, depth:1)
 
         commandEncoder.dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupCount)
         commandEncoder.endEncoding()
         metalCommandBuffer.commit()
         metalCommandBuffer.waitUntilCompleted()
 
-        var copiedPixelValues = [UInt8](count: pixelCount, repeatedValue: 0)
-        let data = NSData(bytesNoCopy: outputVector.contents(), length: pixelByteCount, freeWhenDone: false).copy()
-        data.getBytes(&copiedPixelValues, length:pixelByteCount)
+        var copiedPixelValues = [(Float, Float)](count: byteCount, repeatedValue: (0, 0))
+        let data = NSData(bytesNoCopy: outputVector.contents(), length: byteCount, freeWhenDone: false)
+        data.getBytes(&copiedPixelValues, length:byteCount)
 
-        let image = self.grayscaleImageFromPixelValues(copiedPixelValues, width: width, height: height, imageOrientation: UIImageOrientation.Up)
+//
+//        let image = self.grayscaleImageFromPixelValues(copiedPixelValues, width: width, height: height, imageOrientation: UIImageOrientation.Up)
 
-        return image
+        return nil
     }
 
     private func pixelValuesFromImage(imageRef: CGImage?) -> (pixelValues: [UInt8]?, width: Int, height: Int)

@@ -33,33 +33,22 @@ public class VerasonicsFrame: NSObject, Mappable
                         repeatedValue: ChannelData(channelIdentifier: 0, numberOfSamples: self.numberOfSamplesPerChannel))
                     for channelIndex in 0 ..< self.numberOfChannels {
                         channelData![channelIndex].channelIdentifier = channelIndex
-//                        var real = [Float]()
-//                        real.reserveCapacity(self.numberOfSamplesPerChannel)
-//                        var imaginary = [Float]()
-//                        imaginary.reserveCapacity(self.numberOfSamplesPerChannel)
-//                        for (index, rawChannelData) in self.rawChannelData[channelIndex].enumerate() {
-//                            if index % 2 == 0 {
-//                                real.append(Float(rawChannelData))
-//                            } else {
-//                                imaginary.append(Float(rawChannelData))
-//                            }
-//                        }
-                        let real = self.rawChannelData[channelIndex].enumerate().filter({
+                        let reals = self.rawChannelData[channelIndex].enumerate().filter({
                             (index: Int, element: Int) -> Bool in
                             return index % 2 == 0
                         }).map({ (_: Int, element: Int) -> Float in
                             return Float(element)
                         })
-                        let imaginary = self.rawChannelData[channelIndex].enumerate().filter({
+                        let imaginaries = self.rawChannelData[channelIndex].enumerate().filter({
                             (index: Int, element: Int) -> Bool in
                             return index % 2 != 0
                         }).map({ (_: Int, element: Int) -> Float in
                             return Float(element)
                         })
 
-                        channelData![channelIndex].complexVector.real = real
-                        channelData![channelIndex].complexVector.imaginary = imaginary
+                        channelData![channelIndex].complexVector = ComplexVector(reals: reals, imaginaries: imaginaries)
                     }
+
                     self.calculatedChannelData = channelData
                 }
             }

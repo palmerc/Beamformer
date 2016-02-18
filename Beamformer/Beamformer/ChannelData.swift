@@ -1,20 +1,16 @@
 import Foundation
-import Accelerate
 
 
 
-public struct ChannelData : CustomStringConvertible, Equatable
+public struct ChannelData
 {
     public var channelIdentifier: Int
     public var complexVector: ComplexVector
+    
     public var numberOfSamples: Int {
         get {
             return self.complexVector.count
         }
-    }
-    public var description: String {
-        let name = String(self.dynamicType)
-        return String(format: "%s %d samples", arguments: [name, self.numberOfSamples])
     }
 
     public init(channelIdentifier: Int, numberOfSamples: Int)
@@ -23,6 +19,16 @@ public struct ChannelData : CustomStringConvertible, Equatable
         self.complexVector = ComplexVector(count: numberOfSamples, repeatedValue: 0)
     }
 }
+
+extension ChannelData: CustomStringConvertible
+{
+    public var description: String {
+        let name = String(self.dynamicType)
+        return String(format: "%s %d samples", arguments: [name, self.numberOfSamples])
+    }
+}
+
+extension ChannelData: Equatable {}
 
 public func ==(lhs: ChannelData, rhs: ChannelData) -> Bool
 {
