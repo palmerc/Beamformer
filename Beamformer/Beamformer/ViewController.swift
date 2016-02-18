@@ -47,9 +47,9 @@ class ViewController: UIViewController {
                 let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
                 if self.executing == false {
                     self.executing = true
-                    let executionTime = self.executionTimeInterval({ () -> () in
+                    let executionTime = self.executionTimeInterval({
                         let image = self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame)
-                        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        dispatch_async(dispatch_get_main_queue(), {
                             self.ultrasoundImageView.image = image
                             self.executing = false
                         })
