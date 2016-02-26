@@ -10,7 +10,7 @@ class ViewController: UIViewController {
 
     var executing: Bool = false
 
-    lazy var verasonicsFrameProcessor = VerasonicsFrameProcessor(withDelays: VerasonicsFrameProcessor.defaultDelays)
+    lazy var verasonicsFrameProcessor = VerasonicsFrameProcessor(withDelays: VerasonicsFrameProcessor.transducerElementPositionsInMMs)
     lazy var webSocket = WebSocket()
 
     var isConnected: Bool?

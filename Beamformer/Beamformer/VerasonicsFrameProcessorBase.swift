@@ -35,12 +35,12 @@ public class VerasonicsFrameProcessorBase: NSObject
 
     var imageXStartInMM: Float {
         get {
-            return VerasonicsFrameProcessor.defaultDelays.first!
+            return VerasonicsFrameProcessor.transducerElementPositionsInMMs.first!
         }
     }
     var imageXStopInMM: Float {
         get {
-            return VerasonicsFrameProcessor.defaultDelays.last!
+            return VerasonicsFrameProcessor.transducerElementPositionsInMMs.last!
         }
     }
     var imageXPixelCount: Int {

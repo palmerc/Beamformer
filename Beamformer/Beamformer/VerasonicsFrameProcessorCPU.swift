@@ -30,25 +30,25 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         }
     }
 
-    private var _rawChannelDelays: [Float]? = nil
-    var rawChannelDelays: [Float]? {
+    private var _elementPositions: [Float]? = nil
+    var elementPositions: [Float]? {
         get {
-            return self._rawChannelDelays
+            return self._elementPositions
         }
         set {
-            self._rawChannelDelays = newValue
-            self.calculatedChannelDelays = calculatedDelaysFromRawDelays(newValue)
+            self._elementPositions = newValue
+            self.calculatedChannelDelays = calculatedDelayWithElementPositions(newValue)
         }
     }
 
 
 
-    public init(withDelays delays: [Float])
+    public init(withElementPositions positions: [Float])
     {
         super.init()
         
         self.queue = dispatch_queue_create(queueName, DISPATCH_QUEUE_CONCURRENT)
-        self.rawChannelDelays = delays
+        self.elementPositions = positions
     }
 
 
@@ -137,10 +137,10 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         return complexVector
     }
 
-    func calculatedDelaysFromRawDelays(rawChannelDelays: [Float]?) -> [ChannelDelay]?
+    func calculatedDelayWithElementPositions(elementPositions: [Float]?) -> [ChannelDelay]?
     {
         var calculatedDelays: [ChannelDelay]?
-        if (rawChannelDelays != nil) {
+        if (elementPositions != nil) {
             let angle: Float = 0
             var xs = [Float](count: self.imageXPixelCount, repeatedValue: 0)
             for i in 0..<self.imageXPixelCount {
@@ -178,7 +178,7 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
             for channelIdentifier in 0 ..< self.numberOfActiveTransducerElements {
                 calculatedDelays![channelIdentifier].identifier = channelIdentifier
 
-                let channelDelays = rawChannelDelays![channelIdentifier]
+                let channelDelays = elementPositions![channelIdentifier]
                 for index in 0 ..< self.numberOfPixels {
                     let xDifferenceSquared = pow(unrolledXs[index] - channelDelays, 2)
                     let tauReceive = sqrt(zSquareds[index] + xDifferenceSquared) / self.speedOfUltrasound
