@@ -7,6 +7,5 @@
 @property (assign, nonatomic) CGFloat centralFrequency;
 @property (assign, nonatomic) CGFloat samplingFrequencyHertz;
 
-//- (void)processChannelData:(ComplexVector *)channelData withChannelDelays:(ComplexVector *)channelDelays;
-
+- (NSArray<NSNumber *> *)processChannelData:(NSArray<NSNumber *> *)channelData withChannelDelays:(NSArray<NSNumber *> *)channelDelays;
 @end

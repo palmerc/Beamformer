@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <cmath>
-
+#include <cstring>
 #include "Beamformer.hpp"
 #include "ComplexNumbers.hpp"
 
@@ -10,35 +10,60 @@
 
 @implementation VerasonicsFrameMetalProcessor
 
-- (void)processChannelData:(NSArray<NSNumber *> *)channelData withChannelDelays:(NSArray<NSNumber *> *)channelDelays
+- (NSArray<NSNumber *> *)processChannelData:(NSArray<NSNumber *> *)channelData withChannelDelays:(NSArray<NSNumber *> *)channelDelays
 {
     unsigned long numberOfDelays = channelDelays.count;
-
-    std::vector<int> x_ns;
-    std::vector<int> x_n1s;
-    std::vector<ComplexF> alphas;
-    std::vector<ComplexF> oneMinusAlphas;
-    std::vector<float> calculatedDelays;
-    std::vector<ComplexF> partAs;
-    for (int i = 0; i < numberOfDelays; i++) {
-        float channelDelay = [channelDelays[i] floatValue];
-
-        x_ns[i] = floorf(channelDelay);
-        x_n1s[i] = ceilf(channelDelay);
-
-        float alpha = x_n1s[i] - channelDelay;
-        oneMinusAlphas[i] = ComplexF(1.f - alpha, 0.f);
-        alphas[i] = ComplexF(alpha, 0.f);
-
-        float calculatedDelay = 2 * M_PI * self.centralFrequency * channelDelay / self.samplingFrequencyHertz;
-        float r = expf(0);
-        float real = r * cosf(calculatedDelay);
-        float imaginary = -1.f * r * sinf(calculatedDelay);
-        partAs[i] = ComplexF(real, imaginary);
+    NSMutableArray * complexImageVectorReturned = [[NSMutableArray alloc] initWithCapacity:100];
+    // channelData. value.floatValue
+    //int speedOfUltrasound = 1540 * 1000;
+    int samplingFrequencyHz = 7813000;
+    int centralFrequency = 7813000;
+    //double lensCorrection = 14.14423409;
+    //int numberOfTransducerElements = 192;
+    int numberOfActiveTransducerElements = 128;
+    int delaysPerChannel = floor(1.0*numberOfDelays/numberOfActiveTransducerElements);
+    size_t count = sizeof(float)*delaysPerChannel;
+    void * complexImageVector = malloc(count);
+    memset(complexImageVector, 0, count);
+    float *floatPointer = (float *)complexImageVector;
+    
+    for (int elmt = 0; elmt < numberOfActiveTransducerElements; elmt++) {
+        for (int sample = 0; sample < delaysPerChannel; sample++) {
+            float channelDelay = [channelDelays[sample+elmt*delaysPerChannel] floatValue];
+            int x_n = floorf(channelDelay);
+            int x_n1 = ceilf(channelDelay);
+            float alpha = x_n1 - channelDelay;
+            
+            if (x_n < 400 && x_n1 < 400){
+                float phaseShiftPart = 2 * M_PI * centralFrequency * channelDelay / samplingFrequencyHz;
+                float realPhaseShift = cosf(phaseShiftPart);
+                float imagPhaseShift = -1.f*sinf(phaseShiftPart);
+                float data1Real = (alpha)*[channelData[(x_n+elmt*400)*2] floatValue];
+                float data1Imag = (alpha)*[channelData[(x_n+elmt*400)*2+1] floatValue];
+                float data2Real = (1-alpha)*[channelData[(x_n1+elmt*400)*2] floatValue];
+                float data2Imag = (1-alpha)*[channelData[(x_n1+elmt*400)*2+1] floatValue];
+                float dataReal = data1Real+data2Real;
+                float dataImag = data1Imag+data2Imag;
+                
+                //The real part( a   *   c )      -     (b        *     d)
+                float R = realPhaseShift*dataReal - imagPhaseShift*dataImag;
+                
+                
+                floatPointer[(sample)*2] = floatPointer[(sample)*2] + R;
+                //The imaginary part ( a  * d )   +  (b  *  c)
+                float I = realPhaseShift*dataImag+imagPhaseShift*dataReal;
+                floatPointer[(sample)*2+1] = floatPointer[(sample)*2+1] + I;
+            }
+        }
     }
-
-    std::vector<ComplexF> complexChannelVector;
-    std::vector<ComplexF> complexImageVector = complexImageVectorWithComplexChannelVector(x_ns, x_n1s, alphas, oneMinusAlphas, partAs, complexChannelVector);
+    
+    for (int sample = 0; sample < delaysPerChannel; sample++) {
+        [complexImageVectorReturned addObject:[NSNumber numberWithFloat:floatPointer[sample*2]]];
+        [complexImageVectorReturned addObject:[NSNumber numberWithFloat:floatPointer[sample*2+1]]];
+    }
+    
+    free(floatPointer);
+    return complexImageVectorReturned;
 }
 
 @end

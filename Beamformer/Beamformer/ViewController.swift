@@ -20,7 +20,7 @@ class ViewController: UIViewController {
         }
         set {
             if (newValue) {
-                self.webSocket.open("ws://yankee.local:9000")
+                self.webSocket.open("ws://127.0.0.1:9000")
                 self.connectButton.setTitle("Disconnect", forState: UIControlState.Normal)
             } else {
                 self.webSocket.close()
@@ -48,7 +48,7 @@ class ViewController: UIViewController {
                 if self.executing == false {
                     self.executing = true
                     let executionTime = self.executionTimeInterval({
-                        let image = self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame)
+                        let image = self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame)!
                         dispatch_async(dispatch_get_main_queue(), {
                             self.ultrasoundImageView.image = image
                             self.executing = false
@@ -74,4 +74,5 @@ class ViewController: UIViewController {
         self.connect = !self.connect
     }
 }
+
 

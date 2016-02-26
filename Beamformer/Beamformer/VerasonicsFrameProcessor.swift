@@ -9,6 +9,7 @@ import Accelerate
 public class VerasonicsFrameProcessor: NSObject
 {
     private var verasonicsFrameProcessorCPU: VerasonicsFrameProcessorCPU!
+    private var metalProcessor = VerasonicsFrameMetalProcessor()
     private var rawChannelDelays: [Float]!
 
     static let defaultDelays: [Float] = [
@@ -67,9 +68,39 @@ public class VerasonicsFrameProcessor: NSObject
 //
 //                image = processChannelDataWithMetal(channelData)
 //            } else {
-
-                let pixelCount = self.verasonicsFrameProcessorCPU.numberOfPixels
-                let complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
+            var allMyDelays = [Float]()
+            let channelDelays = self.verasonicsFrameProcessorCPU.calculatedChannelDelays
+            for channelDelay in channelDelays! {
+                let delays  = channelDelay.delays
+                allMyDelays.appendContentsOf(delays)
+            }
+            
+            var allMyData = [Float]()
+            for channelDatum in channelData! {
+                let reals = channelDatum.complexVector.reals!
+                let imaginiaries = channelDatum.complexVector.imaginaries!
+                
+                for (index, real) in reals.enumerate() {
+                    allMyData.append(real)
+                    allMyData.append(imaginiaries[index])
+                }
+            }
+            
+            let pixelCount = self.verasonicsFrameProcessorCPU.numberOfPixels;
+            //    let complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
+            let complexImageVectorReturned = metalProcessor.processChannelData(allMyData,withChannelDelays: allMyDelays);
+                //restructure this into reals and imagniaries
+            var reals = [Float]()
+            var imaginaries = [Float]()
+            for index in 0 ..< complexImageVectorReturned.count / 2
+            {
+                let real = complexImageVectorReturned[2*index]
+                let imag = complexImageVectorReturned[2*index+1]
+                reals.append(real.floatValue)
+                imaginaries.append(imag.floatValue)
+            }
+            
+                let complexImageVector = ComplexVector(reals: reals, imaginaries: imaginaries)
                 let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
                 image = grayscaleImageFromPixelValues(imageAmplitudes,
                     width: self.verasonicsFrameProcessorCPU.imageZPixelCount,
