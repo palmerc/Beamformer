@@ -11,7 +11,7 @@ public class VerasonicsFrameProcessor: NSObject
     private var verasonicsFrameProcessorCPU: VerasonicsFrameProcessorCPU!
     private var rawChannelDelays: [Float]!
 
-    static let defaultDelays: [Float] = [
+    static let transducerElementPositionsInMMs: [Float] = [
         -12.70, -12.50, -12.30, -12.10, -11.90, -11.70,
         -11.50, -11.30, -11.10, -10.90, -10.70, -10.50,
         -10.30, -10.10,  -9.90,  -9.70,  -9.50,  -9.30,
@@ -41,7 +41,7 @@ public class VerasonicsFrameProcessor: NSObject
         super.init()
 
         self.rawChannelDelays = withDelays
-        self.verasonicsFrameProcessorCPU = VerasonicsFrameProcessorCPU(withDelays: VerasonicsFrameProcessor.defaultDelays)
+        self.verasonicsFrameProcessorCPU = VerasonicsFrameProcessorCPU(withElementPositions: VerasonicsFrameProcessor.transducerElementPositionsInMMs)
     }
 
     public func imageFromVerasonicsFrame(verasonicsFrame :VerasonicsFrame?) -> UIImage?
