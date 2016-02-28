@@ -58,8 +58,8 @@
     }
     
     for (int sample = 0; sample < delaysPerChannel; sample++) {
-        [complexImageVectorReturned addObject:[NSNumber numberWithFloat:floatPointer[sample*2]]];
-        [complexImageVectorReturned addObject:[NSNumber numberWithFloat:floatPointer[sample*2+1]]];
+        [complexImageVectorReturned addObject:@(floatPointer[sample*2])];
+        [complexImageVectorReturned addObject:@(floatPointer[sample*2+1])];
     }
     
     free(floatPointer);

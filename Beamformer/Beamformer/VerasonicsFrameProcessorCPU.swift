@@ -8,14 +8,14 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
     private var queue: dispatch_queue_t!
     private let queueName = "no.uio.Beamformer"
 
-    var x_ns: [[Float]]? = nil
-    var x_n1s: [[Float]]? = nil
-    var alphas: [[Float]]? = nil
-    var oneMinusAlphas: [[Float]]? = nil
-    var partAs: [ComplexVector]? = nil
+    var x_ns: [Float]? = nil
+    var x_n1s: [Float]? = nil
+    var alphas: [Float]? = nil
+    var oneMinusAlphas: [Float]? = nil
+    var partAs: [ComplexNumber]? = nil
 
-    private var _calculatedChannelDelays: [ChannelDelay]? = nil
-    var calculatedChannelDelays: [ChannelDelay]? {
+    private var _calculatedChannelDelays: [Float]? = nil
+    var calculatedChannelDelays: [Float]? {
         get {            
             return self._calculatedChannelDelays
         }
@@ -37,11 +37,12 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         }
         set {
             self._elementPositions = newValue
-            self.calculatedChannelDelays = calculatedDelayWithElementPositions(newValue)
+            self.calculatedChannelDelays = calculatedDelaysWithElementPositions(newValue)
         }
     }
 
 
+    // MARK: Object lifecycle
 
     public init(withElementPositions positions: [Float])
     {
@@ -51,95 +52,82 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         self.elementPositions = positions
     }
 
+    // MARK:
 
-
-    public func complexVectorFromChannelData(channelData: [ChannelData]?) -> ComplexVector?
+    public func complexVectorFromChannelData(channelData: ChannelData?) -> [ComplexNumber]?
     {
         /* Interpolate the image*/
-        var complexVector: ComplexVector?
+        var imageVector: [ComplexNumber]?
         if channelData != nil {
-            let numberOfChannels = channelData!.count
+            let startIndex = 0
+            let endIndex = self.numberOfActiveTransducerElements * self.numberOfPixels
+            let complexVector = self.complexVectorFromChannelDatum(channelData!, startIndex: startIndex, endIndex: endIndex)
 
-            complexVector = ComplexVector(count: self.numberOfPixels, repeatedValue: 0)
-            var complexImageVectorWrapper = DSPSplitComplex(realp: &complexVector!.reals!, imagp: &complexVector!.imaginaries!)
+            imageVector = self.imageVectorFromComplexVector(complexVector)
+        }
 
-            dispatch_apply(numberOfChannels, self.queue, {
-                (channelIdentifier: Int) -> Void in
-                let channelDatum = channelData![channelIdentifier]
-                var aComplexImageVector = self.complexVectorFromChannelDatum(channelDatum)
-                var aComplexImageVectorWrapper = DSPSplitComplex(realp: &aComplexImageVector.reals!, imagp: &aComplexImageVector.imaginaries!)
-                vDSP_zvadd(&aComplexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, &complexImageVectorWrapper, 1, UInt(self.numberOfPixels))
-            })
+        return imageVector
+    }
+
+    func complexVectorFromChannelDatum(channelDatum: ChannelData, startIndex: Int, endIndex: Int) -> [ComplexNumber]
+    {
+        let numberOfElements = endIndex - startIndex
+
+        var complexVector = [ComplexNumber](count: numberOfElements, repeatedValue: ComplexNumber(real: 0, imaginary: 0))
+        var i = 0
+        for index in startIndex ..< endIndex {
+            var lower = ComplexNumber(real: 0, imaginary: 0)
+            let xn = self.x_ns![index]
+            let xnIndex = Int(xn)
+            if xnIndex < channelDatum.samplesPerChannel {
+                lower = channelDatum.complexSamples[xnIndex]
+            }
+            lower *= self.alphas![index]
+
+            var upper = ComplexNumber(real: 0, imaginary: 0)
+            let xn1 = self.x_n1s![index]
+            let xn1Index = Int(xn1)
+            if xn1Index < channelDatum.samplesPerChannel {
+                upper = channelDatum.complexSamples[xn1Index]
+            }
+            upper *= self.oneMinusAlphas![index]
+
+            let partA = self.partAs![index]
+            let partB = lower + upper
+            let result = partA * partB
+
+            complexVector[i].real = result.real
+            complexVector[i].imaginary = result.imaginary
+            i += 1
         }
 
         return complexVector
     }
 
-    func complexVectorFromChannelDatum(channelDatum: ChannelData) -> ComplexVector
+    func imageVectorFromComplexVector(complexVector: [ComplexNumber]) -> [ComplexNumber]
     {
-        let channelIdentifier = channelDatum.channelIdentifier
-        let complexChannelVector = channelDatum.complexVector
-        let numberOfSamplesPerChannel = complexChannelVector.count
-        let numberOfDelays = self.partAs![channelIdentifier].count
+        var imageVectorReals = [Float](count: self.numberOfPixels, repeatedValue: 0)
+        var imageVectorImaginaries = [Float](count: self.numberOfPixels, repeatedValue: 0)
+        var imageVectorWrapper = DSPSplitComplex(realp: &imageVectorReals, imagp: &imageVectorImaginaries)
 
-        var lowerReals = self.x_ns![channelIdentifier].enumerate().map {
-            (index: Int, x_n: Float) -> Float in
-            let index = Int(x_n)
-            if (index < numberOfSamplesPerChannel) {
-                return complexChannelVector.reals![index]
-            } else {
-                return 0
-            }
+        let splitVector = ComplexVector(complexNumbers: complexVector)
+        let splitVectorReals = splitVector.reals!
+        let splitVectorImaginaries = splitVector.imaginaries!
+        for channelIndex in 0 ..< self.numberOfActiveTransducerElements {
+            let startIndex = channelIndex * self.numberOfPixels
+            let endIndex = startIndex + self.numberOfPixels
+            var splitVectorRealsSlice = Array(splitVectorReals[startIndex ..< endIndex])
+            var splitVectorImaginariesSlice = Array(splitVectorImaginaries[startIndex ..< endIndex])
+            var splitVectorWrapper = DSPSplitComplex(realp: &splitVectorRealsSlice, imagp: &splitVectorImaginariesSlice)
+            vDSP_zvadd(&splitVectorWrapper, 1, &imageVectorWrapper, 1, &imageVectorWrapper, 1, UInt(self.numberOfPixels))
         }
-        var lowerImaginaries = self.x_ns![channelIdentifier].enumerate().map {
-            (index: Int, x_n: Float) -> Float in
-            let index = Int(x_n)
-            if (index < numberOfSamplesPerChannel) {
-                return complexChannelVector.imaginaries![index]
-            } else {
-                return 0
-            }
-        }
-        var lowers = DSPSplitComplex(realp: &lowerReals, imagp: &lowerImaginaries)
-        vDSP_zrvmul(&lowers, 1, self.alphas![channelIdentifier], 1, &lowers, 1, UInt(numberOfDelays))
 
-        var upperReals = self.x_n1s![channelIdentifier].enumerate().map {
-            (index: Int, x_n1: Float) -> Float in
-            let index = Int(x_n1)
-            if (index < numberOfSamplesPerChannel) {
-                return complexChannelVector.reals![index]
-            } else {
-                return 0
-            }
-        }
-        var upperImaginaries = self.x_n1s![channelIdentifier].enumerate().map {
-            (index: Int, x_n1: Float) -> Float in
-            let index = Int(x_n1)
-            if (index < numberOfSamplesPerChannel) {
-                return complexChannelVector.imaginaries![index]
-            } else {
-                return 0
-            }
-        }
-        var uppers = DSPSplitComplex(realp: &upperReals, imagp: &upperImaginaries)
-        vDSP_zrvmul(&uppers, 1, self.oneMinusAlphas![channelIdentifier], 1, &uppers, 1, UInt(numberOfDelays))
-
-        var partBData = ComplexVector(count: numberOfDelays, repeatedValue: 0)
-        var partBs = DSPSplitComplex(realp: &partBData.reals!, imagp: &partBData.imaginaries!)
-        vDSP_zvadd(&lowers, 1, &uppers, 1, &partBs, 1, UInt(numberOfDelays))
-
-        var partA = self.partAs![channelIdentifier]
-        var partAWrapper = DSPSplitComplex(realp: &partA.reals!, imagp: &partA.imaginaries!)
-        var complexVector = ComplexVector(count: numberOfDelays, repeatedValue: 0)
-        var complexVectorWrapper = DSPSplitComplex(realp: &complexVector.reals!, imagp: &complexVector.imaginaries!)
-        vDSP_zvmul(&partAWrapper, 1, &partBs, 1, &complexVectorWrapper, 1, UInt(numberOfDelays), 1)
-        
-        return complexVector
+        return ComplexVector(reals: imageVectorReals, imaginaries: imageVectorImaginaries).complexNumbers!
     }
 
-    func calculatedDelayWithElementPositions(elementPositions: [Float]?) -> [ChannelDelay]?
+    func calculatedDelaysWithElementPositions(elementPositions: [Float]?) -> [Float]?
     {
-        var calculatedDelays: [ChannelDelay]?
+        var calculatedDelays: [Float]?
         if (elementPositions != nil) {
             let angle: Float = 0
             var xs = [Float](count: self.imageXPixelCount, repeatedValue: 0)
@@ -174,10 +162,9 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
                 return (zCosineAlpha + xSineAlphas[index]) / self.speedOfUltrasound
             })
 
-            calculatedDelays = [ChannelDelay](count:self.numberOfActiveTransducerElements, repeatedValue: ChannelDelay(channelIdentifier: 0, numberOfDelays: self.numberOfPixels))
+            let numberOfDelays = self.numberOfActiveTransducerElements * self.numberOfPixels
+            calculatedDelays = [Float](count: numberOfDelays, repeatedValue: 0)
             for channelIdentifier in 0 ..< self.numberOfActiveTransducerElements {
-                calculatedDelays![channelIdentifier].identifier = channelIdentifier
-
                 let channelDelays = elementPositions![channelIdentifier]
                 for index in 0 ..< self.numberOfPixels {
                     let xDifferenceSquared = pow(unrolledXs[index] - channelDelays, 2)
@@ -185,8 +172,8 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
 
                     let delay = (tauEchos[index] + tauReceive) * self.samplingFrequencyHz + self.lensCorrection
                     
-                    let delayIndex = delayIndices[index]
-                    calculatedDelays![channelIdentifier].delays[delayIndex] = delay
+                    let delayIndex = channelIdentifier * self.numberOfPixels + delayIndices[index]
+                    calculatedDelays![delayIndex] = delay
                 }
             }
         }
@@ -194,80 +181,64 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         return calculatedDelays
     }
 
-    func processCalculatedDelays(calculatedDelays: [ChannelDelay],
+    func processCalculatedDelays(calculatedDelays: [Float],
         centralFrequency: Float,
         samplingFrequencyHz: Float,
         numberOfElements: Int)
-        -> (x_ns: [[Float]], x_n1s: [[Float]], alphas: [[Float]], oneMinusAlphas: [[Float]], partAs: [ComplexVector])
+        -> (x_ns: [Float], x_n1s: [Float], alphas: [Float], oneMinusAlphas: [Float], partAs: [ComplexNumber])
     {
-        var x_ns = [[Float]](count: numberOfElements, repeatedValue: [Float]())
-        var x_n1s = [[Float]](count: numberOfElements, repeatedValue: [Float]())
-        var alphas = [[Float]](count: numberOfElements, repeatedValue: [Float]())
-        var oneMinusAlphas = [[Float]](count: numberOfElements, repeatedValue: [Float]())
-        var partAs = [ComplexVector](count: numberOfElements, repeatedValue: ComplexVector())
+        var partAs = [ComplexNumber](count: numberOfElements, repeatedValue: ComplexNumber(real: 0, imaginary: 0))
 
-        for channelIdentifier in 0 ..< numberOfElements {
-            let channelDelays = calculatedDelays[channelIdentifier].delays
-            let numberOfDelays = channelDelays.count
+        let x_ns = calculatedDelays.map({
+            (channelDelay: Float) -> Float in
+            return Float(floor(channelDelay))
+        })
 
-            let x_n = channelDelays.map({
-                (channelDelay: Float) -> Float in
-                return Float(floor(channelDelay))
-            })
-            x_ns[channelIdentifier] = x_n
+        let x_n1s = calculatedDelays.map({
+            (channelDelay: Float) -> Float in
+            return Float(ceil(channelDelay))
+        })
 
-            let x_n1 = channelDelays.map({
-                (channelDelay: Float) -> Float in
-                return Float(ceil(channelDelay))
-            })
-            x_n1s[channelIdentifier] = x_n1
+        var alphas = [Float](count: calculatedDelays.count, repeatedValue: 0)
+        vDSP_vsub(calculatedDelays, 1, x_n1s, 1, &alphas, 1, UInt(calculatedDelays.count))
 
-            var alpha = [Float](count: numberOfDelays, repeatedValue: 0)
-            vDSP_vsub(channelDelays, 1, x_n1, 1, &alpha, 1, UInt(numberOfDelays))
-            alphas[channelIdentifier] = alpha
+        let ones = [Float](count: calculatedDelays.count, repeatedValue: 1)
+        var oneMinusAlphas = [Float](count: calculatedDelays.count, repeatedValue: 0)
+        vDSP_vsub(alphas, 1, ones, 1, &oneMinusAlphas, 1, UInt(calculatedDelays.count))
 
-            let ones = [Float](count: numberOfDelays, repeatedValue: 1)
-            var oneMinusAlpha = [Float](count: numberOfDelays, repeatedValue: 0)
-            vDSP_vsub(alpha, 1, ones, 1, &oneMinusAlpha, 1, UInt(numberOfDelays))
-            oneMinusAlphas[channelIdentifier] = oneMinusAlpha
+        let shiftedDelays = calculatedDelays.map({
+            (channelDelay: Float) -> Float in
+            return 2 * Float(M_PI) * centralFrequency * channelDelay / samplingFrequencyHz
+        })
 
-            let calculatedDelay = channelDelays.map({
-                (channelDelay: Float) -> Float in
-                return 2 * Float(M_PI) * centralFrequency * channelDelay / samplingFrequencyHz
-            })
+        let realConjugates = shiftedDelays.map({
+            (calculatedDelay: Float) -> Float in
+            let r = Foundation.exp(Float(0))
+            return r * cos(calculatedDelay)
+        })
 
-            let realConjugates = calculatedDelay.map({
-                (calculatedDelay: Float) -> Float in
-                let r = Foundation.exp(Float(0))
-                return r * cos(calculatedDelay)
-            })
+        let imaginaryConjugates = shiftedDelays.map({
+            (calculatedDelay: Float) -> Float in
+            let r = Foundation.exp(Float(0))
+            return -1.0 * r * sin(calculatedDelay)
+        })
 
-            let imaginaryConjugates = calculatedDelay.map({
-                (calculatedDelay: Float) -> Float in
-                let r = Foundation.exp(Float(0))
-                return -1.0 * r * sin(calculatedDelay)
-            })
-
-            partAs[channelIdentifier] = ComplexVector(reals: realConjugates, imaginaries: imaginaryConjugates)
-        }
+        partAs = ComplexVector(reals: realConjugates, imaginaries: imaginaryConjugates).complexNumbers!
 
         return (x_ns, x_n1s, alphas, oneMinusAlphas, partAs)
     }
 
-    public func imageAmplitudesFromComplexImageVector(complexImageVector: ComplexVector?,
+    public func imageAmplitudesFromComplexImageVector(complexImageVector: [ComplexNumber]?,
         numberOfAmplitudes: Int) -> [UInt8]?
     {
         var imageIntensities: [UInt8]?
         if complexImageVector != nil {
-            let imageVector = complexImageVector!
-            var reals = imageVector.reals!
-            var imaginaries = imageVector.imaginaries!
-            var complexImageWrapper = DSPSplitComplex(realp: &reals, imagp: &imaginaries)
+            let imageAmplitudes = complexImageVector!.map({
+                (complexNumber: ComplexNumber) -> Float in
+                return abs(complexNumber)
+            })
 
             // convert complex value to double
-            var imageAmplitudes = [Float](count: numberOfAmplitudes, repeatedValue: 0)
-            vDSP_zvabs(&complexImageWrapper, 1, &imageAmplitudes, 1, UInt(numberOfAmplitudes))
-
             let minimumValue = imageAmplitudes.minElement()!
             let maximumValue = imageAmplitudes.maxElement()!
             var scaledImageAmplitudes = imageAmplitudes.map({

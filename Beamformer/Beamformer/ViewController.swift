@@ -48,9 +48,11 @@ class ViewController: UIViewController {
                 if self.executing == false {
                     self.executing = true
                     let executionTime = self.executionTimeInterval({
-                        let image = self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame)!
+                        let image = self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame)
                         dispatch_async(dispatch_get_main_queue(), {
-                            self.ultrasoundImageView.image = image
+                            if image != nil {
+                                self.ultrasoundImageView.image = image
+                            }
                             self.executing = false
                         })
                     })

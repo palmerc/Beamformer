@@ -1,13 +1,14 @@
 #include <metal_stdlib>
+#include <metal_math>
 using namespace metal;
 
 
 
-kernel void echo(const device uchar *input [[ buffer(0) ]],
-                 device uchar *output [[ buffer(1) ]],
+kernel void echo(const device float2 *inputChannelData [[ buffer(0) ]],
+                 device float2 *outputChannelData [[ buffer(1) ]],
                  uint id [[thread_position_in_grid]])
 {
-    output[id] = input[id];
+    outputChannelData[id] = inputChannelData[id];
 }
 
 //public func complexImageVectorWithIQData(elementIQData: [ChannelData]?, width: Int, height: Int) -> ChannelData?

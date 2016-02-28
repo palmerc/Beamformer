@@ -6,7 +6,7 @@ import ObjectMapper
 public class VerasonicsFrame: NSObject, Mappable
 {
     public var identifier: UInt!
-    private var rawChannelData: [[Int]]!
+    private var rawChannelData: [[Float]]!
     public var numberOfChannels: Int {
         get {
             return self.rawChannelData.count
@@ -23,37 +23,28 @@ public class VerasonicsFrame: NSObject, Mappable
         }
     }
 
-    private var calculatedChannelData: [ChannelData]?
-    public var channelData: [ChannelData]? {
+    private var _channelData: ChannelData?
+    public var channelData: ChannelData? {
         get {
-            if self.calculatedChannelData == nil {
-                var channelData: [ChannelData]?
+            if self._channelData == nil {
                 if self.numberOfChannels > 0 {
-                    channelData = [ChannelData](count: self.numberOfChannels,
-                        repeatedValue: ChannelData(channelIdentifier: 0, numberOfSamples: self.numberOfSamplesPerChannel))
+                    var complexSamples = [ComplexNumber](count: self.numberOfChannels * self.numberOfSamplesPerChannel, repeatedValue: ComplexNumber(real: 0, imaginary: 0))
                     for channelIndex in 0 ..< self.numberOfChannels {
-                        channelData![channelIndex].channelIdentifier = channelIndex
-                        let reals = self.rawChannelData[channelIndex].enumerate().filter({
-                            (index: Int, element: Int) -> Bool in
-                            return index % 2 == 0
-                        }).map({ (_: Int, element: Int) -> Float in
-                            return Float(element)
-                        })
-                        let imaginaries = self.rawChannelData[channelIndex].enumerate().filter({
-                            (index: Int, element: Int) -> Bool in
-                            return index % 2 != 0
-                        }).map({ (_: Int, element: Int) -> Float in
-                            return Float(element)
-                        })
-
-                        channelData![channelIndex].complexVector = ComplexVector(reals: reals, imaginaries: imaginaries)
+                        var channelRawSamples = self.rawChannelData[channelIndex]
+                        for sampleIndex in 0 ..< self.numberOfSamplesPerChannel {
+                            let realIndex = sampleIndex * 2
+                            let imaginaryIndex = realIndex + 1
+                            let complexSampleIndex = channelIndex * self.numberOfSamplesPerChannel + sampleIndex
+                            let complexSample = ComplexNumber(real: channelRawSamples[realIndex], imaginary: channelRawSamples[imaginaryIndex])
+                            complexSamples[complexSampleIndex] = complexSample
+                        }
                     }
 
-                    self.calculatedChannelData = channelData
+                    self._channelData = ChannelData(complexSamples: complexSamples, samplesPerChannel: self.numberOfSamplesPerChannel)
                 }
             }
             
-            return self.calculatedChannelData
+            return self._channelData
         }
     }
 

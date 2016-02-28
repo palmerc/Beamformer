@@ -122,8 +122,8 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
 
         for index in self.channelDataBufferPointer!.startIndex ..< self.channelDataBufferPointer!.endIndex
         {
-            let complexObject = channelData![index].complexVector.zip
-            self.channelDataBufferPointer![index] = complexObject!
+//            let complexObject = channelData![index].complexSamples.zip
+//            self.channelDataBufferPointer![index] = complexObject!
         }
 
         let inputVector = self.metalDevice.newBufferWithBytesNoCopy(self.channelDataPointer, length: channelAlignedByteCount, options: MTLResourceOptions(rawValue: 0), deallocator: nil)

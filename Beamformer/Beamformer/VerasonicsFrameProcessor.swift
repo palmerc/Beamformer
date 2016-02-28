@@ -9,6 +9,7 @@ import Accelerate
 public class VerasonicsFrameProcessor: NSObject
 {
     private var verasonicsFrameProcessorCPU: VerasonicsFrameProcessorCPU!
+    private var verasonicsFrameProcessorMetal: VerasonicsFrameProcessorMetal!
     private var metalProcessor = VerasonicsFrameMetalProcessor()
     private var rawChannelDelays: [Float]!
 
@@ -37,76 +38,46 @@ public class VerasonicsFrameProcessor: NSObject
          12.50,  12.70
     ]
 
-    init(withDelays: [Float])
+    public init(withDelays: [Float])
     {
         super.init()
 
         self.rawChannelDelays = withDelays
         self.verasonicsFrameProcessorCPU = VerasonicsFrameProcessorCPU(withElementPositions: VerasonicsFrameProcessor.transducerElementPositionsInMMs)
+        self.verasonicsFrameProcessorMetal = VerasonicsFrameProcessorMetal()
     }
 
     public func imageFromVerasonicsFrame(verasonicsFrame :VerasonicsFrame?) -> UIImage?
     {
         var image: UIImage?
-        if let channelData: [ChannelData]? = verasonicsFrame!.channelData {
-//            if self.metalDevice != nil {
-//                let byteCount = 128 * 400 * sizeof((Float, Float))
-//                if self.channelDataBufferPointer == nil {
-//                    let (pointer, memoryWrapper) = setupSharedMemoryWithSize(byteCount)
-//                    self.channelDataPointer = pointer
-//
-//                    let unsafePointer = UnsafeMutablePointer<[(Float, Float)]>(memoryWrapper)
-//                    self.channelDataBufferPointer = UnsafeMutableBufferPointer(start: unsafePointer, count: channelData!.count)
-//                }
-//                if self.ultrasoundBitmapBufferPointer == nil {
-//                    let (pointer, memoryWrapper) = setupSharedMemoryWithSize(byteCount)
-//                    self.ultrasoundBitmapPointer = pointer
-//
-//                    let unsafeMutablePointer = UnsafeMutablePointer<[(Float, Float)]>(memoryWrapper)
-//                    self.ultrasoundBitmapBufferPointer = UnsafeMutableBufferPointer(start: unsafeMutablePointer, count: byteCount)
-//                }
-//
-//                image = processChannelDataWithMetal(channelData)
-//            } else {
-            var allMyDelays = [Float]()
-            let channelDelays = self.verasonicsFrameProcessorCPU.calculatedChannelDelays
-            for channelDelay in channelDelays! {
-                let delays  = channelDelay.delays
-                allMyDelays.appendContentsOf(delays)
-            }
-            
-            var allMyData = [Float]()
-            for channelDatum in channelData! {
-                let reals = channelDatum.complexVector.reals!
-                let imaginiaries = channelDatum.complexVector.imaginaries!
-                
-                for (index, real) in reals.enumerate() {
-                    allMyData.append(real)
-                    allMyData.append(imaginiaries[index])
-                }
-            }
-            
+        if let channelData: ChannelData? = verasonicsFrame!.channelData {
             let pixelCount = self.verasonicsFrameProcessorCPU.numberOfPixels;
-            //    let complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
-            let complexImageVectorReturned = metalProcessor.processChannelData(allMyData,withChannelDelays: allMyDelays);
-                //restructure this into reals and imagniaries
-            var reals = [Float]()
-            var imaginaries = [Float]()
-            for index in 0 ..< complexImageVectorReturned.count / 2
-            {
-                let real = complexImageVectorReturned[2*index]
-                let imag = complexImageVectorReturned[2*index+1]
-                reals.append(real.floatValue)
-                imaginaries.append(imag.floatValue)
-            }
-            
-                let complexImageVector = ComplexVector(reals: reals, imaginaries: imaginaries)
-                let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
-                image = grayscaleImageFromPixelValues(imageAmplitudes,
-                    width: self.verasonicsFrameProcessorCPU.imageZPixelCount,
-                    height: self.verasonicsFrameProcessorCPU.imageXPixelCount,
-                    imageOrientation: .Right)
+            let channelDataSampleCount = channelData!.complexSamples.count
+            let channelDataByteCount = channelDataSampleCount * sizeof(ComplexNumber)
+            print("Byte count: \(channelDataByteCount)")
+
+            var complexImageVector: [ComplexNumber]?
+//            if self.verasonicsFrameProcessorMetal != nil {
+//                var channelDataSamples = [ComplexNumber]()
+//                channelDataSamples.reserveCapacity(channelDataSampleCount)
+//                for channelDatum in channelData! {
+//                    let complexNumbers = channelDatum.complexSamples.reals!.enumerate().map({
+//                        (index: Int, real: Float) -> ComplexNumber in
+//                        let imaginary = channelDatum.complexSamples.imaginaries![index]
+//                        return ComplexNumber(real: real, imaginary: imaginary)
+//                    })
+//
+//                    channelDataSamples.appendContentsOf(complexNumbers)
+//                }
+//            } else {
+                complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
 //            }
+            
+            let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
+            image = grayscaleImageFromPixelValues(imageAmplitudes,
+                width: self.verasonicsFrameProcessorCPU.imageZPixelCount,
+                height: self.verasonicsFrameProcessorCPU.imageXPixelCount,
+                imageOrientation: .Right)
 
             print("Frame \(verasonicsFrame!.identifier!) complete")
         }
