@@ -171,8 +171,9 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
                     let tauReceive = sqrt(zSquareds[index] + xDifferenceSquared) / self.speedOfUltrasound
 
                     let delay = (tauEchos[index] + tauReceive) * self.samplingFrequencyHz + self.lensCorrection
-                    
-                    let delayIndex = channelIdentifier * self.numberOfPixels + delayIndices[index]
+
+                    let lookupIndex = delayIndices[index]
+                    let delayIndex = channelIdentifier * self.numberOfPixels + lookupIndex
                     calculatedDelays![delayIndex] = delay
                 }
             }
@@ -187,8 +188,6 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         numberOfElements: Int)
         -> (x_ns: [Float], x_n1s: [Float], alphas: [Float], oneMinusAlphas: [Float], partAs: [ComplexNumber])
     {
-        var partAs = [ComplexNumber](count: numberOfElements, repeatedValue: ComplexNumber(real: 0, imaginary: 0))
-
         let x_ns = calculatedDelays.map({
             (channelDelay: Float) -> Float in
             return Float(floor(channelDelay))
@@ -223,7 +222,7 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
             return -1.0 * r * sin(calculatedDelay)
         })
 
-        partAs = ComplexVector(reals: realConjugates, imaginaries: imaginaryConjugates).complexNumbers!
+        let partAs = ComplexVector(reals: realConjugates, imaginaries: imaginaryConjugates).complexNumbers!
 
         return (x_ns, x_n1s, alphas, oneMinusAlphas, partAs)
     }
