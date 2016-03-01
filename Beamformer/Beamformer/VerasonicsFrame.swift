@@ -34,9 +34,12 @@ public class VerasonicsFrame: NSObject, Mappable
                         for sampleIndex in 0 ..< self.numberOfSamplesPerChannel {
                             let realIndex = sampleIndex * 2
                             let imaginaryIndex = realIndex + 1
+                            let real = channelRawSamples[realIndex]
+                            let imaginary = channelRawSamples[imaginaryIndex]
+
                             let complexSampleIndex = channelIndex * self.numberOfSamplesPerChannel + sampleIndex
-                            let complexSample = ComplexNumber(real: channelRawSamples[realIndex], imaginary: channelRawSamples[imaginaryIndex])
-                            complexSamples[complexSampleIndex] = complexSample
+                            complexSamples[complexSampleIndex].real = real
+                            complexSamples[complexSampleIndex].imaginary = imaginary
                         }
                     }
 
