@@ -59,11 +59,14 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         /* Interpolate the image*/
         var imageVector: [ComplexNumber]?
         if channelData != nil {
-            let startIndex = 0
-            let endIndex = self.numberOfActiveTransducerElements * self.numberOfPixels
-            let complexVector = self.complexVectorFromChannelDatum(channelData!, startIndex: startIndex, endIndex: endIndex)
+            var complexVector: [ComplexNumber]?
+            for channelIdentifier in 0 ..< self.numberOfActiveTransducerElements {
+                let startIndex = channelIdentifier * self.numberOfPixels
+                let endIndex = startIndex + self.numberOfPixels
+                complexVector = self.complexVectorFromChannelDatum(channelData!, startIndex: startIndex, endIndex: endIndex)
+            }
 
-            imageVector = self.imageVectorFromComplexVector(complexVector)
+            imageVector = self.imageVectorFromComplexVector(complexVector!)
         }
 
         return imageVector
