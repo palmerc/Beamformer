@@ -76,19 +76,23 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         var complexVector = [ComplexNumber](count: numberOfElements, repeatedValue: ComplexNumber(real: 0, imaginary: 0))
         var i = 0
         for index in startIndex ..< endIndex {
-            var lower = ComplexNumber(real: 0, imaginary: 0)
+            var lower: ComplexNumber
             let xn = self.x_ns![index]
             let xnIndex = Int(xn)
             if xnIndex < channelDatum.samplesPerChannel {
                 lower = channelDatum.complexSamples[xnIndex]
+            } else {
+                lower = ComplexNumber(real: 0, imaginary: 0)
             }
             lower *= self.alphas![index]
 
-            var upper = ComplexNumber(real: 0, imaginary: 0)
+            var upper: ComplexNumber
             let xn1 = self.x_n1s![index]
             let xn1Index = Int(xn1)
             if xn1Index < channelDatum.samplesPerChannel {
                 upper = channelDatum.complexSamples[xn1Index]
+            } else {
+                upper = ComplexNumber(real: 0, imaginary: 0)
             }
             upper *= self.oneMinusAlphas![index]
 
