@@ -70,7 +70,8 @@ public class VerasonicsFrameProcessor: NSObject
 //                    channelDataSamples.appendContentsOf(complexNumbers)
 //                }
 //            } else {
-                complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
+            self.verasonicsFrameProcessorCPU.samplesPerChannel = channelDataSampleCount
+            complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
 //            }
             
             let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
