@@ -8,8 +8,7 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
     private var queue: dispatch_queue_t!
     private let queueName = "no.uio.Beamformer"
 
-    var x_ns: [Float]? = nil
-    var x_n1s: [Float]? = nil
+    var x_ns: [Int]? = nil
     var alphas: [Float]? = nil
     var oneMinusAlphas: [Float]? = nil
     var partAs: [ComplexNumber]? = nil
@@ -21,9 +20,7 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         }
         set {
             self._calculatedChannelDelays = newValue
-            let (x_ns, x_n1s, alphas, oneMinusAlphas, partAs) = self.processCalculatedDelays(newValue!, centralFrequency: self.centralFrequency, samplingFrequencyHz: self.samplingFrequencyHz, numberOfElements: self.numberOfActiveTransducerElements)
-            self.x_ns = x_ns
-            self.x_n1s = x_n1s
+            let (alphas, oneMinusAlphas, partAs) = self.processCalculatedDelays(newValue!, centralFrequency: self.centralFrequency, samplingFrequencyHz: self.samplingFrequencyHz, numberOfElements: self.numberOfActiveTransducerElements)
             self.alphas = alphas
             self.oneMinusAlphas = oneMinusAlphas
             self.partAs = partAs
@@ -37,7 +34,9 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         }
         set {
             self._elementPositions = newValue
-            self.calculatedChannelDelays = calculatedDelaysWithElementPositions(newValue)
+            let (x_ns, calculatedChannelDelays) = calculatedDelaysWithElementPositions(newValue)
+            self.calculatedChannelDelays = calculatedChannelDelays
+            self.x_ns = x_ns
         }
     }
 
@@ -80,37 +79,31 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         var complexVector = [ComplexNumber](count: numberOfElements, repeatedValue: ComplexNumber(real: 0, imaginary: 0))
         var i = 0
         for index in startIndex ..< endIndex {
-            var lower: ComplexNumber
-            let xn = self.x_ns![index]
-            let xnIndex = Int(xn)
-            if xnIndex < channelDatum.samplesPerChannel {
-                lower = channelDatum.complexSamples[xnIndex]
-            } else {
-                lower = ComplexNumber(real: 0, imaginary: 0)
+            let xnIndex = self.x_ns![index]
+            let xn1Index = xnIndex + 1
+
+            let sampleCount = channelDatum.complexSamples.count
+            if xnIndex != -1  && xn1Index < sampleCount {
+                var lower = channelDatum.complexSamples[xnIndex]
+                lower *= self.alphas![index]
+
+                var upper = channelDatum.complexSamples[xn1Index]
+                upper *= self.oneMinusAlphas![index]
+
+                let partA = self.partAs![index]
+                let partB = lower + upper
+                let result = partA * partB
+
+                complexVector[i].real = result.real
+                complexVector[i].imaginary = result.imaginary
             }
-            lower *= self.alphas![index]
 
-            var upper: ComplexNumber
-            let xn1 = self.x_n1s![index]
-            let xn1Index = Int(xn1)
-            if xn1Index < channelDatum.samplesPerChannel {
-                upper = channelDatum.complexSamples[xn1Index]
-            } else {
-                upper = ComplexNumber(real: 0, imaginary: 0)
-            }
-            upper *= self.oneMinusAlphas![index]
-
-            let partA = self.partAs![index]
-            let partB = lower + upper
-            let result = partA * partB
-
-            complexVector[i].real = result.real
-            complexVector[i].imaginary = result.imaginary
             i += 1
         }
 
         return complexVector
     }
+    
 
     func imageVectorFromComplexVector(complexVector: [ComplexNumber]) -> [ComplexNumber]
     {
@@ -133,18 +126,19 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
         return ComplexVector(reals: imageVectorReals, imaginaries: imageVectorImaginaries).complexNumbers!
     }
 
-    func calculatedDelaysWithElementPositions(elementPositions: [Float]?) -> [Float]?
+    func calculatedDelaysWithElementPositions(elementPositions: [Float]?) -> ([Int]?, [Float]?)
     {
         var calculatedDelays: [Float]?
+        var x_ns: [Int]?
         if (elementPositions != nil) {
             let angle: Float = 0
             var xs = [Float](count: self.imageXPixelCount, repeatedValue: 0)
-            for i in 0..<self.imageXPixelCount {
-                xs[i] = self.imageXStartInMM + Float(i) * self.imageXPixelSpacing
+            for index in 0..<self.imageXPixelCount {
+                xs[index] = self.imageXStartInMM + Float(index) * self.imageXPixelSpacing
             }
             var zs = [Float](count: self.imageZPixelCount, repeatedValue: 0)
-            for i in 0..<self.imageZPixelCount {
-                zs[i] = self.imageZStartInMM + Float(i) * self.imageZPixelSpacing
+            for index in 0..<self.imageZPixelCount {
+                zs[index] = self.imageZStartInMM + Float(index) * self.imageZPixelSpacing
             }
 
             var xIndices = [Int](count: self.numberOfPixels, repeatedValue: 0)
@@ -172,6 +166,7 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
 
             let numberOfDelays = self.numberOfActiveTransducerElements * self.numberOfPixels
             calculatedDelays = [Float](count: numberOfDelays, repeatedValue: 0)
+            x_ns = [Int](count: numberOfDelays, repeatedValue: 0)
             for channelIdentifier in 0 ..< self.numberOfActiveTransducerElements {
                 let channelDelays = elementPositions![channelIdentifier]
                 for index in 0 ..< self.numberOfPixels {
@@ -183,28 +178,33 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
                     let lookupIndex = delayIndices[index]
                     let delayIndex = channelIdentifier * self.numberOfPixels + lookupIndex
                     calculatedDelays![delayIndex] = delay
+
+                    var x_n = Int(floor(delay))
+                    if x_n > self.samplesPerChannel {
+                        x_n = -1
+                    }
+                    x_ns![delayIndex] = channelIdentifier * 400 + x_n
                 }
             }
         }
 
-        return calculatedDelays
+        return (x_ns, calculatedDelays)
     }
 
     func processCalculatedDelays(calculatedDelays: [Float],
         centralFrequency: Float,
         samplingFrequencyHz: Float,
         numberOfElements: Int)
-        -> (x_ns: [Float], x_n1s: [Float], alphas: [Float], oneMinusAlphas: [Float], partAs: [ComplexNumber])
+        -> (alphas: [Float], oneMinusAlphas: [Float], partAs: [ComplexNumber])
     {
         let x_ns = calculatedDelays.map({
             (channelDelay: Float) -> Float in
             return Float(floor(channelDelay))
         })
 
-        let x_n1s = calculatedDelays.map({
-            (channelDelay: Float) -> Float in
-            return Float(ceil(channelDelay))
-        })
+        let x_n1s = x_ns.map { (x_n: Float) -> Float in
+            return x_n + 1
+        }
 
         var alphas = [Float](count: calculatedDelays.count, repeatedValue: 0)
         vDSP_vsub(calculatedDelays, 1, x_n1s, 1, &alphas, 1, UInt(calculatedDelays.count))
@@ -232,7 +232,7 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
 
         let partAs = ComplexVector(reals: realConjugates, imaginaries: imaginaryConjugates).complexNumbers!
 
-        return (x_ns, x_n1s, alphas, oneMinusAlphas, partAs)
+        return (alphas, oneMinusAlphas, partAs)
     }
 
     public func imageAmplitudesFromComplexImageVector(complexImageVector: [ComplexNumber]?,
