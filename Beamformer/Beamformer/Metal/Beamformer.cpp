@@ -1,49 +1,39 @@
 #include "Beamformer.hpp"
 
-#include "ComplexNumbers.hpp"
-
-#include <vector>
 
 
-
-std::vector<ComplexF> complexImageVectorWithComplexChannelVector(std::vector<int> x_ns,
-                                                                 std::vector<int> x_n1s,
-                                                                 std::vector<ComplexF> alphas,
-                                                                 std::vector<ComplexF> oneMinusAlphas,
-                                                                 std::vector<ComplexF> partAs,
-                                                                 std::vector<ComplexF> complexChannelVector)
+void processChannelData(const ComplexNumberF *inputChannelData,
+                        const ComplexNumberF *partAs,
+                        const float *alphas,
+                        const long *x_ns,
+                        ComplexNumberF *outputChannelData)
 {
-    unsigned long numberOfSamplesPerChannel = complexChannelVector.size();
+    int numberOfPixels = 130806;
+    int startIndex = 0;
+    int endIndex = 128 * numberOfPixels;
 
-    std::vector<ComplexF> lowers;
-    std::vector<ComplexF> uppers;
-    for (int i = 0; i < x_ns.size(); i++) {
-        ComplexF lower = ComplexF(0.f, 0.f);
-        int x_n = x_ns[i];
-        if (x_n < numberOfSamplesPerChannel) {
-            lower = complexChannelVector[x_n];
+    for (int index = startIndex; index < endIndex; index++) {
+        long xnIndex = x_ns[index];
+        long xn1Index = xnIndex + 1;
+
+        if (xnIndex != -1 && xn1Index < 51200) {
+            ComplexNumberF partA = partAs[index];
+            ComplexNumberF lower = inputChannelData[xnIndex];
+            ComplexNumberF upper = inputChannelData[xn1Index];
+
+            float alpha = alphas[index];
+            ComplexNumberF complexAlpha = {.real = alpha, .imaginary = 0.0};
+            lower = multiply(lower, complexAlpha);
+
+            float oneMinusAlpha = 1.0 - alpha;
+            ComplexNumberF complexOneMinusAlpha = {.real = oneMinusAlpha, .imaginary = 0.0};
+            upper = multiply(upper, complexOneMinusAlpha);
+
+            ComplexNumberF partB = add(lower, upper);
+            ComplexNumberF result = multiply(partA, partB);
+
+            outputChannelData[index].real = result.real;
+            outputChannelData[index].imaginary = result.imaginary;
         }
-        lowers[i] = lower;
-
-        ComplexF upper = ComplexF(0.f, 0.f);
-        int x_n1 = x_n1s[i];
-        if (x_n1 < numberOfSamplesPerChannel) {
-            upper = complexChannelVector[x_n1];
-        }
-        uppers[i] = upper;
     }
-
-    std::vector<ComplexF> partBs;
-    for (int i = 0; i < numberOfSamplesPerChannel; i++) {
-        ComplexF lower = multiply(lowers[i], alphas[i]);
-        ComplexF upper = multiply(uppers[i], oneMinusAlphas[i]);
-        partBs[i] = add(lower, upper);
-    }
-
-    std::vector<ComplexF> complexImageVector;
-    for (int i = 0; i < numberOfSamplesPerChannel; i++) {
-        complexImageVector[i] = multiply(partAs[i], partBs[i]);
-    }
-
-    return complexImageVector;
 }

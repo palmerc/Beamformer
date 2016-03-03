@@ -10,7 +10,7 @@ class ViewController: UIViewController {
 
     var executing: Bool = false
 
-    lazy var verasonicsFrameProcessor = VerasonicsFrameProcessor(withDelays: VerasonicsFrameProcessor.transducerElementPositionsInMMs)
+    lazy var verasonicsFrameProcessor = VerasonicsFrameProcessor(withElementPositions: VerasonicsFrameProcessor.transducerElementPositionsInMMs)
     lazy var webSocket = WebSocket()
 
     var isConnected: Bool?
@@ -20,7 +20,7 @@ class ViewController: UIViewController {
         }
         set {
             if (newValue) {
-                self.webSocket.open("ws://127.0.0.1:9000")
+                self.webSocket.open("ws://yankee.local:9000")
                 self.connectButton.setTitle("Disconnect", forState: UIControlState.Normal)
             } else {
                 self.webSocket.close()

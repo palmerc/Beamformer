@@ -6,12 +6,13 @@ import Accelerate
 
 
 
-public class VerasonicsFrameProcessor: NSObject
+public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
 {
     private var verasonicsFrameProcessorCPU: VerasonicsFrameProcessorCPU!
     private var verasonicsFrameProcessorMetal: VerasonicsFrameProcessorMetal!
-    private var metalProcessor = VerasonicsFrameMetalProcessor()
-    private var rawChannelDelays: [Float]!
+
+    var calculatedChannelDelays: [Float]?
+    var elementPositions: [Float]?
 
     static let transducerElementPositionsInMMs: [Float] = [
         -12.70, -12.50, -12.30, -12.10, -11.90, -11.70,
@@ -38,42 +39,42 @@ public class VerasonicsFrameProcessor: NSObject
          12.50,  12.70
     ]
 
-    public init(withDelays: [Float])
+    public init(withElementPositions elementPositions: [Float])
     {
         super.init()
 
-        self.rawChannelDelays = withDelays
-        self.verasonicsFrameProcessorCPU = VerasonicsFrameProcessorCPU(withElementPositions: VerasonicsFrameProcessor.transducerElementPositionsInMMs)
+        self.elementPositions = elementPositions
+        let (x_ns, calculatedChannelDelays) = calculatedDelaysWithElementPositions(elementPositions)
+        let (alphas, partAs) = self.processCalculatedDelays(calculatedChannelDelays!, centralFrequency: self.centralFrequency, samplingFrequencyHz: self.samplingFrequencyHz, numberOfElements: self.numberOfActiveTransducerElements)
+
+        self.verasonicsFrameProcessorCPU = VerasonicsFrameProcessorCPU()
+        self.verasonicsFrameProcessorCPU.partAs = partAs
+        self.verasonicsFrameProcessorCPU.alphas = alphas
+        self.verasonicsFrameProcessorCPU.x_ns = x_ns
         self.verasonicsFrameProcessorMetal = VerasonicsFrameProcessorMetal()
+        self.verasonicsFrameProcessorMetal.partAs = partAs
+        self.verasonicsFrameProcessorMetal.alphas = alphas
+        self.verasonicsFrameProcessorMetal.x_ns = x_ns
     }
 
+
+    // MARK: Main
     public func imageFromVerasonicsFrame(verasonicsFrame :VerasonicsFrame?) -> UIImage?
     {
         var image: UIImage?
         if let channelData: ChannelData? = verasonicsFrame!.channelData {
-            let pixelCount = self.verasonicsFrameProcessorCPU.numberOfPixels;
+            let pixelCount = self.numberOfPixels;
             let channelDataSampleCount = channelData!.complexSamples.count
-            let channelDataByteCount = channelDataSampleCount * sizeof(ComplexNumber)
-            print("Byte count: \(channelDataByteCount)")
 
             var complexImageVector: [ComplexNumber]?
-//            if self.verasonicsFrameProcessorMetal != nil {
-//                var channelDataSamples = [ComplexNumber]()
-//                channelDataSamples.reserveCapacity(channelDataSampleCount)
-//                for channelDatum in channelData! {
-//                    let complexNumbers = channelDatum.complexSamples.reals!.enumerate().map({
-//                        (index: Int, real: Float) -> ComplexNumber in
-//                        let imaginary = channelDatum.complexSamples.imaginaries![index]
-//                        return ComplexNumber(real: real, imaginary: imaginary)
-//                    })
-//
-//                    channelDataSamples.appendContentsOf(complexNumbers)
-//                }
-//            } else {
-            self.verasonicsFrameProcessorCPU.samplesPerChannel = channelDataSampleCount
-            complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
-//            }
-            
+            if self.verasonicsFrameProcessorMetal != nil {
+                self.verasonicsFrameProcessorMetal.samplesPerChannel = channelDataSampleCount
+                complexImageVector = self.verasonicsFrameProcessorMetal.complexVectorFromChannelData(channelData)
+            } else {
+                self.verasonicsFrameProcessorCPU.samplesPerChannel = channelDataSampleCount
+                complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
+            }
+
             let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
             image = grayscaleImageFromPixelValues(imageAmplitudes,
                 width: self.verasonicsFrameProcessorCPU.imageZPixelCount,
@@ -86,6 +87,116 @@ public class VerasonicsFrameProcessor: NSObject
         return image
     }
 
+
+    // MARK: Precompute values
+    func calculatedDelaysWithElementPositions(elementPositions: [Float]?) -> ([Int]?, [Float]?)
+    {
+        var calculatedDelays: [Float]?
+        var x_ns: [Int]?
+        if (elementPositions != nil) {
+            let angle: Float = 0
+            var xs = [Float](count: self.imageXPixelCount, repeatedValue: 0)
+            for index in 0..<self.imageXPixelCount {
+                xs[index] = self.imageXStartInMM + Float(index) * self.imageXPixelSpacing
+            }
+            var zs = [Float](count: self.imageZPixelCount, repeatedValue: 0)
+            for index in 0..<self.imageZPixelCount {
+                zs[index] = self.imageZStartInMM + Float(index) * self.imageZPixelSpacing
+            }
+
+            var xIndices = [Int](count: self.numberOfPixels, repeatedValue: 0)
+            var zIndices = [Int](count: self.numberOfPixels, repeatedValue: 0)
+            var delayIndices = [Int](count: self.numberOfPixels, repeatedValue: 0)
+            var zSquareds = [Float](count: self.numberOfPixels, repeatedValue: 0)
+            var unrolledXs = [Float](count: self.numberOfPixels, repeatedValue: 0)
+            var xSineAlphas = [Float](count: self.numberOfPixels, repeatedValue: 0)
+            var zCosineAlphas = [Float](count: self.numberOfPixels, repeatedValue: 0)
+            for index in 0 ..< self.numberOfPixels {
+                let xIndex = index % self.imageXPixelCount
+                let zIndex = index / self.imageXPixelCount
+                xIndices[index] = xIndex
+                zIndices[index] = zIndex
+                unrolledXs[index] = xs[xIndex]
+                delayIndices[index] = xIndex * self.imageZPixelCount + zIndex
+                zSquareds[index] = pow(Float(zs[zIndex]), 2)
+                xSineAlphas[index] = Float(xs[xIndex]) * sin(angle)
+                zCosineAlphas[index] = Float(zs[zIndex]) * cos(angle)
+            }
+            let tauEchos = zCosineAlphas.enumerate().map({
+                (index: Int, zCosineAlpha: Float) -> Float in
+                return (zCosineAlpha + xSineAlphas[index]) / self.speedOfUltrasound
+            })
+
+            let numberOfDelays = self.numberOfActiveTransducerElements * self.numberOfPixels
+            calculatedDelays = [Float](count: numberOfDelays, repeatedValue: 0)
+            x_ns = [Int](count: numberOfDelays, repeatedValue: 0)
+            for channelIdentifier in 0 ..< self.numberOfActiveTransducerElements {
+                let channelDelays = elementPositions![channelIdentifier]
+                for index in 0 ..< self.numberOfPixels {
+                    let xDifferenceSquared = pow(unrolledXs[index] - channelDelays, 2)
+                    let tauReceive = sqrt(zSquareds[index] + xDifferenceSquared) / self.speedOfUltrasound
+
+                    let delay = (tauEchos[index] + tauReceive) * self.samplingFrequencyHz + self.lensCorrection
+
+                    let lookupIndex = delayIndices[index]
+                    let delayIndex = channelIdentifier * self.numberOfPixels + lookupIndex
+                    calculatedDelays![delayIndex] = delay
+
+                    var x_n = Int(floor(delay))
+                    if x_n > self.samplesPerChannel {
+                        x_n = -1
+                    }
+                    x_ns![delayIndex] = channelIdentifier * 400 + x_n
+                }
+            }
+        }
+
+        return (x_ns, calculatedDelays)
+    }
+
+    func processCalculatedDelays(calculatedDelays: [Float],
+        centralFrequency: Float,
+        samplingFrequencyHz: Float,
+        numberOfElements: Int)
+        -> (alphas: [Float], partAs: [ComplexNumber])
+    {
+        let x_ns = calculatedDelays.map({
+            (channelDelay: Float) -> Float in
+            return Float(floor(channelDelay))
+        })
+
+        let x_n1s = x_ns.map { (x_n: Float) -> Float in
+            return x_n + 1
+        }
+
+        var alphas = [Float](count: calculatedDelays.count, repeatedValue: 0)
+        vDSP_vsub(calculatedDelays, 1, x_n1s, 1, &alphas, 1, UInt(calculatedDelays.count))
+
+        let shiftedDelays = calculatedDelays.map({
+            (channelDelay: Float) -> Float in
+            return 2 * Float(M_PI) * centralFrequency * channelDelay / samplingFrequencyHz
+        })
+
+        let realConjugates = shiftedDelays.map({
+            (calculatedDelay: Float) -> Float in
+            let r = Foundation.exp(Float(0))
+            return r * cos(calculatedDelay)
+        })
+
+        let imaginaryConjugates = shiftedDelays.map({
+            (calculatedDelay: Float) -> Float in
+            let r = Foundation.exp(Float(0))
+            return -1.0 * r * sin(calculatedDelay)
+        })
+
+        let partAs = ComplexVector(reals: realConjugates, imaginaries: imaginaryConjugates).complexNumbers!
+        
+        return (alphas, partAs)
+    }
+
+
+
+    // MARK: Image formation
     private func grayscaleImageFromPixelValues(pixelValues: [UInt8]?, width: Int, height: Int, imageOrientation: UIImageOrientation) -> UIImage?
     {
         var image: UIImage?

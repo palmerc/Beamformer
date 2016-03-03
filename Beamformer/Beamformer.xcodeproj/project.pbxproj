@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		024A352A7B6DD64A17CF1C35 /* Pods_BeamformerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE5AE6D1B09C2E6BB2D03AAB /* Pods_BeamformerTests.framework */; };
 		7A7789441E15BA48B374191B /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68453FC83C16B34314D8C95F /* Pods.framework */; };
+		C702D3971C86D9B9004EB165 /* Beamformer.metal in Sources */ = {isa = PBXBuildFile; fileRef = C7EB50D11C58E50E0050C582 /* Beamformer.metal */; };
 		C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E68F1C2EE001006972A0 /* VerasonicsFrame.swift */; };
 		C734E6921C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E6911C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift */; };
 		C77C01E31C64D2CD00600B51 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C77C01E21C64D2CD00600B51 /* Metal.framework */; };
@@ -16,7 +17,6 @@
 		C77C01E71C64D32200600B51 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C77C01E61C64D32200600B51 /* QuartzCore.framework */; };
 		C78321201C81C20100890009 /* ComplexNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = C783211F1C81C20100890009 /* ComplexNumber.swift */; };
 		C78321241C81ED1F00890009 /* ComplexVector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C78321231C81ED1F00890009 /* ComplexVector.swift */; };
-		C7AF7E031C70CC370055B49B /* VerasonicsFrameMetalProcessor.mm in Sources */ = {isa = PBXBuildFile; fileRef = C7AF7E021C70CC370055B49B /* VerasonicsFrameMetalProcessor.mm */; };
 		C7C283891C6DD68C002AC83A /* Beamformer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7C283871C6DD68C002AC83A /* Beamformer.cpp */; };
 		C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */; };
 		C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959411C19FBEC0075EF90 /* ViewController.swift */; };
@@ -25,7 +25,6 @@
 		C7C9594A1C19FBEC0075EF90 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */; };
 		C7C959551C19FBEC0075EF90 /* BeamformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959541C19FBEC0075EF90 /* BeamformerTests.swift */; };
 		C7C959601C19FBEC0075EF90 /* BeamformerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */; };
-		C7CF50BE1C7278EA00C41C50 /* NSValue+BFComplexNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = C7CF50BD1C7278EA00C41C50 /* NSValue+BFComplexNumber.m */; };
 		C7CF50C11C72797000C41C50 /* ComplexNumbers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7CF50BF1C72797000C41C50 /* ComplexNumbers.cpp */; };
 		C7CF50C31C78765F00C41C50 /* VerasonicsFrameProcessorCPU.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7CF50C21C78765F00C41C50 /* VerasonicsFrameProcessorCPU.swift */; };
 		C7CF50C51C7892F500C41C50 /* VerasonicsFrameProcessorBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7CF50C41C7892F500C41C50 /* VerasonicsFrameProcessorBase.swift */; };
@@ -68,8 +67,6 @@
 		C77C01E61C64D32200600B51 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		C783211F1C81C20100890009 /* ComplexNumber.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComplexNumber.swift; sourceTree = "<group>"; };
 		C78321231C81ED1F00890009 /* ComplexVector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComplexVector.swift; sourceTree = "<group>"; };
-		C7AF7E011C70CC370055B49B /* VerasonicsFrameMetalProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VerasonicsFrameMetalProcessor.h; sourceTree = "<group>"; };
-		C7AF7E021C70CC370055B49B /* VerasonicsFrameMetalProcessor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VerasonicsFrameMetalProcessor.mm; sourceTree = "<group>"; };
 		C7C2837A1C6A1422002AC83A /* Beamformer-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Beamformer-Bridging-Header.h"; sourceTree = "<group>"; };
 		C7C283871C6DD68C002AC83A /* Beamformer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Beamformer.cpp; sourceTree = "<group>"; };
 		C7C283881C6DD68C002AC83A /* Beamformer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Beamformer.hpp; sourceTree = "<group>"; };
@@ -86,9 +83,6 @@
 		C7C9595B1C19FBEC0075EF90 /* BeamformerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeamformerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7C9595F1C19FBEC0075EF90 /* BeamformerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamformerUITests.swift; sourceTree = "<group>"; };
 		C7C959611C19FBEC0075EF90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C7CF50BB1C7278EA00C41C50 /* BFComplexNumber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BFComplexNumber.h; sourceTree = "<group>"; };
-		C7CF50BC1C7278EA00C41C50 /* NSValue+BFComplexNumber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSValue+BFComplexNumber.h"; sourceTree = "<group>"; };
-		C7CF50BD1C7278EA00C41C50 /* NSValue+BFComplexNumber.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSValue+BFComplexNumber.m"; sourceTree = "<group>"; };
 		C7CF50BF1C72797000C41C50 /* ComplexNumbers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ComplexNumbers.cpp; sourceTree = "<group>"; };
 		C7CF50C01C72797000C41C50 /* ComplexNumbers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ComplexNumbers.hpp; sourceTree = "<group>"; };
 		C7CF50C21C78765F00C41C50 /* VerasonicsFrameProcessorCPU.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrameProcessorCPU.swift; sourceTree = "<group>"; };
@@ -216,9 +210,6 @@
 		C7CF50BA1C7278EA00C41C50 /* ComplexNumber */ = {
 			isa = PBXGroup;
 			children = (
-				C7CF50BB1C7278EA00C41C50 /* BFComplexNumber.h */,
-				C7CF50BC1C7278EA00C41C50 /* NSValue+BFComplexNumber.h */,
-				C7CF50BD1C7278EA00C41C50 /* NSValue+BFComplexNumber.m */,
 				C7CF50BF1C72797000C41C50 /* ComplexNumbers.cpp */,
 				C7CF50C01C72797000C41C50 /* ComplexNumbers.hpp */,
 				C783211F1C81C20100890009 /* ComplexNumber.swift */,
@@ -233,8 +224,6 @@
 				C7EB50D11C58E50E0050C582 /* Beamformer.metal */,
 				C7C283871C6DD68C002AC83A /* Beamformer.cpp */,
 				C7C283881C6DD68C002AC83A /* Beamformer.hpp */,
-				C7AF7E011C70CC370055B49B /* VerasonicsFrameMetalProcessor.h */,
-				C7AF7E021C70CC370055B49B /* VerasonicsFrameMetalProcessor.mm */,
 			);
 			path = Metal;
 			sourceTree = "<group>";
@@ -488,7 +477,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C734E6921C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift in Sources */,
-				C7AF7E031C70CC370055B49B /* VerasonicsFrameMetalProcessor.mm in Sources */,
+				C702D3971C86D9B9004EB165 /* Beamformer.metal in Sources */,
 				C734E6901C2EE001006972A0 /* VerasonicsFrame.swift in Sources */,
 				C78321201C81C20100890009 /* ComplexNumber.swift in Sources */,
 				C7CF50C51C7892F500C41C50 /* VerasonicsFrameProcessorBase.swift in Sources */,
@@ -498,7 +487,6 @@
 				C7CF50C11C72797000C41C50 /* ComplexNumbers.cpp in Sources */,
 				C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */,
 				C7CF50C71C78933200C41C50 /* VerasonicsFrameProcessorMetal.swift in Sources */,
-				C7CF50BE1C7278EA00C41C50 /* NSValue+BFComplexNumber.m in Sources */,
 				C7EB50AB1C53832A0050C582 /* ChannelData.swift in Sources */,
 				C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */,
 				C7C283891C6DD68C002AC83A /* Beamformer.cpp in Sources */,

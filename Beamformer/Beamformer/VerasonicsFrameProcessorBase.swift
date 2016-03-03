@@ -13,6 +13,10 @@ public class VerasonicsFrameProcessorBase: NSObject
     let imageZStopInMM: Float = 50.0
     var samplesPerChannel: Int = 400
 
+    var x_ns: [Int]? = nil
+    var alphas: [Float]? = nil
+    var partAs: [ComplexNumber]? = nil
+
     var centralFrequency: Float {
         get {
             return self.samplingFrequencyHz

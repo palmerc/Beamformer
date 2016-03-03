@@ -1,15 +1,19 @@
 #ifndef Beamformer_hpp
 #define Beamformer_hpp
 
-#include <vector>
-
 #include "ComplexNumbers.hpp"
 
-std::vector<ComplexF> complexImageVectorWithComplexChannelVector(std::vector<int> x_ns,
-                                                                 std::vector<int> x_n1s,
-                                                                 std::vector<ComplexF> alphas,
-                                                                 std::vector<ComplexF> oneMinusAlphas,
-                                                                 std::vector<ComplexF> partAs,
-                                                                 std::vector<ComplexF> complexChannelVector);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+    void processChannelData(const ComplexNumberF *inputChannelData,
+                        const ComplexNumberF *partAs,
+                        const float *alphas,
+                        const long *x_ns,
+                        ComplexNumberF *outputChannelData);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
