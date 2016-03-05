@@ -2,21 +2,35 @@
 
 
 
-void processChannelData(const ComplexNumberF *inputChannelData,
+void processChannelData(const BeamformerParameters beamformerParameters,
+                        const ComplexNumberF *inputChannelData,
                         const ComplexNumberF *partAs,
                         const float *alphas,
                         const long *x_ns,
-                        ComplexNumberF *outputChannelData)
+                        ComplexNumberF *outputChannelData,
+                        const unsigned long threadgroupIdentifier,
+                        const unsigned long threadgroups,
+                        const unsigned long threadIdentifier,
+                        const unsigned long threadsPerThreadgroup)
 {
-    int numberOfPixels = 130806;
-    int startIndex = 0;
-    int endIndex = 128 * numberOfPixels;
+    long channelCount = beamformerParameters.channelCount; // 128
+    long samplesPerChannel = beamformerParameters.samplesPerChannel; // 400
+    long xnCutoff = channelCount * samplesPerChannel;
 
-    for (int index = startIndex; index < endIndex; index++) {
+    long pixelCount = beamformerParameters.pixelCount;
+    long totalSamples = channelCount * pixelCount;
+
+    long samplesPerThreadgroup = totalSamples / threadgroups;
+    long samplesPerThread = samplesPerThreadgroup / threadsPerThreadgroup;
+
+    long threadOffset = threadgroupIdentifier * threadsPerThreadgroup + threadIdentifier;
+    long startIndex = threadOffset * samplesPerThread;
+    long endIndex = startIndex + samplesPerThread;
+    for (long index = startIndex; index < endIndex; index++) {
         long xnIndex = x_ns[index];
         long xn1Index = xnIndex + 1;
 
-        if (xnIndex != -1 && xn1Index < 51200) {
+        if (xnIndex != -1 && xn1Index < xnCutoff) {
             ComplexNumberF partA = partAs[index];
             ComplexNumberF lower = inputChannelData[xnIndex];
             ComplexNumberF upper = inputChannelData[xn1Index];
