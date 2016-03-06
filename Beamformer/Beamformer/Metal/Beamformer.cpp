@@ -1,8 +1,9 @@
 #include "Beamformer.hpp"
+#include <pthread.h>
 
 
 
-void processChannelData(const BeamformerParameters beamformerParameters,
+void processChannelData(const BeamformerParametersF beamformerParameters,
                         const ComplexNumberF *inputChannelData,
                         const ComplexNumberF *partAs,
                         const float *alphas,
