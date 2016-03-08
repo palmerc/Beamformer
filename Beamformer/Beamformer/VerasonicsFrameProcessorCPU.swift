@@ -121,6 +121,7 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
                 return (((imageAmplitude - minimumValue) / (maximumValue - minimumValue)) * 255.0) + 1.0
             })
 
+            // convert float to decibeL
             var decibelValues = [Float](count: numberOfAmplitudes, repeatedValue: 0)
             var one: Float = 1;
             vDSP_vdbcon(&scaledImageAmplitudes, 1, &one, &decibelValues, 1, UInt(numberOfAmplitudes), 1)
@@ -132,7 +133,6 @@ public class VerasonicsFrameProcessorCPU: VerasonicsFrameProcessorBase
                 return ((decibelValue - decibelMinimumValues) / (decibelMaximumValues - decibelMinimumValues)) * 255.0
             })
 
-            // convert double to decibeL
             imageIntensities = [UInt8](count: numberOfAmplitudes, repeatedValue: 0)
             vDSP_vfixu8(&scaledDecibelValues, 1, &imageIntensities!, 1, UInt(numberOfAmplitudes))
         }
