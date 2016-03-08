@@ -1,12 +1,12 @@
-#ifndef BeamformerParameters_h
-#define BeamformerParameters_h
+#ifndef BeamformerParametersF_h
+#define BeamformerParametersF_h
 
 
 
-typedef struct BeamformerParameters {
+typedef struct BeamformerParametersF {
     long channelCount;
     long samplesPerChannel;
     long pixelCount;
-} BeamformerParameters;
+} BeamformerParametersF;
 
 #endif
