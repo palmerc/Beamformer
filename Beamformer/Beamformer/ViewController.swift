@@ -43,10 +43,10 @@ class ViewController: UIViewController {
         self.ultrasoundImageView.image = horse
 
         self.webSocket.event.message = { message in
-            if let text = message as? String {
-                let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
-                if self.executing == false {
-                    self.executing = true
+            if self.executing == false {
+                self.executing = true
+                if let text = message as? String {
+                    let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
                     let executionTime = self.executionTimeInterval({
                         let image = self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame)
                         dispatch_async(dispatch_get_main_queue(), {
