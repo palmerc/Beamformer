@@ -1,0 +1,7 @@
+### Beamformer iOS
+
+This is a minimal client to display a beamformed image streaming from the Verasonics research ultrasound system
+
+## Technologies
+    * Metal
+    * OpenGL
