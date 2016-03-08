@@ -19,10 +19,7 @@ ComplexNumber multiply(ComplexNumber lhs, ComplexNumber rhs);
 float absC(ComplexNumber lhs);
 
 
-//                               uint threadgroupIdentifier [[ threadgroup_position_in_grid ]],
-//                               uint threadgroups [[ threadgroups_per_grid ]],
-//                               uint threadIdentifier [[ thread_position_in_threadgroup ]],
-//                               uint threadsPerThreadgroup [[ threads_per_threadgroup ]])
+
 kernel void processChannelData(const device BeamformerParameters *beamformerParameters [[ buffer(0) ]],
                                const device ComplexNumber *inputChannelData [[ buffer(1) ]],
                                const device ComplexNumber *partAs [[ buffer(2) ]],
@@ -37,75 +34,35 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
     int xnCutoff = channelCount * samplesPerChannel;
 
     int pixelCount = beamformerParameters[0].pixelCount;
-//    int totalSamples = channelCount * pixelCount;
 
-//    int samplesPerThreadgroup = totalSamples / threadgroups;
-//    int samplesPerThread = samplesPerThreadgroup / threadsPerThreadgroup;
-//
-//    int threadOffset = threadgroupIdentifier * threadsPerThreadgroup + threadIdentifier;
-//    int startIndex = threadOffset * samplesPerThread;
-//    int endIndex = startIndex + samplesPerThread;
+    ComplexNumber channelSum = {.real = 0.0, .imaginary = 0.0};
+    for (int channelNumber = 0; channelNumber < channelCount; channelNumber++) {
+        uint channelIndex = channelNumber * pixelCount + threadIdentifier;
 
-//    for (int pixelIndex = startIndex; pixelIndex < endIndex; pixelIndex++) {
-        ComplexNumber channelSum = {.real = 0.0, .imaginary = 0.0};
-        for (int channelNumber = 0; channelNumber < channelCount; channelNumber++) {
-            uint channelIndex = channelNumber * pixelCount + threadIdentifier;
+        int xnIndex = x_ns[channelIndex];
+        int xn1Index = xnIndex + 1;
 
-            int xnIndex = x_ns[channelIndex];
-            int xn1Index = xnIndex + 1;
+        if (xnIndex > -1 && xn1Index < xnCutoff) {
+            ComplexNumber partA = partAs[channelIndex];
+            ComplexNumber lower = inputChannelData[xnIndex];
+            ComplexNumber upper = inputChannelData[xn1Index];
 
-            if (xnIndex > -1 && xn1Index < xnCutoff) {
-                ComplexNumber partA = partAs[channelIndex];
-                ComplexNumber lower = inputChannelData[xnIndex];
-                ComplexNumber upper = inputChannelData[xn1Index];
+            float alpha = alphas[channelIndex];
+            ComplexNumber complexAlpha = {.real = alpha, .imaginary = 0.0};
+            lower = multiply(lower, complexAlpha);
 
-                float alpha = alphas[channelIndex];
-                ComplexNumber complexAlpha = {.real = alpha, .imaginary = 0.0};
-                lower = multiply(lower, complexAlpha);
+            float oneMinusAlpha = 1.0 - alpha;
+            ComplexNumber complexOneMinusAlpha = {.real = oneMinusAlpha, .imaginary = 0.0};
+            upper = multiply(upper, complexOneMinusAlpha);
 
-                float oneMinusAlpha = 1.0 - alpha;
-                ComplexNumber complexOneMinusAlpha = {.real = oneMinusAlpha, .imaginary = 0.0};
-                upper = multiply(upper, complexOneMinusAlpha);
-
-                ComplexNumber partB = add(lower, upper);
-                ComplexNumber result = multiply(partA, partB);
-                channelSum = add(channelSum, result);
-            }
+            ComplexNumber partB = add(lower, upper);
+            ComplexNumber result = multiply(partA, partB);
+            channelSum = add(channelSum, result);
         }
-        float absoluteValue = absC(channelSum);
-        outputChannelData[threadIdentifier] = absoluteValue;
-//    }
+    }
+    float absoluteValue = absC(channelSum);
+    outputChannelData[threadIdentifier] = absoluteValue;
 }
-
-//kernel void sumChannelData(const device BeamformerParameters *beamformerParameters [[ buffer(0) ]],
-//                           const device ComplexNumber *inputChannelData [[ buffer(1) ]],
-//                           device float *outputChannelData [[ buffer(2) ]],
-//                           uint threadgroupIdentifier [[ threadgroup_position_in_grid ]],
-//                           uint threadgroups [[ threadgroups_per_grid ]],
-//                           uint threadIdentifier [[ thread_position_in_threadgroup ]],
-//                           uint threadsPerThreadgroup [[ threads_per_threadgroup ]])
-//{
-//    int channelCount = beamformerParameters[0].channelCount;
-//    int pixelCount = beamformerParameters[0].pixelCount;
-//
-//    int pixelsPerThreadgroup = pixelCount / threadgroups;
-//    int pixelsPerThread = pixelsPerThreadgroup / threadsPerThreadgroup;
-//
-//    int threadOffset = threadgroupIdentifier * threadsPerThreadgroup + threadIdentifier;
-//    int startPixelIndex = threadOffset * pixelsPerThread;
-//    int endPixelIndex = startPixelIndex + pixelsPerThread;
-//
-//    for (int pixelIndex = startPixelIndex; pixelIndex < endPixelIndex; pixelIndex++) {
-//        ComplexNumber channelSum = {.real = 0.0, .imaginary = 0.0};
-//        for (int channelNumber = 0; channelNumber < channelCount; channelNumber++) {
-//            uint channelIndex = channelNumber * pixelCount + pixelIndex;
-//            channelSum = add(channelSum, inputChannelData[channelIndex]);
-//        }
-//
-//        float absoluteValue = absC(channelSum);
-//        outputChannelData[pixelIndex] = absoluteValue;
-//    }
-//}
 
 ComplexNumber add(ComplexNumber lhs, ComplexNumber rhs)
 {
