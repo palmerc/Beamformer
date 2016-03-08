@@ -1,12 +1,6 @@
-//
-//  AppDelegate.swift
-//  Beamformer
-//
-//  Created by Cameron Palmer on 10.12.2015.
-//  Copyright © 2015 NTNU. All rights reserved.
-//
-
 import UIKit
+
+
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {

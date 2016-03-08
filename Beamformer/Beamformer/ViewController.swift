@@ -5,9 +5,12 @@ import ObjectMapper
 
 
 class ViewController: UIViewController {
-    @IBOutlet weak var UltrasoundImageView: UIImageView!
-    @IBOutlet weak var ConnectButton: UIButton!
+    @IBOutlet weak var ultrasoundImageView: UIImageView!
+    @IBOutlet weak var connectButton: UIButton!
 
+    var executing: Bool = false
+
+    lazy var verasonicsFrameProcessor = VerasonicsFrameProcessor(withElementPositions: VerasonicsFrameProcessor.transducerElementPositionsInMMs)
     lazy var webSocket = WebSocket()
 
     var isConnected: Bool?
@@ -17,36 +20,48 @@ class ViewController: UIViewController {
         }
         set {
             if (newValue) {
-                self.webSocket.open("ws://127.0.0.1:9000")
+                self.webSocket.open("ws://yankee.local:9000")
+                self.connectButton.setTitle("Disconnect", forState: UIControlState.Normal)
             } else {
                 self.webSocket.close()
+                self.connectButton.setTitle("Connect", forState: UIControlState.Normal)
             }
             self.isConnected = newValue
         }
     }
 
+    deinit
+    {
+        self.webSocket.close()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let processor = VerasonicsFrameProcessor(withDelays: VerasonicsFrameProcessor.defaultDelays)
+        let image = UIImage(named: "Horse07")?.CGImage
+        let horse = UIImage(CGImage: image!, scale: 1.0, orientation: UIImageOrientation.Down)
+        self.ultrasoundImageView.image = horse
+
         self.webSocket.event.message = { message in
-            if let text = message as? String {
-//                let data: NSData = text.dataUsingEncoding(NSUTF8StringEncoding)!
-//                data.writeToFile("/Users/palmerc/frame.json", atomically: true)
-                let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
-                let executionTime = self.executionTimeInterval({ () -> () in
-                    let image = processor.imageFromVerasonicsFrame(verasonicsFrame)
-                    self.UltrasoundImageView.image = image
-                })
-                print("Execution time: \(executionTime) seconds")
+            if self.executing == false {
+                self.executing = true
+                if let text = message as? String {
+                    let verasonicsFrame = Mapper<VerasonicsFrame>().map(text)
+                    let executionTime = self.executionTimeInterval({
+                        let image = self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame)
+                        dispatch_async(dispatch_get_main_queue(), {
+                            if image != nil {
+                                self.ultrasoundImageView.image = image
+                            }
+                            self.executing = false
+                        })
+                    })
+                    print("Execution time: \(executionTime) seconds")
+                }
             }
         }
 
         self.connect = false
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
     }
 
     func executionTimeInterval(block: () -> ()) -> CFTimeInterval
@@ -61,4 +76,5 @@ class ViewController: UIViewController {
         self.connect = !self.connect
     }
 }
+
 
