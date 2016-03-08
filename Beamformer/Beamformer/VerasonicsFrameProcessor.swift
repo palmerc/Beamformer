@@ -66,16 +66,17 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
             let pixelCount = self.numberOfPixels;
             let channelDataSampleCount = channelData!.complexSamples.count
 
-            var complexImageVector: [ComplexNumber]?
-            if self.verasonicsFrameProcessorMetal != nil {
-                self.verasonicsFrameProcessorMetal.samplesPerChannel = channelDataSampleCount
-                complexImageVector = self.verasonicsFrameProcessorMetal.complexVectorFromChannelData(channelData)
-            } else {
-                self.verasonicsFrameProcessorCPU.samplesPerChannel = channelDataSampleCount
-                complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
-            }
+            var imageAmplitudes: [UInt8]?
+//            var complexImageVector: [ComplexNumber]?
+//            if self.verasonicsFrameProcessorMetal != nil {
+            self.verasonicsFrameProcessorMetal.samplesPerChannel = channelDataSampleCount
+            imageAmplitudes = self.verasonicsFrameProcessorMetal.complexVectorFromChannelData(channelData)
+//            } else {
+//                self.verasonicsFrameProcessorCPU.samplesPerChannel = channelDataSampleCount
+//                complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
+//            }
 
-            let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
+//            let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
             image = grayscaleImageFromPixelValues(imageAmplitudes,
                 width: self.verasonicsFrameProcessorCPU.imageZPixelCount,
                 height: self.verasonicsFrameProcessorCPU.imageXPixelCount,
