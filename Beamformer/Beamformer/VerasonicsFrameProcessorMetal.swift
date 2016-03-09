@@ -163,11 +163,11 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                 initializeBuffersWithSampleCount(channelData.complexSamples.count)
             }
 
-            let channelTime = self.executionTimeInterval({
-                self.processChannelData(channelData)
-                self.processDecibelValues()
-            })
-            print("Channel processing completed: \(channelTime) seconds")
+//            let channelTime = self.executionTimeInterval({
+            self.processChannelData(channelData)
+            self.processDecibelValues()
+//            })
+//            print("Channel processing completed: \(channelTime) seconds")
 
             let pixelCount = self.numberOfPixels
             let byteCount = pixelCount * sizeof(UInt8)
@@ -291,7 +291,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                 commandEncoder.setBuffer(self.xnsMetalBuffer, offset: 0, atIndex: 4)
                 commandEncoder.setBuffer(self.imageAmplitudesMetalBuffer, offset: 0, atIndex: 5)
 
-                let threadExecutionWidth = pipelineState.maxTotalThreadsPerThreadgroup
+                let threadExecutionWidth = pipelineState.threadExecutionWidth
                 let threadsPerThreadgroup = MTLSize(width: threadExecutionWidth, height: 1, depth: 1)
                 let threadGroups = MTLSize(width: self.numberOfPixels / threadsPerThreadgroup.width, height: 1, depth:1)
 
@@ -313,19 +313,18 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
             let data = NSData(bytesNoCopy: imageAmplitudesMetalBuffer.contents(), length: byteCount, freeWhenDone: false)
             data.getBytes(&pixelValues, length:byteCount)
 
-            let decibels = pixelValues.map({ (value: Float) -> String in
-                return "\(value)"
-            })
-
-            let paths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
-            var docs: String = paths[0] as! String
-            let dir = NSURL(string: docs)
-            let decibelFile = dir?.URLByAppendingPathComponent("decibels.txt")
-
-            let val = decibels.joinWithSeparator(",")
-            do {
-                try val.writeToFile(decibelFile!.absoluteString, atomically: true, encoding: NSUTF8StringEncoding)
-            } catch {}
+//            let decibels = pixelValues.map({ (value: Float) -> String in
+//                return "\(value)"
+//            })
+//            let paths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
+//            var docs: String = paths[0] as! String
+//            let dir = NSURL(string: docs)
+//            let decibelFile = dir?.URLByAppendingPathComponent("decibels.txt")
+//
+//            let val = decibels.joinWithSeparator(",")
+//            do {
+//                try val.writeToFile(decibelFile!.absoluteString, atomically: true, encoding: NSUTF8StringEncoding)
+//            } catch {}
 
             let minimum = pixelValues.minElement()
             let maximum = pixelValues.maxElement()

@@ -21,6 +21,12 @@
                             <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Horse07" translatesAutoresizingMaskIntoConstraints="NO" id="XYv-BP-5dS">
                                 <rect key="frame" x="20" y="20" width="560" height="230"/>
                             </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0 FPS" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cmK-rS-IxY">
+                                <rect key="frame" x="277.5" y="258" width="45" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jgq-Fk-yKy">
                                 <rect key="frame" x="270" y="550" width="59" height="30"/>
                                 <state key="normal" title="Connect"/>
@@ -34,12 +40,15 @@
                             <constraint firstItem="jgq-Fk-yKy" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="MNF-vK-Nze"/>
                             <constraint firstItem="XYv-BP-5dS" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="SJA-Qc-GsV"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="jgq-Fk-yKy" secondAttribute="bottom" constant="20" id="Th5-x5-3kw"/>
+                            <constraint firstItem="cmK-rS-IxY" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="UgL-xg-agl"/>
                             <constraint firstItem="XYv-BP-5dS" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="dMw-4y-FON"/>
+                            <constraint firstItem="cmK-rS-IxY" firstAttribute="top" secondItem="XYv-BP-5dS" secondAttribute="bottom" constant="8" id="kvz-hh-oZX"/>
                             <constraint firstAttribute="trailingMargin" secondItem="XYv-BP-5dS" secondAttribute="trailing" id="oXK-vl-ial"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="connectButton" destination="jgq-Fk-yKy" id="T3t-RU-3gZ"/>
+                        <outlet property="framesPerSecondLabel" destination="cmK-rS-IxY" id="1TW-U3-PGm"/>
                         <outlet property="ultrasoundImageView" destination="XYv-BP-5dS" id="K0K-Wl-uFH"/>
                     </connections>
                 </viewController>
