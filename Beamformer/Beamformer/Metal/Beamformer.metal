@@ -2,6 +2,7 @@
 using namespace metal;
 
 
+
 struct ImageAmplitudesParameters {
     float minimumValue;
     float maximumValue;
@@ -81,7 +82,7 @@ kernel void processDecibelValues(const device ImageAmplitudesParameters *imagePa
 
     float decibelValue = inputImageAmplitudes[threadIdentifier];
     float shiftedDecibelValue = decibelValue - maximumValue;
-    float dynamicRange = 120.f;
+    float dynamicRange = 60.f;
     if (shiftedDecibelValue < -dynamicRange) {
         shiftedDecibelValue = -dynamicRange;
     }
@@ -107,6 +108,6 @@ float absC(ComplexNumber lhs)
 }
 float decibel(float value)
 {
-    return 20.f * log(value);
+    return 20.f * log10(value);
 }
 
