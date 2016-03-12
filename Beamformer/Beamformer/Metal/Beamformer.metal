@@ -14,22 +14,17 @@ struct BeamformerParameters {
     int pixelCount;
 };
 
-struct ComplexNumber {
-    float real;
-    float imaginary;
-};
-
-ComplexNumber add(ComplexNumber lhs, ComplexNumber rhs);
-ComplexNumber subtract(ComplexNumber lhs, ComplexNumber rhs);
-ComplexNumber multiply(ComplexNumber lhs, ComplexNumber rhs);
-float absC(ComplexNumber lhs);
+float2 add(float2 lhs, float2 rhs);
+float2 subtract(float2 lhs, float2 rhs);
+float2 multiply(float2 lhs, float2 rhs);
+float absC(float2 lhs);
 float decibel(float value);
 
 
 
 kernel void processChannelData(const device BeamformerParameters *beamformerParameters [[ buffer(0) ]],
-                               const device ComplexNumber *inputChannelData [[ buffer(1) ]],
-                               const device ComplexNumber *partAs [[ buffer(2) ]],
+                               const device float2 *inputChannelData [[ buffer(1) ]],
+                               const device float2 *partAs [[ buffer(2) ]],
                                const device float *alphas [[ buffer(3) ]],
                                const device int *x_ns [[ buffer(4) ]],
                                device float *outputImageAmplitude [[ buffer(5) ]],
@@ -42,7 +37,7 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
 
     int pixelCount = beamformerParameters->pixelCount;
 
-    ComplexNumber channelSum = {.real = 0.f, .imaginary = 0.f};
+    float2 channelSum(0.f, 0.f);
     for (int channelNumber = 0; channelNumber < channelCount; channelNumber++) {
         uint channelIndex = channelNumber * pixelCount + threadIdentifier;
 
@@ -50,20 +45,20 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
         int xn1Index = xnIndex + 1;
 
         if (xnIndex > -1 && xn1Index < xnCutoff) {
-            ComplexNumber partA = partAs[channelIndex];
-            ComplexNumber lower = inputChannelData[xnIndex];
-            ComplexNumber upper = inputChannelData[xn1Index];
+            float2 partA = partAs[channelIndex];
+            float2 lower = inputChannelData[xnIndex];
+            float2 upper = inputChannelData[xn1Index];
 
             float alpha = alphas[channelIndex];
-            ComplexNumber complexAlpha = {.real = alpha, .imaginary = 0.f};
+            float2 complexAlpha(alpha, 0.f);
             lower = multiply(lower, complexAlpha);
 
             float oneMinusAlpha = 1.f - alpha;
-            ComplexNumber complexOneMinusAlpha = {.real = oneMinusAlpha, .imaginary = 0.f};
+            float2 complexOneMinusAlpha(oneMinusAlpha, 0.f);
             upper = multiply(upper, complexOneMinusAlpha);
 
-            ComplexNumber partB = add(lower, upper);
-            ComplexNumber result = multiply(partA, partB);
+            float2 partB = add(lower, upper);
+            float2 result = multiply(partA, partB);
             channelSum = add(channelSum, result);
         }
     }
@@ -90,21 +85,21 @@ kernel void processDecibelValues(const device ImageAmplitudesParameters *imagePa
     outputImageAmplitudes[threadIdentifier] = static_cast<unsigned char>(scaledValue);
 }
 
-ComplexNumber add(ComplexNumber lhs, ComplexNumber rhs)
+float2 add(float2 lhs, float2 rhs)
 {
-    return { lhs.real + rhs.real, lhs.imaginary + rhs.imaginary };
+    return { lhs.x + rhs.x, lhs.y + rhs.y };
 }
-ComplexNumber subtract(ComplexNumber lhs, ComplexNumber rhs)
+float2 subtract(float2 lhs, float2 rhs)
 {
-    return { lhs.real - rhs.real, lhs.imaginary - rhs.imaginary };
+    return { lhs.x - rhs.x, lhs.y - rhs.y };
 }
-ComplexNumber multiply(ComplexNumber lhs, ComplexNumber rhs)
+float2 multiply(float2 lhs, float2 rhs)
 {
-    return { lhs.real * rhs.real - lhs.imaginary * rhs.imaginary, lhs.real * rhs.imaginary + rhs.real * lhs.imaginary };
+    return { lhs.x * rhs.x - lhs.y * rhs.y, lhs.x * rhs.y + rhs.x * lhs.y };
 }
-float absC(ComplexNumber lhs)
+float absC(float2 lhs)
 {
-    return sqrt(pow(lhs.real, 2) + pow(lhs.imaginary, 2));
+    return sqrt(pow(lhs.x, 2) + pow(lhs.y, 2));
 }
 float decibel(float value)
 {
