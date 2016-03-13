@@ -9,8 +9,8 @@ struct ImageAmplitudesParameters {
 }
 
 struct BeamformerParameters {
-    var channelCount: Int32
-    var samplesPerChannel: Int32
+    var numberOfChannels: Int32
+    var numberOfSamplesPerChannel: Int32
     var pixelCount: Int32
 }
 
@@ -20,23 +20,10 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
     private var isInitializationComplete = false
     private var channelDataParametersMetalBuffer: MTLBuffer?
     private var imageAmplitudesParametersMetalBuffer: MTLBuffer?
-
-    private var channelDataPointer: UnsafeMutablePointer<Void> = nil
-    private var channelDataBufferPointer: UnsafeMutableBufferPointer<ComplexNumber>?
     private var channelDataMetalBuffer: MTLBuffer?
-
-    private var partAsPointer: UnsafeMutablePointer<Void> = nil
-    private var partAsBufferPointer: UnsafeMutableBufferPointer<ComplexNumber>?
     private var partAsMetalBuffer: MTLBuffer?
-
-    private var alphasPointer: UnsafeMutablePointer<Void> = nil
-    private var alphasBufferPointer: UnsafeMutableBufferPointer<Float>?
     private var alphasMetalBuffer: MTLBuffer?
-
-    private var xnsPointer: UnsafeMutablePointer<Void> = nil
-    private var xnsBufferPointer: UnsafeMutableBufferPointer<Int32>?
     private var xnsMetalBuffer: MTLBuffer?
-
     private var imageAmplitudesMetalBuffer: MTLBuffer?
     private var imageIntensitiesMetalBuffer: MTLBuffer?
 
@@ -131,28 +118,6 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
         return (metalKernelFunction, metalPipelineState)
     }
 
-    private func setupSharedMemoryWithSize(byteCount: Int) ->
-        (pointer: UnsafeMutablePointer<Void>,
-        memoryWrapper: COpaquePointer,
-        size: Int)
-    {
-        let memoryAlignment = 0x1000
-        var memory: UnsafeMutablePointer<Void> = nil
-
-        let alignedByteCount = byteSizeWithAlignment(memoryAlignment, size: byteCount)
-        posix_memalign(&memory, memoryAlignment, alignedByteCount)
-
-        let memoryWrapper = COpaquePointer(memory)
-
-        return (memory, memoryWrapper, alignedByteCount)
-    }
-
-    private func byteSizeWithAlignment(alignment: Int, size: Int) -> Int
-    {
-        return Int(ceil(Float(size) / Float(alignment))) * alignment
-    }
-
-
     // MARK:
 
     public func complexVectorFromChannelData(channelData: ChannelData?) -> [UInt8]?
@@ -163,11 +128,11 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                 initializeBuffersWithSampleCount(channelData.complexSamples.count)
             }
 
-//            let channelTime = self.executionTimeInterval({
-            self.processChannelData(channelData)
-            self.processDecibelValues()
-//            })
-//            print("Channel processing completed: \(channelTime) seconds")
+            let channelTime = self.executionTimeInterval({
+                self.processChannelData(channelData)
+                self.processDecibelValues()
+            })
+            print("Channel processing completed: \(channelTime) seconds")
 
             let pixelCount = self.numberOfPixels
             let byteCount = pixelCount * sizeof(UInt8)
@@ -193,60 +158,45 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
             self.channelDataParametersMetalBuffer = self.metalDevice.newBufferWithLength(byteCount, options: .StorageModeShared)
         }
 
-        if self.channelDataPointer == nil {
+        if self.channelDataMetalBuffer == nil {
             let byteCount = sampleCount * sizeof(ComplexNumber)
-            let (memory, memoryWrapper, size) = setupSharedMemoryWithSize(byteCount)
-            self.channelDataMetalBuffer = self.metalDevice.newBufferWithBytesNoCopy(memory, length: size, options: .StorageModeShared, deallocator: nil)
-            self.channelDataPointer = memory
-            let typedOpaquePointer = UnsafeMutablePointer<ComplexNumber>(memoryWrapper)
-            self.channelDataBufferPointer = UnsafeMutableBufferPointer(start: typedOpaquePointer, count: sampleCount)
+            self.channelDataMetalBuffer = self.metalDevice.newBufferWithLength(byteCount, options: .StorageModeShared)
         }
 
-        if self.partAsPointer == nil {
+        if self.partAsMetalBuffer == nil {
             let count = self.partAs!.count
             let byteCount = count * sizeof(ComplexNumber)
-            let (memory, memoryWrapper, size) = setupSharedMemoryWithSize(byteCount)
-            self.partAsMetalBuffer = self.metalDevice.newBufferWithBytesNoCopy(memory, length: size, options: .StorageModeShared, deallocator: nil)
-            self.partAsPointer = memory
-            let typedOpaquePointer = UnsafeMutablePointer<ComplexNumber>(memoryWrapper)
-            self.partAsBufferPointer = UnsafeMutableBufferPointer(start: typedOpaquePointer, count: count)
+            self.partAsMetalBuffer = self.metalDevice.newBufferWithLength(byteCount, options: .StorageModeShared)
         }
 
-        if let partAs = self.partAs, partAsBufferPointer = self.partAsBufferPointer {
-            for index in partAsBufferPointer.startIndex ..< partAsBufferPointer.endIndex {
-                partAsBufferPointer[index] = partAs[index]
-            }
+        if let partAs = self.partAs, partAsMetalBuffer = self.partAsMetalBuffer {
+            let count = Int32(partAs.count) * 2
+            cblas_scopy(count, UnsafePointer<Float>(partAs), 1, UnsafeMutablePointer<Float>(partAsMetalBuffer.contents()), 1)
         }
 
-        if self.alphasPointer == nil {
+        if self.alphasMetalBuffer == nil {
             let count = self.alphas!.count
             let byteCount = count * sizeof(Float)
-            let (memory, memoryWrapper, size) = setupSharedMemoryWithSize(byteCount)
-            self.alphasMetalBuffer = self.metalDevice.newBufferWithBytesNoCopy(memory, length: size, options: .StorageModeShared, deallocator: nil)
-            self.alphasPointer = memory
-            let typedOpaquePointer = UnsafeMutablePointer<Float>(memoryWrapper)
-            self.alphasBufferPointer = UnsafeMutableBufferPointer(start: typedOpaquePointer, count: count)
+            self.alphasMetalBuffer = self.metalDevice.newBufferWithLength(byteCount, options: .StorageModeShared)
         }
 
-        if let alphas = self.alphas, alphasBufferPointer = self.alphasBufferPointer {
-            for index in alphasBufferPointer.startIndex ..< alphasBufferPointer.endIndex {
-                alphasBufferPointer[index] = alphas[index]
-            }
+        if let alphas = self.alphas, alphasMetalBuffer = self.alphasMetalBuffer {
+            let count = Int32(alphas.count)
+            cblas_scopy(count, alphas, 1, UnsafeMutablePointer<Float>(alphasMetalBuffer.contents()), 1)
         }
 
-        if self.xnsPointer == nil {
+        if self.xnsMetalBuffer == nil {
             let count = self.x_ns!.count
             let byteCount = count * sizeof(Int32)
-            let (memory, memoryWrapper, size) = setupSharedMemoryWithSize(byteCount)
-            self.xnsMetalBuffer = self.metalDevice.newBufferWithBytesNoCopy(memory, length: size, options: .StorageModeShared, deallocator: nil)
-            self.xnsPointer = memory
-            let typedOpaquePointer = UnsafeMutablePointer<Int32>(memoryWrapper)
-            self.xnsBufferPointer = UnsafeMutableBufferPointer(start: typedOpaquePointer, count: count)
+            self.xnsMetalBuffer = self.metalDevice.newBufferWithLength(byteCount, options: .StorageModeShared)
         }
 
-        if let x_ns = self.x_ns, xnsBufferPointer = self.xnsBufferPointer {
-            for index in xnsBufferPointer.startIndex ..< xnsBufferPointer.endIndex {
-                xnsBufferPointer[index] = Int32(x_ns[index])
+        if let x_ns = self.x_ns, xnsMetalBuffer = self.xnsMetalBuffer {
+            let count = x_ns.count
+            let mutablePointer = UnsafeMutablePointer<Int32>(xnsMetalBuffer.contents())
+            let buffer = UnsafeMutableBufferPointer<Int32>(start: mutablePointer, count: count)
+            for index in buffer.startIndex ..< buffer.endIndex {
+                buffer[index] = Int32(x_ns[index])
             }
         }
 
@@ -269,14 +219,12 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
 
     private func processChannelData(channelData: ChannelData?)
     {
-        if let channelData = channelData, channelDataBufferPointer = self.channelDataBufferPointer, channelDataParametersMetalBuffer = self.channelDataParametersMetalBuffer {
-            let parameters = BeamformerParameters(channelCount: Int32(self.numberOfActiveTransducerElements), samplesPerChannel: Int32(channelData.samplesPerChannel), pixelCount: Int32(self.numberOfPixels))
+        if let channelData = channelData, channelDataMetalBuffer = self.channelDataMetalBuffer, channelDataParametersMetalBuffer = self.channelDataParametersMetalBuffer {
+            let parameters = BeamformerParameters(numberOfChannels: Int32(channelData.numberOfChannels), numberOfSamplesPerChannel: Int32(channelData.numberOfSamplesPerChannel), pixelCount: Int32(self.numberOfPixels))
             UnsafeMutablePointer<BeamformerParameters>(channelDataParametersMetalBuffer.contents()).memory = parameters
 
-            for index in channelDataBufferPointer.startIndex ..< channelDataBufferPointer.endIndex {
-                let sample = channelData.complexSamples[index]
-                channelDataBufferPointer[index] = sample
-            }
+            let channelDataDoublePointer = UnsafePointer<Double>(channelData.complexSamples)
+            cblas_dcopy(Int32(channelData.complexSamples.count), channelDataDoublePointer, 1, UnsafeMutablePointer<Double>(channelDataMetalBuffer.contents()), 1)
 
             let metalCommandBuffer = self.metalCommandQueue.commandBuffer()
             let commandEncoder = metalCommandBuffer.computeCommandEncoder()

@@ -75,10 +75,11 @@ class ViewController: UIViewController {
             let executionTime = self.executionTimeInterval({
                 let image = self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame)
                 dispatch_async(dispatch_get_main_queue(), {
+                    self.executing = false
+
                     if image != nil {
                         self.ultrasoundImageView.image = image
                     }
-                    self.executing = false
                 })
             })
 

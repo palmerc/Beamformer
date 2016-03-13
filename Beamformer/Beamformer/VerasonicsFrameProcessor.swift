@@ -69,7 +69,7 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
             var imageAmplitudes: [UInt8]?
 //            var complexImageVector: [ComplexNumber]?
 //            if self.verasonicsFrameProcessorMetal != nil {
-            self.verasonicsFrameProcessorMetal.samplesPerChannel = channelDataSampleCount
+//            self.verasonicsFrameProcessorMetal.samplesPerChannel = channelDataSampleCount
             imageAmplitudes = self.verasonicsFrameProcessorMetal.complexVectorFromChannelData(channelData)
 //            } else {
 //                self.verasonicsFrameProcessorCPU.samplesPerChannel = channelDataSampleCount
