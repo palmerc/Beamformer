@@ -8,7 +8,7 @@ import Accelerate
 
 public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
 {
-    private var verasonicsFrameProcessorCPU: VerasonicsFrameProcessorCPU!
+//    private var verasonicsFrameProcessorCPU: VerasonicsFrameProcessorCPU!
     private var verasonicsFrameProcessorMetal: VerasonicsFrameProcessorMetal!
 
     var calculatedChannelDelays: [Float]?
@@ -47,10 +47,10 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
         let (x_ns, calculatedChannelDelays) = calculatedDelaysWithElementPositions(elementPositions)
         let (alphas, partAs) = self.processCalculatedDelays(calculatedChannelDelays!, centralFrequency: self.centralFrequency, samplingFrequencyHz: self.samplingFrequencyHz, numberOfElements: self.numberOfActiveTransducerElements)
 
-        self.verasonicsFrameProcessorCPU = VerasonicsFrameProcessorCPU()
-        self.verasonicsFrameProcessorCPU.partAs = partAs
-        self.verasonicsFrameProcessorCPU.alphas = alphas
-        self.verasonicsFrameProcessorCPU.x_ns = x_ns
+//        self.verasonicsFrameProcessorCPU = VerasonicsFrameProcessorCPU()
+//        self.verasonicsFrameProcessorCPU.partAs = partAs
+//        self.verasonicsFrameProcessorCPU.alphas = alphas
+//        self.verasonicsFrameProcessorCPU.x_ns = x_ns
         self.verasonicsFrameProcessorMetal = VerasonicsFrameProcessorMetal()
         self.verasonicsFrameProcessorMetal.partAs = partAs
         self.verasonicsFrameProcessorMetal.alphas = alphas
@@ -63,8 +63,8 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
     {
         var image: UIImage?
         if let channelData: ChannelData? = verasonicsFrame!.channelData {
-            let pixelCount = self.numberOfPixels;
-            let channelDataSampleCount = channelData!.complexSamples.count
+//            let pixelCount = self.numberOfPixels;
+//            let channelDataSampleCount = channelData!.complexSamples.count
 
             var imageAmplitudes: [UInt8]?
 //            var complexImageVector: [ComplexNumber]?
@@ -78,8 +78,8 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
 
 //            let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
             image = grayscaleImageFromPixelValues(imageAmplitudes,
-                width: self.verasonicsFrameProcessorCPU.imageZPixelCount,
-                height: self.verasonicsFrameProcessorCPU.imageXPixelCount,
+                width: self.verasonicsFrameProcessorMetal.imageZPixelCount,
+                height: self.verasonicsFrameProcessorMetal.imageXPixelCount,
                 imageOrientation: .Right)
 
             print("Frame \(verasonicsFrame!.identifier!) complete")
