@@ -14,11 +14,11 @@ struct BeamformerParameters {
     int pixelCount;
 };
 
-float2 add(float2 lhs, float2 rhs);
-float2 subtract(float2 lhs, float2 rhs);
-float2 multiply(float2 lhs, float2 rhs);
-float absC(float2 lhs);
-float decibel(float value);
+inline float2 add(float2 lhs, float2 rhs);
+inline float2 subtract(float2 lhs, float2 rhs);
+inline float2 multiply(float2 lhs, float2 rhs);
+inline float absC(float2 lhs);
+inline float decibel(float value);
 
 
 
@@ -85,23 +85,23 @@ kernel void processDecibelValues(const device ImageAmplitudesParameters *imagePa
     outputImageAmplitudes[threadIdentifier] = static_cast<unsigned char>(scaledValue);
 }
 
-float2 add(float2 lhs, float2 rhs)
+inline float2 add(float2 lhs, float2 rhs)
 {
     return { lhs.x + rhs.x, lhs.y + rhs.y };
 }
-float2 subtract(float2 lhs, float2 rhs)
+inline float2 subtract(float2 lhs, float2 rhs)
 {
     return { lhs.x - rhs.x, lhs.y - rhs.y };
 }
-float2 multiply(float2 lhs, float2 rhs)
+inline float2 multiply(float2 lhs, float2 rhs)
 {
     return { lhs.x * rhs.x - lhs.y * rhs.y, lhs.x * rhs.y + rhs.x * lhs.y };
 }
-float absC(float2 lhs)
+inline float absC(float2 lhs)
 {
-    return sqrt(pow(lhs.x, 2) + pow(lhs.y, 2));
+    return sqrt(lhs.x * lhs.x + lhs.y * lhs.y);
 }
-float decibel(float value)
+inline float decibel(float value)
 {
     return 20.f * log10(value);
 }
