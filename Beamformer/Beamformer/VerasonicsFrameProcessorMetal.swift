@@ -223,8 +223,8 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
             let parameters = BeamformerParameters(numberOfChannels: Int32(channelData.numberOfChannels), numberOfSamplesPerChannel: Int32(channelData.numberOfSamplesPerChannel), pixelCount: Int32(self.numberOfPixels))
             UnsafeMutablePointer<BeamformerParameters>(channelDataParametersMetalBuffer.contents()).memory = parameters
 
-            let channelDataDoublePointer = UnsafePointer<Double>(channelData.complexSamples)
-            cblas_dcopy(Int32(channelData.complexSamples.count), channelDataDoublePointer, 1, UnsafeMutablePointer<Double>(channelDataMetalBuffer.contents()), 1)
+            let channelDataDoublePointer = UnsafePointer<Float>(channelData.complexSamples)
+            cblas_scopy(Int32(channelData.complexSamples.count), channelDataDoublePointer, 1, UnsafeMutablePointer<Float>(channelDataMetalBuffer.contents()), 1)
 
             let metalCommandBuffer = self.metalCommandQueue.commandBuffer()
             let commandEncoder = metalCommandBuffer.computeCommandEncoder()

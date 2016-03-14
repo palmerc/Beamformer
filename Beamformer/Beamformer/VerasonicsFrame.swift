@@ -18,25 +18,23 @@ public class VerasonicsFrame: NSObject, Mappable
                 numberOfSamplesPerChannel = self.numberOfSamplesPerChannel {
                 self._rawChannelData = rawChannelData
 
-                let numberOfSamples = numberOfChannels * numberOfSamplesPerChannel
-                if self.numberOfChannels > 0 {
-                    var complexSamples = [ComplexNumber](count: numberOfSamples, repeatedValue: ComplexNumber(real: 0, imaginary: 0))
+                let numberOfSampleValuesPerChannel = numberOfSamplesPerChannel * 2
+                let numberOfSampleValues = numberOfChannels * numberOfSampleValuesPerChannel
+                    var complexSamples = [Float](count: numberOfSampleValues, repeatedValue: 0)
 
                     for channelIndex in 0 ..< numberOfChannels {
                         var channelRawSamples = rawChannelData[channelIndex]
-                        for sampleIndex in 0 ..< numberOfSamplesPerChannel {
-                            let realIndex = sampleIndex * 2
-                            let imaginaryIndex = realIndex + 1
-                            let real = channelRawSamples[realIndex]
-                            let imaginary = channelRawSamples[imaginaryIndex]
-
-                            let complexSampleIndex = channelIndex * numberOfSamplesPerChannel + sampleIndex
-                            complexSamples[complexSampleIndex].real = real
-                            complexSamples[complexSampleIndex].imaginary = imaginary
+                        for sampleIndex in 0 ..< numberOfSampleValuesPerChannel {
+//                            let realIndex = sampleIndex * 2
+//                            let imaginaryIndex = realIndex + 1
+//                            let real = channelRawSamples[realIndex]
+//                            let imaginary = channelRawSamples[imaginaryIndex]
+//
+                            let complexSampleIndex = channelIndex * numberOfSampleValuesPerChannel + sampleIndex
+                            complexSamples[complexSampleIndex] = channelRawSamples[sampleIndex]
                         }
-                    }
 
-                    self.channelData = ChannelData(complexSamples: complexSamples, numberOfChannels: numberOfChannels, numberOfSamplesPerChannel: numberOfSamplesPerChannel)
+                        self.channelData = ChannelData(complexSamples: complexSamples, numberOfChannels: numberOfChannels, numberOfSamplesPerChannel: numberOfSamplesPerChannel)
                 }
             }
         }
