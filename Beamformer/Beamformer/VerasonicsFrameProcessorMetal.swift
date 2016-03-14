@@ -147,7 +147,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
         return imageVector
     }
 
-    private func initializeBuffersWithSampleCount(sampleCount: Int)
+    private func initializeBuffersWithSampleCount(sampleValueCount: Int)
     {
         if self.imageAmplitudesParametersMetalBuffer == nil {
             let byteCount = sizeof(ImageAmplitudesParameters)
@@ -159,7 +159,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
         }
 
         if self.channelDataMetalBuffer == nil {
-            let byteCount = sampleCount * sizeof(ComplexNumber)
+            let byteCount = sampleValueCount * sizeof(Int16)
             self.channelDataMetalBuffer = self.metalDevice.newBufferWithLength(byteCount, options: .StorageModeShared)
         }
 
@@ -223,8 +223,13 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
             let parameters = BeamformerParameters(numberOfChannels: Int32(channelData.numberOfChannels), numberOfSamplesPerChannel: Int32(channelData.numberOfSamplesPerChannel), pixelCount: Int32(self.numberOfPixels))
             UnsafeMutablePointer<BeamformerParameters>(channelDataParametersMetalBuffer.contents()).memory = parameters
 
-            let channelDataDoublePointer = UnsafePointer<Float>(channelData.complexSamples)
-            cblas_scopy(Int32(channelData.complexSamples.count), channelDataDoublePointer, 1, UnsafeMutablePointer<Float>(channelDataMetalBuffer.contents()), 1)
+            let bufferLength = channelDataMetalBuffer.length
+            let virtualFloatCount = Int32(bufferLength / sizeof(Float))
+            let bufferMutableContents = UnsafeMutablePointer<Float>(channelDataMetalBuffer.contents())
+            let channelDataPointer = UnsafePointer<Float>(channelData.complexSamples)
+            cblas_scopy(virtualFloatCount,
+                channelDataPointer, 1,
+                bufferMutableContents, 1)
 
             let metalCommandBuffer = self.metalCommandQueue.commandBuffer()
             let commandEncoder = metalCommandBuffer.computeCommandEncoder()

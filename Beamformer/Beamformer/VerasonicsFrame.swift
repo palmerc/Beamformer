@@ -20,18 +20,13 @@ public class VerasonicsFrame: NSObject, Mappable
 
                 let numberOfSampleValuesPerChannel = numberOfSamplesPerChannel * 2
                 let numberOfSampleValues = numberOfChannels * numberOfSampleValuesPerChannel
-                    var complexSamples = [Float](count: numberOfSampleValues, repeatedValue: 0)
+                    var complexSamples = [Int16](count: numberOfSampleValues, repeatedValue: 0)
 
                     for channelIndex in 0 ..< numberOfChannels {
                         var channelRawSamples = rawChannelData[channelIndex]
-                        for sampleIndex in 0 ..< numberOfSampleValuesPerChannel {
-//                            let realIndex = sampleIndex * 2
-//                            let imaginaryIndex = realIndex + 1
-//                            let real = channelRawSamples[realIndex]
-//                            let imaginary = channelRawSamples[imaginaryIndex]
-//
+                        for sampleIndex in 0 ..< numberOfSampleValuesPerChannel {//
                             let complexSampleIndex = channelIndex * numberOfSampleValuesPerChannel + sampleIndex
-                            complexSamples[complexSampleIndex] = channelRawSamples[sampleIndex]
+                            complexSamples[complexSampleIndex] = Int16(channelRawSamples[sampleIndex])
                         }
 
                         self.channelData = ChannelData(complexSamples: complexSamples, numberOfChannels: numberOfChannels, numberOfSamplesPerChannel: numberOfSamplesPerChannel)

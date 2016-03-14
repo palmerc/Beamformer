@@ -4,7 +4,7 @@ import Foundation
 
 public struct ChannelData
 {
-    public var complexSamples: [Float]
+    public var complexSamples: [Int16]
     public var numberOfChannels: Int
     public var numberOfSamplesPerChannel: Int
 }
