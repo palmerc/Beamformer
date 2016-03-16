@@ -10,8 +10,8 @@ public class VerasonicsFrame: NSObject, Mappable
     public var numberOfSamplesPerChannel: Int?
     public var channelData: ChannelData?
 
-    private var _rawChannelData: [[Float]]?
-    private var rawChannelData: [[Float]]? {
+    private var _rawChannelData: [[Int]]?
+    private var rawChannelData: [[Int]]? {
         set {
             if let rawChannelData = newValue,
                 numberOfChannels = self.numberOfChannels,

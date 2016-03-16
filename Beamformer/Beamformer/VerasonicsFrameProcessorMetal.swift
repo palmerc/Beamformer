@@ -46,6 +46,9 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
     private var textureA: MTLTexture!
     private var textureB: MTLTexture!
 
+    private var amplitudeValues: [Float]!
+    private var pixelValues: [UInt8]!
+
     private var queue: dispatch_queue_t!
     private let queueName = "no.uio.Beamformer"
 
@@ -55,6 +58,9 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
     override init()
     {
         super.init()
+
+        self.amplitudeValues = [Float](count: self.numberOfPixels, repeatedValue: 0)
+        self.pixelValues = [UInt8](count: self.numberOfPixels, repeatedValue: 0)
 
         let (metalDevice, metalLibrary, metalCommandQueue) = self.setupMetalDevice()
         if let metalDevice = metalDevice, metalLibrary = metalLibrary, metalCommandQueue = metalCommandQueue {
@@ -128,20 +134,20 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                 initializeBuffersWithSampleCount(channelData.complexSamples.count)
             }
 
-            let channelTime = self.executionTimeInterval({
-                self.processChannelData(channelData)
-                self.processDecibelValues()
-            })
-            print("Channel processing completed: \(channelTime) seconds")
+            if let imageIntensitiesMetalBuffer = self.imageIntensitiesMetalBuffer {
+                let channelTime = self.executionTimeInterval({
+                    self.processChannelData(channelData)
+                    self.processDecibelValues()
 
-            let pixelCount = self.numberOfPixels
-            let byteCount = pixelCount * sizeof(UInt8)
-            var pixelValues = [UInt8](count: pixelCount, repeatedValue: 0)
+                    let pixelCount = self.numberOfPixels * sizeof(UInt8)
+                    let pixelPointer = UnsafeMutablePointer<Void>(self.pixelValues)
+                    let bufferPointer = UnsafePointer<Void>(imageIntensitiesMetalBuffer.contents())
+                    memcpy(pixelPointer, bufferPointer, pixelCount)
+                })
+                print("Channel processing completed: \(channelTime) seconds")
 
-            let data = NSData(bytesNoCopy: self.imageIntensitiesMetalBuffer!.contents(), length: byteCount, freeWhenDone: false)
-            data.getBytes(&pixelValues, length:byteCount)
-
-            imageVector = pixelValues
+                imageVector = self.pixelValues
+            }
         }
 
         return imageVector
@@ -219,7 +225,10 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
 
     private func processChannelData(channelData: ChannelData?)
     {
-        if let channelData = channelData, channelDataMetalBuffer = self.channelDataMetalBuffer, channelDataParametersMetalBuffer = self.channelDataParametersMetalBuffer {
+        if let channelData = channelData,
+            channelDataMetalBuffer = self.channelDataMetalBuffer,
+            imageAmplitudesMetalBuffer = self.imageAmplitudesMetalBuffer,
+            channelDataParametersMetalBuffer = self.channelDataParametersMetalBuffer {
             let parameters = BeamformerParameters(numberOfChannels: Int32(channelData.numberOfChannels), numberOfSamplesPerChannel: Int32(channelData.numberOfSamplesPerChannel), pixelCount: Int32(self.numberOfPixels))
             UnsafeMutablePointer<BeamformerParameters>(channelDataParametersMetalBuffer.contents()).memory = parameters
 
@@ -244,9 +253,10 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                 commandEncoder.setBuffer(self.xnsMetalBuffer, offset: 0, atIndex: 4)
                 commandEncoder.setBuffer(self.imageAmplitudesMetalBuffer, offset: 0, atIndex: 5)
 
-                let threadExecutionWidth = pipelineState.threadExecutionWidth
+                let maxPixelCount = imageAmplitudesMetalBuffer.length / sizeof(Float)
+                let threadExecutionWidth = pipelineState.maxTotalThreadsPerThreadgroup
                 let threadsPerThreadgroup = MTLSize(width: threadExecutionWidth, height: 1, depth: 1)
-                let threadGroups = MTLSize(width: self.numberOfPixels / threadsPerThreadgroup.width, height: 1, depth:1)
+                let threadGroups = MTLSize(width: maxPixelCount / threadsPerThreadgroup.width, height: 1, depth:1)
 
                 commandEncoder.dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadsPerThreadgroup)
                 commandEncoder.endEncoding()
@@ -260,27 +270,12 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
     {
         if let imageAmplitudesParametersMetalBuffer = self.imageAmplitudesParametersMetalBuffer, imageAmplitudesMetalBuffer = self.imageAmplitudesMetalBuffer {
             let pixelCount = self.numberOfPixels
-            let byteCount = pixelCount * sizeof(Float)
-            var pixelValues = [Float](count: pixelCount, repeatedValue: 0)
+            let imageAmplitudeBufferContents = UnsafePointer<Float>(imageAmplitudesMetalBuffer.contents())
+            let amplitudesMutablePointer = UnsafeMutablePointer<Float>(self.amplitudeValues)
+            cblas_scopy(Int32(pixelCount), imageAmplitudeBufferContents, 1, amplitudesMutablePointer, 1)
 
-            let data = NSData(bytesNoCopy: imageAmplitudesMetalBuffer.contents(), length: byteCount, freeWhenDone: false)
-            data.getBytes(&pixelValues, length:byteCount)
-
-//            let decibels = pixelValues.map({ (value: Float) -> String in
-//                return "\(value)"
-//            })
-//            let paths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
-//            var docs: String = paths[0] as! String
-//            let dir = NSURL(string: docs)
-//            let decibelFile = dir?.URLByAppendingPathComponent("decibels.txt")
-//
-//            let val = decibels.joinWithSeparator(",")
-//            do {
-//                try val.writeToFile(decibelFile!.absoluteString, atomically: true, encoding: NSUTF8StringEncoding)
-//            } catch {}
-
-            let minimum = pixelValues.minElement()
-            let maximum = pixelValues.maxElement()
+            let minimum = self.amplitudeValues.minElement()
+            let maximum = self.amplitudeValues.maxElement()
             if let minimum = minimum, maximum = maximum {
                 let parameters = ImageAmplitudesParameters(minimumValue: Float(minimum), maximumValue: Float(maximum))
                 UnsafeMutablePointer<ImageAmplitudesParameters>(imageAmplitudesParametersMetalBuffer.contents()).memory = parameters
@@ -294,9 +289,10 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                     commandEncoder.setBuffer(self.imageAmplitudesMetalBuffer, offset: 0, atIndex: 1)
                     commandEncoder.setBuffer(self.imageIntensitiesMetalBuffer, offset: 0, atIndex: 2)
 
-                    let threadExecutionWidth = pipelineState.threadExecutionWidth
+                    let maxPixelCount = imageAmplitudesMetalBuffer.length / sizeof(Float)
+                    let threadExecutionWidth = pipelineState.maxTotalThreadsPerThreadgroup
                     let threadsPerThreadgroup = MTLSize(width: threadExecutionWidth, height: 1, depth: 1)
-                    let threadGroups = MTLSize(width: self.numberOfPixels / threadsPerThreadgroup.width, height: 1, depth:1)
+                    let threadGroups = MTLSize(width: maxPixelCount / threadsPerThreadgroup.width, height: 1, depth:1)
 
                     commandEncoder.dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadsPerThreadgroup)
                     commandEncoder.endEncoding()

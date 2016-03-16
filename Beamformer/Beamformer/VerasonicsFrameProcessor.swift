@@ -47,10 +47,6 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
         let (x_ns, calculatedChannelDelays) = calculatedDelaysWithElementPositions(elementPositions)
         let (alphas, partAs) = self.processCalculatedDelays(calculatedChannelDelays!, centralFrequency: self.centralFrequency, samplingFrequencyHz: self.samplingFrequencyHz, numberOfElements: self.numberOfActiveTransducerElements)
 
-//        self.verasonicsFrameProcessorCPU = VerasonicsFrameProcessorCPU()
-//        self.verasonicsFrameProcessorCPU.partAs = partAs
-//        self.verasonicsFrameProcessorCPU.alphas = alphas
-//        self.verasonicsFrameProcessorCPU.x_ns = x_ns
         self.verasonicsFrameProcessorMetal = VerasonicsFrameProcessorMetal()
         self.verasonicsFrameProcessorMetal.partAs = partAs
         self.verasonicsFrameProcessorMetal.alphas = alphas
@@ -80,7 +76,7 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
             image = grayscaleImageFromPixelValues(imageAmplitudes,
                 width: self.verasonicsFrameProcessorMetal.imageZPixelCount,
                 height: self.verasonicsFrameProcessorMetal.imageXPixelCount,
-                imageOrientation: .Right)
+                imageOrientation: .LeftMirrored)
 
             print("Frame \(verasonicsFrame!.identifier!) complete")
         }
@@ -147,7 +143,7 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
                     if x_n > self.samplesPerChannel {
                         x_n = -1
                     }
-                    x_ns![delayIndex] = channelIdentifier * 400 + x_n
+                    x_ns![delayIndex] = channelIdentifier * self.samplesPerChannel + x_n
                 }
             }
         }
