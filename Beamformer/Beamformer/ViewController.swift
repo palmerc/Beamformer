@@ -13,7 +13,6 @@ class ViewController: UIViewController {
 
     let shouldDumpFrame: Bool = false
     let shouldUseWebSocket: Bool = false
-    var executing: Bool = false
     var measurement: Float = 0.0
     var framesPerSecondFormatter: NSNumberFormatter!
 
@@ -69,7 +68,7 @@ class ViewController: UIViewController {
         if let webSocket = self.webSocket {
             webSocket.event.message = { message in
                 if let message = message as? String {
-                    self.processFrame(message)
+                    self.processFrame(message, withCompletionHandler: nil)
                 }
             }
         } else {
@@ -87,19 +86,22 @@ class ViewController: UIViewController {
             let frameCount = webSocketFrameURLs.count
             if frameNumber < frameCount {
                 let webSocketFrameURL = webSocketFrameURLs[frameNumber]
-                dispatch_async(self.queue) {
-                    do {
-                        let message = try NSString.init(contentsOfURL: webSocketFrameURL, encoding: NSUTF8StringEncoding)
-                        self.processFrame(message as String)
-                    } catch {}
+                var message: String?
+                do {
+                    let text = try NSString.init(contentsOfURL: webSocketFrameURL, encoding: NSUTF8StringEncoding)
+                    message = text as String
+                } catch {}
 
-                    dispatch_async(dispatch_get_main_queue(), {
-                        var nextFrameNumber = frameNumber + 1
-                        if nextFrameNumber >= frameCount {
-                            nextFrameNumber = 0
-                        }
+                if let message = message {
+                    processFrame(message, withCompletionHandler: {
+                        dispatch_async(dispatch_get_main_queue(), {
+                            var nextFrameNumber = frameNumber + 1
+                            if nextFrameNumber >= frameCount {
+                                nextFrameNumber = 0
+                            }
 
-                        self.testDataLoop(nextFrameNumber)
+                            self.testDataLoop(nextFrameNumber)
+                        })
                     })
                 }
             }
@@ -108,15 +110,13 @@ class ViewController: UIViewController {
         }
     }
 
-    func processFrame(message: String)
+    func processFrame(message: String, withCompletionHandler handler: (() -> ())?)
     {
-        if self.executing {
-            dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), {
-                self.dispatchFrame(message)
-            })
-        } else {
+        dispatch_async(self.queue) {
             self.dispatchFrame(message)
-            self.executing = true
+            if let handler = handler {
+                handler()
+            }
         }
     }
 
@@ -161,7 +161,7 @@ class ViewController: UIViewController {
     private func executionTimeInterval(block: () -> ()) -> CFTimeInterval
     {
         let start = CACurrentMediaTime()
-        block();
+        block()
         let end = CACurrentMediaTime()
         return end - start
     }
