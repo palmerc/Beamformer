@@ -14,7 +14,7 @@ let kWebSocketFileExtension = "ws"
 
 class DatasetManager
 {
-    private static var sharedInstance: DatasetManager = DatasetManager()
+    private static var sharedInstance = DatasetManager()
     private var datasets: [Dataset]?
 
 
