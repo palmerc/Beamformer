@@ -40,7 +40,6 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
     float2 channelSum(0.f, 0.f);
     for (int channelNumber = 0; channelNumber < channelCount; channelNumber++) {
         uint channelIndex = channelNumber * pixelCount + threadIdentifier;
-
         int xnIndex = x_ns[channelIndex];
         int xn1Index = xnIndex + 1;
 
@@ -66,6 +65,13 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
     float absoluteValue = absC(channelSum) + epsilon;
     outputImageAmplitude[threadIdentifier] = decibel(absoluteValue);
 }
+
+//kernel void findMinMax(const device float *inputImageAmplitudes [[ buffer(0) ]],
+//                       device float *inputImageAmplitudes [[ buffer(1) ]],
+//                       uint threadIdentifier [[ thread_position_in_grid ]])
+//{
+//    
+//}
 
 kernel void processDecibelValues(const device ImageAmplitudesParameters *imageParameters [[ buffer(0) ]],
                                  const device float *inputImageAmplitudes [[ buffer(1) ]],

@@ -55,33 +55,27 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
 
 
     // MARK: Main
-    public func imageFromVerasonicsFrame(verasonicsFrame :VerasonicsFrame?) -> UIImage?
+    public func imageFromVerasonicsFrame(verasonicsFrame :VerasonicsFrame?, withCompletionHandler block: (image: UIImage) -> Void)
     {
-        var image: UIImage?
         if let channelData: ChannelData? = verasonicsFrame!.channelData {
 //            let pixelCount = self.numberOfPixels;
 //            let channelDataSampleCount = channelData!.complexSamples.count
 
-            var imageAmplitudes: [UInt8]?
 //            var complexImageVector: [ComplexNumber]?
 //            if self.verasonicsFrameProcessorMetal != nil {
 //            self.verasonicsFrameProcessorMetal.samplesPerChannel = channelDataSampleCount
-            imageAmplitudes = self.verasonicsFrameProcessorMetal.complexVectorFromChannelData(channelData)
+            self.verasonicsFrameProcessorMetal.complexVectorFromChannelData(channelData, withCompletionHandler: {
+                (image: UIImage) in
+                block(image: image)
+            })
 //            } else {
 //                self.verasonicsFrameProcessorCPU.samplesPerChannel = channelDataSampleCount
 //                complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
 //            }
 
 //            let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
-            image = grayscaleImageFromPixelValues(imageAmplitudes,
-                width: self.verasonicsFrameProcessorMetal.imageZPixelCount,
-                height: self.verasonicsFrameProcessorMetal.imageXPixelCount,
-                imageOrientation: .LeftMirrored)
-
             print("Frame \(verasonicsFrame!.identifier!) complete")
         }
-
-        return image
     }
 
 
@@ -121,7 +115,7 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
             }
             let tauEchos = zCosineAlphas.enumerate().map({
                 (index: Int, zCosineAlpha: Float) -> Float in
-                return (zCosineAlpha + xSineAlphas[index]) / self.speedOfUltrasound
+                return (zCosineAlpha + xSineAlphas[index]) / self.speedOfUltrasoundInMMPerSecond
             })
 
             let numberOfDelays = self.numberOfActiveTransducerElements * self.numberOfPixels
@@ -131,7 +125,7 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
                 let channelDelays = elementPositions![channelIdentifier]
                 for index in 0 ..< self.numberOfPixels {
                     let xDifferenceSquared = pow(unrolledXs[index] - channelDelays, 2)
-                    let tauReceive = sqrt(zSquareds[index] + xDifferenceSquared) / self.speedOfUltrasound
+                    let tauReceive = sqrt(zSquareds[index] + xDifferenceSquared) / self.speedOfUltrasoundInMMPerSecond
 
                     let delay = (tauEchos[index] + tauReceive) * self.samplingFrequencyHz + self.lensCorrection
 

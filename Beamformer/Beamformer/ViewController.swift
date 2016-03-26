@@ -81,8 +81,8 @@ class ViewController: UIViewController {
 
     func testDataLoop(frameNumber: Int)
     {
-        let webSocketFrameURLs = self.filesMatchingExtension("ws")
-        if let webSocketFrameURLs = webSocketFrameURLs {
+        let defaultDataset = DatasetManager.defaultManager().defaultDataset()
+        if let webSocketFrameURLs = defaultDataset?.fileURLs {
             let frameCount = webSocketFrameURLs.count
             if frameNumber < frameCount {
                 let webSocketFrameURL = webSocketFrameURLs[frameNumber]
@@ -123,47 +123,40 @@ class ViewController: UIViewController {
     private func dispatchFrame(message: String)
     {
         let verasonicsFrame = Mapper<VerasonicsFrame>().map(message)
-        if self.shouldDumpFrame {
-            if let documentsDirectory = self.documentsDirectory() {
-                let number = verasonicsFrame!.identifier!
-                let path = documentsDirectory.path! as NSString
-                let filename = path.stringByAppendingPathComponent("Frame\(number).ws")
-                self.dumpFrameWithFile(filename, text: message)
-            }
-        }
+//        if self.shouldDumpFrame {
+//            if let documentsDirectory = self.documentsDirectory() {
+//                let number = verasonicsFrame!.identifier!
+//                let path = documentsDirectory.path! as NSString
+//                let filename = path.stringByAppendingPathComponent("Frame\(number).ws")
+//                self.dumpFrameWithFile(filename, text: message)
+//            }
+//        }
 
-        let executionTime = self.executionTimeInterval({
-            let image = self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame)
-
+        let startTime = CACurrentMediaTime()
+        self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame, withCompletionHandler: {
+            (image: UIImage) in
             dispatch_async(dispatch_get_main_queue(), {
-                if image != nil {
-                    self.ultrasoundImageView.image = image
-                }
+                self.ultrasoundImageView.image = image
+                let endTime = CACurrentMediaTime()
+                let elapsedTime = endTime - startTime
+                self.executionTime(elapsedTime)
             })
-        })
-
-        dispatch_async(dispatch_get_main_queue(), {
-            if self.measurement > 0 {
-                let smoothing: Float = 0.6
-                self.measurement = (self.measurement * smoothing) + (Float(executionTime) * (1.0 - smoothing))
-                let framesPerSecond = 1.0 / self.measurement
-
-                if let fpsText = self.framesPerSecondFormatter.stringFromNumber(framesPerSecond) {
-                    self.framesPerSecondLabel.text = "\(fpsText) FPS"
-                }
-            } else {
-                self.measurement = Float(executionTime)
-            }
-
         })
     }
 
-    private func executionTimeInterval(block: () -> ()) -> CFTimeInterval
+    private func executionTime(executionTime: CFTimeInterval)
     {
-        let start = CACurrentMediaTime()
-        block()
-        let end = CACurrentMediaTime()
-        return end - start
+        if self.measurement > 0 {
+            let smoothing: Float = 0.6
+            self.measurement = (self.measurement * smoothing) + (Float(executionTime) * (1.0 - smoothing))
+            let framesPerSecond = 1.0 / self.measurement
+
+            if let fpsText = self.framesPerSecondFormatter.stringFromNumber(framesPerSecond) {
+                self.framesPerSecondLabel.text = "\(fpsText) FPS"
+            }
+        } else {
+            self.measurement = Float(executionTime)
+        }
     }
 
     private func dumpFrameWithFile(filename: String, text: String)
@@ -173,49 +166,9 @@ class ViewController: UIViewController {
         } catch {}
     }
 
-    private func filesMatchingExtension(fileExtension: String) -> [NSURL]?
-    {
-        var fileURLs: [NSURL]?
-        if let documentsDirectory = self.documentsDirectory() {
-            do {
-                let files = try NSFileManager.defaultManager().contentsOfDirectoryAtURL(documentsDirectory, includingPropertiesForKeys: nil, options: NSDirectoryEnumerationOptions.init(rawValue: 0))
-                var matchingFiles = [NSURL]()
-                for file in files {
-                    let pathExtension = file.pathExtension
-                    if pathExtension == fileExtension {
-                        matchingFiles.append(file)
-                    }
-                }
-                matchingFiles.sortInPlace({
-                    (lhs: NSURL, rhs: NSURL) -> Bool in
-                    let leftHandPath = lhs.absoluteString
-                    let rightHandPath = rhs.absoluteString
-                    let options = NSStringCompareOptions.CaseInsensitiveSearch.union(.NumericSearch)
-                    return leftHandPath.compare(rightHandPath, options: options) == NSComparisonResult.OrderedAscending
-                })
-                if matchingFiles.count > 0 {
-                    fileURLs = matchingFiles
-                }
-            } catch {}
-        }
-
-        return fileURLs
-    }
-
-    private func documentsDirectory() -> NSURL?
-    {
-        var documentsDirectory: NSURL?
-        if let directory: NSString = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first {
-            documentsDirectory = NSURL.init(fileURLWithPath: directory as String, isDirectory: true)
-        }
-
-        return documentsDirectory
-    }
-
     @IBAction func didPressConnectButton(sender: AnyObject)
     {
         self.connect = !self.connect
     }
 }
-
 
