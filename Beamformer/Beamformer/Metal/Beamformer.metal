@@ -14,16 +14,16 @@ struct BeamformerParameters {
     int pixelCount;
 };
 
-float2 add(float2 lhs, float2 rhs);
-float2 subtract(float2 lhs, float2 rhs);
-float2 multiply(float2 lhs, float2 rhs);
-float absC(float2 lhs);
-float decibel(float value);
+inline float2 add(float2 lhs, float2 rhs);
+inline float2 subtract(float2 lhs, float2 rhs);
+inline float2 multiply(float2 lhs, float2 rhs);
+inline float absC(float2 lhs);
+inline float decibel(float value);
 
 
 
 kernel void processChannelData(const device BeamformerParameters *beamformerParameters [[ buffer(0) ]],
-                               const device float2 *inputChannelData [[ buffer(1) ]],
+                               const device short2 *inputChannelData [[ buffer(1) ]],
                                const device float2 *partAs [[ buffer(2) ]],
                                const device float *alphas [[ buffer(3) ]],
                                const device int *x_ns [[ buffer(4) ]],
@@ -40,14 +40,13 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
     float2 channelSum(0.f, 0.f);
     for (int channelNumber = 0; channelNumber < channelCount; channelNumber++) {
         uint channelIndex = channelNumber * pixelCount + threadIdentifier;
-
         int xnIndex = x_ns[channelIndex];
         int xn1Index = xnIndex + 1;
 
         if (xnIndex > -1 && xn1Index < xnCutoff) {
             float2 partA = partAs[channelIndex];
-            float2 lower = inputChannelData[xnIndex];
-            float2 upper = inputChannelData[xn1Index];
+            float2 lower = static_cast<float2>(inputChannelData[xnIndex]);
+            float2 upper = static_cast<float2>(inputChannelData[xn1Index]);
 
             float alpha = alphas[channelIndex];
             float2 complexAlpha(alpha, 0.f);
@@ -67,6 +66,13 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
     outputImageAmplitude[threadIdentifier] = decibel(absoluteValue);
 }
 
+//kernel void findMinMax(const device float *inputImageAmplitudes [[ buffer(0) ]],
+//                       device float *inputImageAmplitudes [[ buffer(1) ]],
+//                       uint threadIdentifier [[ thread_position_in_grid ]])
+//{
+//    
+//}
+
 kernel void processDecibelValues(const device ImageAmplitudesParameters *imageParameters [[ buffer(0) ]],
                                  const device float *inputImageAmplitudes [[ buffer(1) ]],
                                  device unsigned char *outputImageAmplitudes [[ buffer(2) ]],
@@ -85,23 +91,23 @@ kernel void processDecibelValues(const device ImageAmplitudesParameters *imagePa
     outputImageAmplitudes[threadIdentifier] = static_cast<unsigned char>(scaledValue);
 }
 
-float2 add(float2 lhs, float2 rhs)
+inline float2 add(float2 lhs, float2 rhs)
 {
     return { lhs.x + rhs.x, lhs.y + rhs.y };
 }
-float2 subtract(float2 lhs, float2 rhs)
+inline float2 subtract(float2 lhs, float2 rhs)
 {
     return { lhs.x - rhs.x, lhs.y - rhs.y };
 }
-float2 multiply(float2 lhs, float2 rhs)
+inline float2 multiply(float2 lhs, float2 rhs)
 {
     return { lhs.x * rhs.x - lhs.y * rhs.y, lhs.x * rhs.y + rhs.x * lhs.y };
 }
-float absC(float2 lhs)
+inline float absC(float2 lhs)
 {
-    return sqrt(pow(lhs.x, 2) + pow(lhs.y, 2));
+    return sqrt(lhs.x * lhs.x + lhs.y * lhs.y);
 }
-float decibel(float value)
+inline float decibel(float value)
 {
     return 20.f * log10(value);
 }
