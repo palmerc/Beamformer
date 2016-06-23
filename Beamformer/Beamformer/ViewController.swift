@@ -56,7 +56,7 @@ class ViewController: UIViewController {
         framesPerSecondFormatter.maximumFractionDigits = 2
 
         if shouldUseWebSocket {
-            let ws = WebSocket("ws://yankee.local:9000")
+            let ws = WebSocket("ws://192.168.1.101:9000")
             ws.services = [ .VoIP, .Background ]
             self.webSocket = ws
         }

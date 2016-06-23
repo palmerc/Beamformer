@@ -84,62 +84,56 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
     {
         var calculatedDelays: [Float]?
         var x_ns: [Int]?
-        if (elementPositions != nil) {
-            let angle: Float = 0
-            var xs = [Float](count: self.imageXPixelCount, repeatedValue: 0)
-            for index in 0..<self.imageXPixelCount {
-                xs[index] = self.imageXStartInMM + Float(index) * self.imageXPixelSpacing
-            }
-            var zs = [Float](count: self.imageZPixelCount, repeatedValue: 0)
-            for index in 0..<self.imageZPixelCount {
-                zs[index] = self.imageZStartInMM + Float(index) * self.imageZPixelSpacing
-            }
 
-            var xIndices = [Int](count: self.numberOfPixels, repeatedValue: 0)
-            var zIndices = [Int](count: self.numberOfPixels, repeatedValue: 0)
-            var delayIndices = [Int](count: self.numberOfPixels, repeatedValue: 0)
-            var zSquareds = [Float](count: self.numberOfPixels, repeatedValue: 0)
-            var unrolledXs = [Float](count: self.numberOfPixels, repeatedValue: 0)
-            var xSineAlphas = [Float](count: self.numberOfPixels, repeatedValue: 0)
-            var zCosineAlphas = [Float](count: self.numberOfPixels, repeatedValue: 0)
+        guard let elementPositions = elementPositions else {
+            print("Element positions are not initialized.")
+            return (x_ns, calculatedDelays)
+        }
+
+        let numberOfDelays = self.numberOfActiveTransducerElements * self.numberOfPixels
+        var calculatedDelaysInternal = [Float](count: numberOfDelays, repeatedValue: 0)
+        var x_nsInternal = [Int](count: numberOfDelays, repeatedValue: 0)
+
+        let angle: Float = 0
+
+        var unrolledXs = [Float](count: self.numberOfPixels, repeatedValue: 0)
+        var unrolledZs = [Float](count: self.numberOfPixels, repeatedValue: 0)
+        var tauSends = [Float](count: self.numberOfPixels, repeatedValue: 0)
+        for pixelIndex in 0 ..< self.numberOfPixels {
+            let xIndex = pixelIndex % self.imageXPixelCount
+            let zIndex = pixelIndex / self.imageXPixelCount
+            let x = self.imageXStartInMM + Float(xIndex) * self.imageXPixelSpacing
+            let z = self.imageZStartInMM + Float(zIndex) * self.imageZPixelSpacing
+            unrolledXs[pixelIndex] = x
+            unrolledZs[pixelIndex] = z
+            tauSends[pixelIndex] = x * sin(angle) + z * cos(angle)
+        }
+
+        for channelIdentifier in 0 ..< self.numberOfActiveTransducerElements {
+            let elementPosition = elementPositions[channelIdentifier]
             for index in 0 ..< self.numberOfPixels {
-                let xIndex = index % self.imageXPixelCount
-                let zIndex = index / self.imageXPixelCount
-                xIndices[index] = xIndex
-                zIndices[index] = zIndex
-                unrolledXs[index] = xs[xIndex]
-                delayIndices[index] = xIndex * self.imageZPixelCount + zIndex
-                zSquareds[index] = pow(Float(zs[zIndex]), 2)
-                xSineAlphas[index] = Float(xs[xIndex]) * sin(angle)
-                zCosineAlphas[index] = Float(zs[zIndex]) * cos(angle)
-            }
-            let tauEchos = zCosineAlphas.enumerate().map({
-                (index: Int, zCosineAlpha: Float) -> Float in
-                return (zCosineAlpha + xSineAlphas[index]) / self.speedOfUltrasoundInMMPerSecond
-            })
+                let x = unrolledXs[index]
+                let z = unrolledZs[index]
+                let xDifferenceSquared = pow(x - elementPosition, 2)
+                let zSquared = pow(z, 2)
 
-            let numberOfDelays = self.numberOfActiveTransducerElements * self.numberOfPixels
-            calculatedDelays = [Float](count: numberOfDelays, repeatedValue: 0)
-            x_ns = [Int](count: numberOfDelays, repeatedValue: 0)
-            for channelIdentifier in 0 ..< self.numberOfActiveTransducerElements {
-                let channelDelays = elementPositions![channelIdentifier]
-                for index in 0 ..< self.numberOfPixels {
-                    let xDifferenceSquared = pow(unrolledXs[index] - channelDelays, 2)
-                    let tauReceive = sqrt(zSquareds[index] + xDifferenceSquared) / self.speedOfUltrasoundInMMPerSecond
+                let tauSend = tauSends[index]
+                let tauReceive = sqrt(zSquared + xDifferenceSquared)
+                let tau = (tauSend + tauReceive) / self.speedOfUltrasoundInMMPerSecond
 
-                    let delay = (tauEchos[index] + tauReceive) * self.samplingFrequencyHz + self.lensCorrection
+                let delay = tau * self.samplingFrequencyHz + self.lensCorrection
+                let delayIndex = channelIdentifier * self.numberOfPixels + index
+                calculatedDelaysInternal[delayIndex] = delay
 
-                    let lookupIndex = delayIndices[index]
-                    let delayIndex = channelIdentifier * self.numberOfPixels + lookupIndex
-                    calculatedDelays![delayIndex] = delay
-
-                    var x_n = Int(floor(delay))
-                    if x_n > self.samplesPerChannel {
-                        x_n = -1
-                    }
-                    x_ns![delayIndex] = channelIdentifier * self.samplesPerChannel + x_n
+                var x_n = Int(floor(delay))
+                if x_n > self.samplesPerChannel {
+                    x_n = -1
                 }
+                x_nsInternal[delayIndex] = channelIdentifier * self.samplesPerChannel + x_n
             }
+
+            x_ns = x_nsInternal
+            calculatedDelays = calculatedDelaysInternal
         }
 
         return (x_ns, calculatedDelays)

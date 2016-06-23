@@ -147,7 +147,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                 self.processChannelData(channelData, withCommandBuffer: metalCommandBuffer)
                 self.processDecibelValues(metalCommandBuffer)
                 metalCommandBuffer.addCompletedHandler({ _ in
-                    let image = self.grayscaleImageFromPixelValues(imageIntensitiesMetalBuffer.contents(), width: self.imageZPixelCount, height: self.imageXPixelCount, imageOrientation: UIImageOrientation.LeftMirrored)
+                    let image = self.grayscaleImageFromPixelValues(imageIntensitiesMetalBuffer.contents(), width: self.imageXPixelCount, height: self.imageZPixelCount, imageOrientation: UIImageOrientation.Up)
                     dispatch_semaphore_signal(self.inflightSemaphore)
                     if let image = image {
                         block(image: image)
@@ -162,36 +162,38 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
     {
         var image: UIImage?
 
-        if (pixelValues != nil) {
-            let colorSpaceRef = CGColorSpaceCreateDeviceGray()
-
-            let bitsPerComponent = 8
-            let bytesPerPixel = 1
-            let bitsPerPixel = bytesPerPixel * bitsPerComponent
-            let bytesPerRow = bytesPerPixel * width
-            let totalBytes = height * bytesPerRow
-
-            let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.None.rawValue)
-                .union(CGBitmapInfo.ByteOrderDefault)
-
-            let data = NSData(bytes: pixelValues!, length: totalBytes)
-            let providerRef = CGDataProviderCreateWithCFData(data)
-
-            let imageRef = CGImageCreate(width,
-                height,
-                bitsPerComponent,
-                bitsPerPixel,
-                bytesPerRow,
-                colorSpaceRef,
-                bitmapInfo,
-                providerRef,
-                nil,
-                false,
-                CGColorRenderingIntent.RenderingIntentDefault)
-
-            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: imageOrientation)
+        guard let pixelValues = pixelValues else {
+            return image
         }
-        
+
+        let colorSpaceRef = CGColorSpaceCreateDeviceGray()
+
+        let bitsPerComponent = 8
+        let bytesPerPixel = 1
+        let bitsPerPixel = bytesPerPixel * bitsPerComponent
+        let bytesPerRow = bytesPerPixel * width
+        let totalBytes = height * bytesPerRow
+
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.None.rawValue)
+            .union(CGBitmapInfo.ByteOrderDefault)
+
+        let data = NSData(bytes: pixelValues, length: totalBytes)
+        let providerRef = CGDataProviderCreateWithCFData(data)
+
+        if let imageRef = CGImageCreate(width,
+                                        height,
+                                        bitsPerComponent,
+                                        bitsPerPixel,
+                                        bytesPerRow,
+                                        colorSpaceRef,
+                                        bitmapInfo,
+                                        providerRef,
+                                        nil,
+                                        false,
+                                        CGColorRenderingIntent.RenderingIntentDefault) {
+            image = UIImage(CGImage: imageRef, scale: 1.0, orientation: imageOrientation)
+        }
+
         return image
     }
 
