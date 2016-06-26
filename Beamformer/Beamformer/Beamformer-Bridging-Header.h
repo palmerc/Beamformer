@@ -2,4 +2,5 @@
 //  Use this file to import your target's public headers that you would like to expose to Swift.
 //
 
-#import "Beamformer.hpp"
+#import "VerasonicsFrame.h"
+#import "VerasonicsFrameJSON.h"

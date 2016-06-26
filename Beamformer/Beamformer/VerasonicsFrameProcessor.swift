@@ -55,27 +55,30 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
 
 
     // MARK: Main
-    public func imageFromVerasonicsFrame(verasonicsFrame :VerasonicsFrame?, withCompletionHandler block: (image: UIImage) -> Void)
+    public func imageFromVerasonicsFrame(verasonicsFrame :VerasonicsFrame?, withCompletionHandler handler: (image: UIImage) -> Void)
     {
-        if let channelData: ChannelData? = verasonicsFrame!.channelData {
+        guard let frame = verasonicsFrame else {
+            return
+        }
+
 //            let pixelCount = self.numberOfPixels;
 //            let channelDataSampleCount = channelData!.complexSamples.count
 
 //            var complexImageVector: [ComplexNumber]?
 //            if self.verasonicsFrameProcessorMetal != nil {
 //            self.verasonicsFrameProcessorMetal.samplesPerChannel = channelDataSampleCount
-            self.verasonicsFrameProcessorMetal.complexVectorFromChannelData(channelData, withCompletionHandler: {
-                (image: UIImage) in
-                block(image: image)
-            })
+        self.verasonicsFrameProcessorMetal.complexVectorFromVerasonicsFrame(frame,
+                                                                            withCompletionHandler: {
+            (image: UIImage) in
+            handler(image: image)
+        })
 //            } else {
-//                self.verasonicsFrameProcessorCPU.samplesPerChannel = channelDataSampleCount
+        //                self.verasonicsFrameProcessorCPU.samplesPerChannel = channelDataSampleCount
 //                complexImageVector = self.verasonicsFrameProcessorCPU.complexVectorFromChannelData(channelData)
 //            }
 
 //            let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
-            print("Frame \(verasonicsFrame!.identifier!) complete")
-        }
+        print("Frame \(frame.identifier) complete")
     }
 
 

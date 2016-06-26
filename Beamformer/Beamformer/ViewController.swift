@@ -5,16 +5,19 @@ import ObjectMapper
 
 
 class ViewController: UIViewController {
-    @IBOutlet weak var ultrasoundImageView: UIImageView!
-    @IBOutlet weak var connectButton: UIButton!
-    @IBOutlet weak var framesPerSecondLabel: UILabel!
+    @IBOutlet var ultrasoundImageView: UIImageView!
+    @IBOutlet var connectButton: UIButton!
+    @IBOutlet var framesPerSecondLabel: UILabel!
 
-    let queue: dispatch_queue_t = dispatch_queue_create("no.uio.TestDataQueue", nil);
+    let queue: dispatch_queue_t = dispatch_queue_create("no.uio.TestDataQueue", nil)
 
+    var shouldLoop = false
     let shouldDumpFrame: Bool = false
     let shouldUseWebSocket: Bool = false
     var measurement: Float = 0.0
     var framesPerSecondFormatter: NSNumberFormatter!
+    var inflightFrames = 0
+    var maxInflightFrames = 1
 
     lazy var verasonicsFrameProcessor = VerasonicsFrameProcessor(withElementPositions: VerasonicsFrameProcessor.transducerElementPositionsInMMs)
     var webSocket: WebSocket?
@@ -57,7 +60,7 @@ class ViewController: UIViewController {
 
         if shouldUseWebSocket {
             let ws = WebSocket("ws://192.168.1.101:9000")
-            ws.services = [ .VoIP, .Background ]
+            ws.services = [ .Video, .Background ]
             self.webSocket = ws
         }
 
@@ -67,13 +70,18 @@ class ViewController: UIViewController {
 
         if let webSocket = self.webSocket {
             webSocket.event.message = { message in
-                if let message = message as? String {
-                    self.processFrame(message, withCompletionHandler: nil)
+                if let message = message as? String where
+                    self.inflightFrames < self.maxInflightFrames {
+//                    let frameData = message.dataUsingEncoding(NSUTF8StringEncoding)
+//                    self.processFrameData(frameData!, withCompletionHandler: nil)
+                    self.inflightFrames = self.inflightFrames + 1
                 }
             }
         } else {
             print("Test data loop starting...")
-            self.testDataLoop(0)
+            dispatch_async(dispatch_get_main_queue(), {
+                self.testDataLoop(0)
+            })
         }
 
         self.connect = false
@@ -81,71 +89,59 @@ class ViewController: UIViewController {
 
     func testDataLoop(frameNumber: Int)
     {
-        let defaultDataset = DatasetManager.defaultManager().defaultDataset()
-        if let webSocketFrameURLs = defaultDataset?.fileURLs {
+        self.shouldLoop = true
+        
+        if let defaultDataset = DatasetManager.defaultManager().defaultDataset() {
+            let webSocketFrameURLs = defaultDataset.fileURLs
             let frameCount = webSocketFrameURLs.count
-            if frameNumber < frameCount {
-                let webSocketFrameURL = webSocketFrameURLs[frameNumber]
-                var message: String?
-                do {
-                    let text = try NSString.init(contentsOfURL: webSocketFrameURL, encoding: NSUTF8StringEncoding)
-                    message = text as String
-                } catch {}
 
-                if let message = message {
-                    processFrame(message, withCompletionHandler: {
-                        dispatch_async(dispatch_get_main_queue(), {
-                            var nextFrameNumber = frameNumber + 1
-                            if nextFrameNumber >= frameCount {
-                                nextFrameNumber = 0
-                            }
+            let webSocketFrameURL = webSocketFrameURLs[frameNumber]
+            let verasonicsFrameData = DatasetManager.defaultManager().cachedDataWithURL(webSocketFrameURL)
+            if let verasonicsFrame = VerasonicsFrameJSON(JSONData: verasonicsFrameData) {
+                processFrameData(verasonicsFrame, withCompletionHandler: {
+                    var nextNumber = frameNumber + 1
+                    if nextNumber >= frameCount {
+                        nextNumber = 0
+                    }
 
-                            self.testDataLoop(nextFrameNumber)
-                        })
-                    })
-                }
-            }
-        } else {
-            print("No frames in the documents directory.")
-        }
-    }
-
-    func processFrame(message: String, withCompletionHandler handler: (() -> ())?)
-    {
-        dispatch_async(self.queue) {
-            self.dispatchFrame(message)
-            if let handler = handler {
-                handler()
+                    self.testDataLoop(nextNumber)
+                })
             }
         }
     }
 
-    private func dispatchFrame(message: String)
+    func processFrameData(verasonicsFrame: VerasonicsFrame, withCompletionHandler handler: (() -> ())?)
     {
-        let verasonicsFrame = Mapper<VerasonicsFrame>().map(message)
-//        if self.shouldDumpFrame {
-//            if let documentsDirectory = self.documentsDirectory() {
-//                let number = verasonicsFrame!.identifier!
-//                let path = documentsDirectory.path! as NSString
-//                let filename = path.stringByAppendingPathComponent("Frame\(number).ws")
-//                self.dumpFrameWithFile(filename, text: message)
+        dispatch_sync(self.queue, {
+//            if self.shouldDumpFrame {
+//                self.dumpFrameData(data)
 //            }
-//        }
+            self.dispatchFrame(verasonicsFrame, withCompletionHandler: handler)
+        })
+    }
 
+    private func dispatchFrame(verasonicsFrame: VerasonicsFrame?, withCompletionHandler handler: (() -> ())?)
+    {
         let startTime = CACurrentMediaTime()
         self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame, withCompletionHandler: {
             (image: UIImage) in
             dispatch_async(dispatch_get_main_queue(), {
+                self.inflightFrames = self.inflightFrames - 1
                 self.ultrasoundImageView.image = image
                 let endTime = CACurrentMediaTime()
                 let elapsedTime = endTime - startTime
                 self.executionTime(elapsedTime)
+                self.connectButton.setTitle("Frame \(verasonicsFrame?.identifier)", forState: .Normal)
+                if let handler = handler {
+                    handler()
+                }
             })
         })
     }
 
     private func executionTime(executionTime: CFTimeInterval)
     {
+        print("\(executionTime)")
         if self.measurement > 0 {
             let smoothing: Float = 0.6
             self.measurement = (self.measurement * smoothing) + (Float(executionTime) * (1.0 - smoothing))
@@ -157,6 +153,16 @@ class ViewController: UIViewController {
         } else {
             self.measurement = Float(executionTime)
         }
+    }
+
+    private func dumpFrameData(data: NSData)
+    {
+//        if let documentsDirectory = self.documentsDirectory() {
+//            let number = verasonicsFrame!.identifier!
+//            let path = documentsDirectory.path! as NSString
+//            let filename = path.stringByAppendingPathComponent("Frame\(number).ws")
+//            self.dumpFrameWithFile(filename, text: message)
+//        }
     }
 
     private func dumpFrameWithFile(filename: String, text: String)
