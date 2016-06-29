@@ -16,6 +16,8 @@ class DatasetManager
 {
     private static var sharedInstance = DatasetManager()
     private var datasets: [Dataset]?
+    private var frameCache: NSCache
+    private var dataCache: NSCache
 
 
 
@@ -38,8 +40,41 @@ class DatasetManager
         return result
     }
 
+    func cachedVerasonicsFrameWithURL(URL: NSURL) -> VerasonicsFrame?
+    {
+        var verasonicsFrame = self.frameCache.objectForKey(URL) as? VerasonicsFrame
+        if verasonicsFrame == nil {
+            let data = self.cachedDataWithURL(URL)
+            if let data = data {
+                let frame = VerasonicsFrameJSON(JSONData: data)
+                self.frameCache.setObject(frame, forKey: URL)
+                verasonicsFrame = frame
+            }
+        }
+
+        return verasonicsFrame
+    }
+
+    func cachedDataWithURL(URL: NSURL) -> NSData?
+    {
+        var data = self.dataCache.objectForKey(URL) as? NSData
+        if data == nil {
+            let newData = NSData(contentsOfURL: URL)
+            if let newData = newData {
+                self.dataCache.setObject(newData, forKey: URL)
+                data = newData
+            }
+        }
+
+        return data
+    }
+
     private init()
     {
+        self.dataCache = NSCache()
+        self.dataCache.removeAllObjects()
+        self.frameCache = NSCache()
+        self.frameCache.removeAllObjects()
         self.copyDefaultDatasetsToDocumentsDirectory()
         self.loadDatasets()
     }

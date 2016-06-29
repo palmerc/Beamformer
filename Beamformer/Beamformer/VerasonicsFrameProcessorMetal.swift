@@ -134,27 +134,29 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
 
     // MARK:
 
-    public func complexVectorFromChannelData(channelData: ChannelData?, withCompletionHandler block: (image: UIImage) -> ())
+    public func complexVectorFromVerasonicsFrame(verasonicsFrame: VerasonicsFrame?, withCompletionHandler handler: (image: UIImage) -> ())
     {
-        if let channelData = channelData {
-            if !self.isInitializationComplete {
-                initializeBuffersWithSampleCount(channelData.complexSamples.count)
-            }
+        guard let verasonicsFrame = verasonicsFrame else {
+            return
+        }
 
-            if let imageIntensitiesMetalBuffer = self.imageIntensitiesMetalBuffer {
-                let metalCommandBuffer = self.metalCommandQueue.commandBuffer()
-                dispatch_semaphore_wait(self.inflightSemaphore, DISPATCH_TIME_FOREVER)
-                self.processChannelData(channelData, withCommandBuffer: metalCommandBuffer)
-                self.processDecibelValues(metalCommandBuffer)
-                metalCommandBuffer.addCompletedHandler({ _ in
-                    let image = self.grayscaleImageFromPixelValues(imageIntensitiesMetalBuffer.contents(), width: self.imageZPixelCount, height: self.imageXPixelCount, imageOrientation: UIImageOrientation.LeftMirrored)
-                    dispatch_semaphore_signal(self.inflightSemaphore)
-                    if let image = image {
-                        block(image: image)
-                    }
-                })
-                metalCommandBuffer.commit()
-            }
+        if !self.isInitializationComplete {
+            initializeBuffersWithSampleCount(verasonicsFrame)
+        }
+
+        if let imageIntensitiesMetalBuffer = self.imageIntensitiesMetalBuffer {
+            let metalCommandBuffer = self.metalCommandQueue.commandBuffer()
+            dispatch_semaphore_wait(self.inflightSemaphore, DISPATCH_TIME_FOREVER)
+            self.processVerasonicsFrame(verasonicsFrame, withCommandBuffer: metalCommandBuffer)
+            self.processDecibelValues(metalCommandBuffer)
+            metalCommandBuffer.addCompletedHandler({ _ in
+                let image = self.grayscaleImageFromPixelValues(imageIntensitiesMetalBuffer.contents(), width: self.imageXPixelCount, height: self.imageZPixelCount, imageOrientation: UIImageOrientation.Up)
+                dispatch_semaphore_signal(self.inflightSemaphore)
+                if let image = image {
+                    handler(image: image)
+                }
+            })
+            metalCommandBuffer.commit()
         }
     }
 
@@ -162,40 +164,42 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
     {
         var image: UIImage?
 
-        if (pixelValues != nil) {
-            let colorSpaceRef = CGColorSpaceCreateDeviceGray()
-
-            let bitsPerComponent = 8
-            let bytesPerPixel = 1
-            let bitsPerPixel = bytesPerPixel * bitsPerComponent
-            let bytesPerRow = bytesPerPixel * width
-            let totalBytes = height * bytesPerRow
-
-            let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.None.rawValue)
-                .union(CGBitmapInfo.ByteOrderDefault)
-
-            let data = NSData(bytes: pixelValues!, length: totalBytes)
-            let providerRef = CGDataProviderCreateWithCFData(data)
-
-            let imageRef = CGImageCreate(width,
-                height,
-                bitsPerComponent,
-                bitsPerPixel,
-                bytesPerRow,
-                colorSpaceRef,
-                bitmapInfo,
-                providerRef,
-                nil,
-                false,
-                CGColorRenderingIntent.RenderingIntentDefault)
-
-            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: imageOrientation)
+        guard let pixelValues = pixelValues else {
+            return image
         }
-        
+
+        let colorSpaceRef = CGColorSpaceCreateDeviceGray()
+
+        let bitsPerComponent = 8
+        let bytesPerPixel = 1
+        let bitsPerPixel = bytesPerPixel * bitsPerComponent
+        let bytesPerRow = bytesPerPixel * width
+        let totalBytes = height * bytesPerRow
+
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.None.rawValue)
+            .union(CGBitmapInfo.ByteOrderDefault)
+
+        let data = NSData(bytes: pixelValues, length: totalBytes)
+        let providerRef = CGDataProviderCreateWithCFData(data)
+
+        if let imageRef = CGImageCreate(width,
+                                        height,
+                                        bitsPerComponent,
+                                        bitsPerPixel,
+                                        bytesPerRow,
+                                        colorSpaceRef,
+                                        bitmapInfo,
+                                        providerRef,
+                                        nil,
+                                        false,
+                                        CGColorRenderingIntent.RenderingIntentDefault) {
+            image = UIImage(CGImage: imageRef, scale: 1.0, orientation: imageOrientation)
+        }
+
         return image
     }
 
-    private func initializeBuffersWithSampleCount(sampleValueCount: Int)
+    private func initializeBuffersWithSampleCount(verasonicsFrame: VerasonicsFrame)
     {
         if self.imageAmplitudesParametersMetalBuffer == nil {
             let byteCount = sizeof(ImageAmplitudesParameters)
@@ -210,7 +214,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
         if self.channelDataMetalBuffers == nil {
             var metalBuffers = [MTLBuffer]()
             for index in 0 ..< kInflightCommandBuffers {
-                let byteCount = sampleValueCount * sizeof(Int16)
+                let byteCount = verasonicsFrame.complexSampleBytes
                 let options = MTLResourceOptions.StorageModeShared.union(.CPUCacheModeWriteCombined)
                 let channelDataMetalBuffer = self.metalDevice.newBufferWithLength(byteCount, options: options)
                 channelDataMetalBuffer.label = "Channel Data Buffer \(index)"
@@ -279,20 +283,25 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
         self.isInitializationComplete = true
     }
 
-    private func processChannelData(channelData: ChannelData?, withCommandBuffer metalCommandBuffer: MTLCommandBuffer)
+    private func processVerasonicsFrame(verasonicsFrame: VerasonicsFrame, withCommandBuffer metalCommandBuffer: MTLCommandBuffer)
     {
-        if let channelData = channelData,
-            channelDataMetalBuffers = self.channelDataMetalBuffers,
+        if let channelDataMetalBuffers = self.channelDataMetalBuffers,
             imageAmplitudesMetalBuffer = self.imageAmplitudesMetalBuffer,
             channelDataParametersMetalBuffer = self.channelDataParametersMetalBuffer {
-            let parameters = BeamformerParameters(numberOfChannels: Int32(channelData.numberOfChannels), numberOfSamplesPerChannel: Int32(channelData.numberOfSamplesPerChannel), pixelCount: Int32(self.numberOfPixels))
+
+            let numberOfChannels = verasonicsFrame.numberOfChannels
+            let numberOfSamplesPerChannel = verasonicsFrame.numberOfSamplesPerChannel
+
+            let parameters = BeamformerParameters(numberOfChannels: numberOfChannels,
+                                                  numberOfSamplesPerChannel: numberOfSamplesPerChannel,
+                                                  pixelCount: Int32(self.numberOfPixels))
             UnsafeMutablePointer<BeamformerParameters>(channelDataParametersMetalBuffer.contents()).memory = parameters
 
             let channelDataMetalBuffer = channelDataMetalBuffers[self.computeFrameCycle]
             let channelDataMetalBufferPointer = channelDataMetalBuffer.contents()
 
-            let length = channelData.complexSamples.count * sizeof(UInt16)
-            memcpy(channelDataMetalBufferPointer, channelData.complexSamples, length)
+            let complexSamples = verasonicsFrame.complexSamples
+            memcpy(channelDataMetalBufferPointer, complexSamples, verasonicsFrame.complexSampleBytes)
             let commandEncoder = metalCommandBuffer.computeCommandEncoder()
 
             if let pipelineState = self.metalChannelDataPipelineState {
@@ -315,7 +324,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                 commandEncoder.endEncoding()
                 commandEncoder.popDebugGroup()
             }
-
+            
             self.computeFrameCycle = (self.computeFrameCycle + 1) % kInflightCommandBuffers
         }
     }

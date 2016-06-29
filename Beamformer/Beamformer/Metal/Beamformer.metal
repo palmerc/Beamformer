@@ -40,23 +40,25 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
     float2 channelSum(0.f, 0.f);
     for (int channelNumber = 0; channelNumber < channelCount; channelNumber++) {
         uint channelIndex = channelNumber * pixelCount + threadIdentifier;
-        int xnIndex = x_ns[channelIndex];
-        int xn1Index = xnIndex + 1;
+        int x_nIndex = x_ns[channelIndex];
+        int x_n1Index = x_nIndex + 1;
 
-        if (xnIndex > -1 && xn1Index < xnCutoff) {
+        if (x_nIndex > -1 && x_n1Index < xnCutoff) {
             float2 partA = partAs[channelIndex];
-            float2 lower = static_cast<float2>(inputChannelData[xnIndex]);
-            float2 upper = static_cast<float2>(inputChannelData[xn1Index]);
+
+            // pull a sample based upon Tau
+            float2 lowerSample = static_cast<float2>(inputChannelData[x_nIndex]);
+            float2 upperSample = static_cast<float2>(inputChannelData[x_n1Index]);
 
             float alpha = alphas[channelIndex];
             float2 complexAlpha(alpha, 0.f);
-            lower = multiply(lower, complexAlpha);
+            float2 lowerWeighted = multiply(lowerSample, complexAlpha);
 
             float oneMinusAlpha = 1.f - alpha;
             float2 complexOneMinusAlpha(oneMinusAlpha, 0.f);
-            upper = multiply(upper, complexOneMinusAlpha);
+            float2 upperWeighted = multiply(upperSample, complexOneMinusAlpha);
 
-            float2 partB = add(lower, upper);
+            float2 partB = add(lowerWeighted, upperWeighted);
             float2 result = multiply(partA, partB);
             channelSum = add(channelSum, result);
         }
