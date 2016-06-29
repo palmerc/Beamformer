@@ -1,8 +1,9 @@
 platform :ios, '9.0'
 use_frameworks!
 
-xcodeproj 'Beamformer/Beamformer.xcodeproj'
-pod 'SwiftWebSocket'
-pod 'ObjectMapper'
+target 'Beamformer' do
+    pod 'SwiftWebSocket'
+    pod 'ObjectMapper'
+end
 
-link_with 'Beamformer', 'BeamformerTests'
+project 'Beamformer/Beamformer.xcodeproj'
