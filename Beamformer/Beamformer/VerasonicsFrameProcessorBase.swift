@@ -10,7 +10,7 @@ public class VerasonicsFrameProcessorBase: NSObject
     let numberOfTransducerElements: Int = 192
     let numberOfActiveTransducerElements: Int = 128
     let imageZStartInMM: Float = 3.0
-    let imageZStopInMM: Float = 42.5
+    let imageZStopInMM: Float = 42.5 //42.5
     var samplesPerChannel: Int = 512
 
     var x_ns: [Int]? = nil

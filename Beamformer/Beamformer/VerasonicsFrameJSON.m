@@ -14,10 +14,12 @@ static NSString *const kVerasonicsFrameJSONKeyChannelData = @"channel_data";
 
 
 @implementation VerasonicsFrameJSON
+
 - (instancetype)initWithJSONData:(NSData *)JSONData
 {
     self = [super init];
     if (self) {
+        self.complexSamples = NULL;
         [self deserializeJSONData:JSONData];
     }
 
@@ -88,14 +90,11 @@ static NSString *const kVerasonicsFrameJSONKeyChannelData = @"channel_data";
 - (void)setComplexSamplesWithArray:(id)value
 {
     if ([value isKindOfClass:[NSArray class]]) {
-        free(self.complexSamples);
-        self.complexSamples = NULL;
-
         NSArray<NSNumber *> *array = (NSArray<NSNumber *> *)value;
-        size_t length = array.count * sizeof(int16_t);
-        int16_t *complexSamples = malloc(length);
+        NSMutableData *complexSamples = [NSMutableData dataWithLength:array.count * sizeof(int16_t)];
+        int16_t *underlyingBytes = complexSamples.mutableBytes;
         for (int i = 0; i < array.count; i++) {
-            complexSamples[i] = (int16_t)array[i].intValue;
+            underlyingBytes[i] = (int16_t)array[i].intValue;
         }
 
         self.complexSamples = complexSamples;

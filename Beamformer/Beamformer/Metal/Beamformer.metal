@@ -23,49 +23,44 @@ inline float decibel(float value);
 
 
 kernel void processChannelData(const device BeamformerParameters *beamformerParameters [[ buffer(0) ]],
-                               const device short2 *inputChannelData [[ buffer(1) ]],
-                               const device float2 *partAs [[ buffer(2) ]],
+                               const device short2 *IQComplexSampleData [[ buffer(1) ]],
+                               const device float2 *IQFrequencyShifts [[ buffer(2) ]],
                                const device float *alphas [[ buffer(3) ]],
-                               const device int *x_ns [[ buffer(4) ]],
-                               device float *outputImageAmplitude [[ buffer(5) ]],
+                               const device int *sampleIndices [[ buffer(4) ]],
+                               device float *imageAmplitudes [[ buffer(5) ]],
                                uint threadIdentifier [[ thread_position_in_grid ]])
 
 {
     int channelCount = beamformerParameters->channelCount; // 128
-    int samplesPerChannel = beamformerParameters->samplesPerChannel; // 400
-    int xnCutoff = channelCount * samplesPerChannel;
-
+//    int samplesPerChannel = beamformerParameters->samplesPerChannel; // 400
     int pixelCount = beamformerParameters->pixelCount;
 
     float2 channelSum(0.f, 0.f);
     for (int channelNumber = 0; channelNumber < channelCount; channelNumber++) {
         uint channelIndex = channelNumber * pixelCount + threadIdentifier;
-        int x_nIndex = x_ns[channelIndex];
-        int x_n1Index = x_nIndex + 1;
+        int sampleIndex = sampleIndices[channelIndex];
 
-        if (x_nIndex > -1 && x_n1Index < xnCutoff) {
-            float2 partA = partAs[channelIndex];
+        float2 IQFrequencyShift = IQFrequencyShifts[channelIndex];
 
-            // pull a sample based upon Tau
-            float2 lowerSample = static_cast<float2>(inputChannelData[x_nIndex]);
-            float2 upperSample = static_cast<float2>(inputChannelData[x_n1Index]);
+        // pull a sample based upon Tau
+        float2 lowerSample = static_cast<float2>(IQComplexSampleData[sampleIndex]);
+        float2 upperSample = static_cast<float2>(IQComplexSampleData[sampleIndex + 1]);
 
-            float alpha = alphas[channelIndex];
-            float2 complexAlpha(alpha, 0.f);
-            float2 lowerWeighted = multiply(lowerSample, complexAlpha);
+        float alpha = alphas[channelIndex];
+        float2 complexAlpha(alpha, 0.f);
+        float2 lowerWeighted = multiply(lowerSample, complexAlpha);
 
-            float oneMinusAlpha = 1.f - alpha;
-            float2 complexOneMinusAlpha(oneMinusAlpha, 0.f);
-            float2 upperWeighted = multiply(upperSample, complexOneMinusAlpha);
+        float oneMinusAlpha = 1.f - alpha;
+        float2 complexOneMinusAlpha(oneMinusAlpha, 0.f);
+        float2 upperWeighted = multiply(upperSample, complexOneMinusAlpha);
 
-            float2 partB = add(lowerWeighted, upperWeighted);
-            float2 result = multiply(partA, partB);
-            channelSum = add(channelSum, result);
-        }
+        float2 IQData = add(lowerWeighted, upperWeighted);
+        float2 result = multiply(IQFrequencyShift, IQData);
+        channelSum = add(channelSum, result);
     }
     float epsilon = 0.01f;
     float absoluteValue = absC(channelSum) + epsilon;
-    outputImageAmplitude[threadIdentifier] = decibel(absoluteValue);
+    imageAmplitudes[threadIdentifier] = decibel(absoluteValue);
 }
 
 //kernel void findMinMax(const device float *inputImageAmplitudes [[ buffer(0) ]],

@@ -13,7 +13,7 @@ class ViewController: UIViewController {
 
     var shouldLoop = false
     let shouldDumpFrame: Bool = false
-    let shouldUseWebSocket: Bool = false
+    let shouldUseWebSocket: Bool = true
     var measurement: Float = 0.0
     var framesPerSecondFormatter: NSNumberFormatter!
     var inflightFrames = 0
@@ -59,8 +59,8 @@ class ViewController: UIViewController {
         framesPerSecondFormatter.maximumFractionDigits = 2
 
         if shouldUseWebSocket {
-            let ws = WebSocket("ws://192.168.1.101:9000")
-            ws.services = [ .Video, .Background ]
+            let ws = WebSocket("ws://193.157.117.38:9000")
+            ws.services = [ .Background ]
             self.webSocket = ws
         }
 
@@ -72,8 +72,10 @@ class ViewController: UIViewController {
             webSocket.event.message = { message in
                 if let message = message as? String where
                     self.inflightFrames < self.maxInflightFrames {
-//                    let frameData = message.dataUsingEncoding(NSUTF8StringEncoding)
-//                    self.processFrameData(frameData!, withCompletionHandler: nil)
+                    let compressedData = NSData(base64EncodedString: message, options: NSDataBase64DecodingOptions(rawValue: 0))
+                    let frameData = compressedData?.uncompressedDataUsingCompression(Compression.ZLIB)
+                    let versonicsFrame = VerasonicsFrameJSON(JSONData: frameData)
+                    self.processFrameData(versonicsFrame, withCompletionHandler: nil)
                     self.inflightFrames = self.inflightFrames + 1
                 }
             }

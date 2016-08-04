@@ -44,13 +44,13 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
         super.init()
 
         self.elementPositions = elementPositions
-        let (x_ns, calculatedChannelDelays) = calculatedDelaysWithElementPositions(elementPositions)
-        let (alphas, partAs) = self.processCalculatedDelays(calculatedChannelDelays!, centralFrequency: self.centralFrequency, samplingFrequencyHz: self.samplingFrequencyHz, numberOfElements: self.numberOfActiveTransducerElements)
+        let (sampleLookup, calculatedChannelDelays) = calculatedDelaysWithElementPositions(elementPositions)
+        let (alphas, partAs) = self.processCalculatedDelays(calculatedChannelDelays!, numberOfElements: self.numberOfActiveTransducerElements)
 
         self.verasonicsFrameProcessorMetal = VerasonicsFrameProcessorMetal()
         self.verasonicsFrameProcessorMetal.partAs = partAs
         self.verasonicsFrameProcessorMetal.alphas = alphas
-        self.verasonicsFrameProcessorMetal.x_ns = x_ns
+        self.verasonicsFrameProcessorMetal.x_ns = sampleLookup
     }
 
 
@@ -86,16 +86,16 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
     func calculatedDelaysWithElementPositions(elementPositions: [Float]?) -> ([Int]?, [Float]?)
     {
         var calculatedDelays: [Float]?
-        var x_ns: [Int]?
+        var sampleLookup: [Int]?
 
         guard let elementPositions = elementPositions else {
             print("Element positions are not initialized.")
-            return (x_ns, calculatedDelays)
+            return (sampleLookup, calculatedDelays)
         }
 
         let numberOfDelays = self.numberOfActiveTransducerElements * self.numberOfPixels
         var calculatedDelaysInternal = [Float](count: numberOfDelays, repeatedValue: 0)
-        var x_nsInternal = [Int](count: numberOfDelays, repeatedValue: 0)
+        var sampleIndices = [Int](count: numberOfDelays, repeatedValue: 0)
 
         let angle: Float = 0
 
@@ -114,55 +114,53 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
 
         for channelIdentifier in 0 ..< self.numberOfActiveTransducerElements {
             let elementPosition = elementPositions[channelIdentifier]
-            for index in 0 ..< self.numberOfPixels {
-                let x = unrolledXs[index]
-                let z = unrolledZs[index]
+            for pixelIndex in 0 ..< self.numberOfPixels {
+                let channelPixelIndex = channelIdentifier * self.numberOfPixels + pixelIndex
+
+                let x = unrolledXs[pixelIndex]
+                let z = unrolledZs[pixelIndex]
                 let xDifferenceSquared = pow(x - elementPosition, 2)
                 let zSquared = pow(z, 2)
 
-                let tauSend = tauSends[index]
+                let tauSend = tauSends[pixelIndex]
                 let tauReceive = sqrt(zSquared + xDifferenceSquared)
                 let tau = (tauSend + tauReceive) / self.speedOfUltrasoundInMMPerSecond
 
                 let delay = tau * self.samplingFrequencyHz + self.lensCorrection
-                let delayIndex = channelIdentifier * self.numberOfPixels + index
-                calculatedDelaysInternal[delayIndex] = delay
 
-                var x_n = Int(floor(delay))
-                if x_n > self.samplesPerChannel {
-                    x_n = -1
+                var sampleOffset = Int(floor(delay))
+                if sampleOffset < 0 {
+                    sampleOffset = 0
+                } else if sampleOffset >= self.samplesPerChannel {
+                    sampleOffset = self.numberOfActiveTransducerElements - 1
                 }
-                x_nsInternal[delayIndex] = channelIdentifier * self.samplesPerChannel + x_n
+
+                sampleIndices[channelPixelIndex] = channelIdentifier * self.samplesPerChannel + sampleOffset
+                calculatedDelaysInternal[channelPixelIndex] = delay
             }
 
-            x_ns = x_nsInternal
+            sampleLookup = sampleIndices
             calculatedDelays = calculatedDelaysInternal
         }
 
-        return (x_ns, calculatedDelays)
+        return (sampleLookup, calculatedDelays)
     }
 
     func processCalculatedDelays(calculatedDelays: [Float],
-        centralFrequency: Float,
-        samplingFrequencyHz: Float,
         numberOfElements: Int)
         -> (alphas: [Float], partAs: [ComplexNumber])
     {
-        let x_ns = calculatedDelays.map({
-            (channelDelay: Float) -> Float in
-            return Float(floor(channelDelay))
+        let ceilingOfDelays = calculatedDelays.map({
+            (delay: Float) -> Float in
+            return floor(delay) + 1
         })
 
-        let x_n1s = x_ns.map { (x_n: Float) -> Float in
-            return x_n + 1
-        }
-
         var alphas = [Float](count: calculatedDelays.count, repeatedValue: 0)
-        vDSP_vsub(calculatedDelays, 1, x_n1s, 1, &alphas, 1, UInt(calculatedDelays.count))
+        vDSP_vsub(calculatedDelays, 1, ceilingOfDelays, 1, &alphas, 1, UInt(calculatedDelays.count))
 
         let shiftedDelays = calculatedDelays.map({
             (channelDelay: Float) -> Float in
-            return 2 * Float(M_PI) * centralFrequency * channelDelay / samplingFrequencyHz
+            return 2 * Float(M_PI) * self.centralFrequency * channelDelay / self.samplingFrequencyHz
         })
 
         let realConjugates = shiftedDelays.map({
@@ -177,9 +175,9 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
             return -1.0 * r * sin(calculatedDelay)
         })
 
-        let partAs = ComplexVector(reals: realConjugates, imaginaries: imaginaryConjugates).complexNumbers!
+        let IQComplexFrequencyShifts = ComplexVector(reals: realConjugates, imaginaries: imaginaryConjugates).complexNumbers!
         
-        return (alphas, partAs)
+        return (alphas, IQComplexFrequencyShifts)
     }
 
 
