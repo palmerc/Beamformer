@@ -1,6 +1,9 @@
 #import "VerasonicsFrameJSON.h"
 
+
+
 static NSString *const kVerasonicsFrameJSONKeyIdentifier = @"identifier";
+static NSString *const kVerasonicsFrameJSONKeyTimestamp = @"timestamp";
 static NSString *const kVerasonicsFrameJSONKeyChannelCount = @"number_of_channels";
 static NSString *const kVerasonicsFrameJSONKeySamplesPerChannelCount = @"number_of_samples_per_channel";
 static NSString *const kVerasonicsFrameJSONKeyChannelData = @"channel_data";
@@ -57,6 +60,7 @@ static NSString *const kVerasonicsFrameJSONKeyChannelData = @"channel_data";
 {
     return @{
              kVerasonicsFrameJSONKeyIdentifier: [NSValue valueWithPointer:@selector(setIdentifierWithNumber:)],
+             kVerasonicsFrameJSONKeyTimestamp: [NSValue valueWithPointer:@selector(setTimestampWithNumber:)],
              kVerasonicsFrameJSONKeyChannelCount: [NSValue valueWithPointer:@selector(setChannelCountWithNumber:)],
              kVerasonicsFrameJSONKeySamplesPerChannelCount: [NSValue valueWithPointer:@selector(setSamplesPerChannelCountWithNumber:)],
              kVerasonicsFrameJSONKeyChannelData: [NSValue valueWithPointer:@selector(setComplexSamplesWithArray:)]
@@ -68,6 +72,14 @@ static NSString *const kVerasonicsFrameJSONKeyChannelData = @"channel_data";
     if ([value isKindOfClass:[NSNumber class]]) {
         NSNumber *number = (NSNumber *)value;
         self.identifier = [number integerValue];
+    }
+}
+
+- (void)setTimestampWithNumber:(id)value
+{
+    if ([value isKindOfClass:[NSString class]]) {
+        NSNumber *timestamp = (NSNumber *)value;
+        self.timestamp = timestamp.integerValue;
     }
 }
 
