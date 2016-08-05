@@ -1,0 +1,8 @@
+message VerasonicsFrame {
+   int32 identifier = 1;
+   timestamp
+   string description;
+   int32 number_of_channels
+   int32 number_of_samples_per_channel
+   int16 channel_data
+}

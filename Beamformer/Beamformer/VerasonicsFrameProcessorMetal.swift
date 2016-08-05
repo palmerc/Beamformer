@@ -301,7 +301,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
             let channelDataMetalBufferPointer = channelDataMetalBuffer.contents()
 
             let complexSamples = verasonicsFrame.complexSamples
-            memcpy(channelDataMetalBufferPointer, complexSamples, verasonicsFrame.complexSampleBytes)
+            memcpy(channelDataMetalBufferPointer, complexSamples.bytes, verasonicsFrame.complexSampleBytes)
             let commandEncoder = metalCommandBuffer.computeCommandEncoder()
 
             if let pipelineState = self.metalChannelDataPipelineState {
