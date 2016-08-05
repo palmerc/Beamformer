@@ -13,7 +13,7 @@ class ViewController: UIViewController {
 
     var shouldLoop = false
     let shouldDumpFrame: Bool = false
-    let shouldUseWebSocket: Bool = true
+    let shouldUseWebSocket: Bool = false
     var measurement: Float = 0.0
     var framesPerSecondFormatter: NSNumberFormatter!
     var inflightFrames = 0

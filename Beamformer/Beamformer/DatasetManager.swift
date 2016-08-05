@@ -148,13 +148,19 @@ class DatasetManager
         for fileURL in fileURLs {
             let fileManager = NSFileManager.defaultManager()
 
-            if let filename = fileURL.lastPathComponent {
+            if let filename = fileURL.lastPathComponent, filePath = fileURL.path {
                 let destinationURL = destinationDirectory.URLByAppendingPathComponent(filename)
                 if let destinationPath = destinationURL.path {
-                    if fileManager.fileExistsAtPath(destinationPath) == false {
+                    if fileManager.contentsEqualAtPath(filePath, andPath: destinationPath) == false {
+                        do {
+                            try fileManager.removeItemAtURL(destinationURL)
+                        } catch let error as NSError {
+                            print("Unable to delete \(fileURL) - \(error.localizedDescription)")
+                        }
+
                         do {
                             try fileManager.copyItemAtURL(fileURL, toURL: destinationURL)
-                            print("Created file \(filename) in \(destinationDirectory) directory")
+                            print("Copied file \(filename) in \(destinationDirectory) directory")
                         } catch let error as NSError {
                             print("Unable to copy \(fileURL) - \(error.localizedDescription)")
                         }
