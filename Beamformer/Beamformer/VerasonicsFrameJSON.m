@@ -4,6 +4,8 @@
 
 static NSString *const kVerasonicsFrameJSONKeyIdentifier = @"identifier";
 static NSString *const kVerasonicsFrameJSONKeyTimestamp = @"timestamp";
+static NSString *const kVerasonicsFrameJSONKeyLensCorrection = @"lens_correction";
+static NSString *const kVerasonicsFrameJSONKeySamplingFrequency = @"sampling_frequency";
 static NSString *const kVerasonicsFrameJSONKeyChannelCount = @"number_of_channels";
 static NSString *const kVerasonicsFrameJSONKeySamplesPerChannelCount = @"number_of_samples_per_channel";
 static NSString *const kVerasonicsFrameJSONKeyChannelData = @"channel_data";
@@ -61,6 +63,8 @@ static NSString *const kVerasonicsFrameJSONKeyChannelData = @"channel_data";
     return @{
              kVerasonicsFrameJSONKeyIdentifier: [NSValue valueWithPointer:@selector(setIdentifierWithNumber:)],
              kVerasonicsFrameJSONKeyTimestamp: [NSValue valueWithPointer:@selector(setTimestampWithNumber:)],
+             kVerasonicsFrameJSONKeyLensCorrection: [NSValue valueWithPointer:@selector(setLensCorrectionWithNumber:)],
+             kVerasonicsFrameJSONKeySamplingFrequency: [NSValue valueWithPointer:@selector(setSamplingFrequencyWithNumber:)],
              kVerasonicsFrameJSONKeyChannelCount: [NSValue valueWithPointer:@selector(setChannelCountWithNumber:)],
              kVerasonicsFrameJSONKeySamplesPerChannelCount: [NSValue valueWithPointer:@selector(setSamplesPerChannelCountWithNumber:)],
              kVerasonicsFrameJSONKeyChannelData: [NSValue valueWithPointer:@selector(setComplexSamplesWithArray:)]
@@ -77,9 +81,27 @@ static NSString *const kVerasonicsFrameJSONKeyChannelData = @"channel_data";
 
 - (void)setTimestampWithNumber:(id)value
 {
-    if ([value isKindOfClass:[NSString class]]) {
+    if ([value isKindOfClass:[NSNumber class]]) {
         NSNumber *timestamp = (NSNumber *)value;
-        self.timestamp = timestamp.integerValue;
+        NSTimeInterval milliseconds = timestamp.doubleValue;
+        NSTimeInterval timeInterval = milliseconds / 1000.f;
+        self.timestamp = timeInterval;
+    }
+}
+
+- (void)setLensCorrectionWithNumber:(id)value
+{
+    if ([value isKindOfClass:[NSNumber class]]) {
+        NSNumber *lensCorrection = (NSNumber *)value;
+        self.lensCorrection = lensCorrection.doubleValue;
+    }
+}
+
+- (void)setSamplingFrequencyWithNumber:(id)value
+{
+    if ([value isKindOfClass:[NSNumber class]]) {
+        NSNumber *samplingFrequency = (NSNumber *)value;
+        self.samplingFrequency = samplingFrequency.doubleValue;
     }
 }
 
