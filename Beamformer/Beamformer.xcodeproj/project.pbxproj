@@ -7,11 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		29BEA8288EA69A7671483725 /* Pods_Beamformer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F1AE980CF9DE929883053BF /* Pods_Beamformer.framework */; };
 		C727A54E1D534566000A5F90 /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C727A54D1D534566000A5F90 /* libcompression.tbd */; };
 		C734E6921C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C734E6911C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift */; };
-		C73CC8161D1FA7A5008887D5 /* VerasonicsFrameJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = C73CC8151D1FA7A5008887D5 /* VerasonicsFrameJSON.m */; };
+		C7458ACB1D5A04FC0020A1FC /* VerasonicsFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = C7458AC81D5A04FC0020A1FC /* VerasonicsFrame.m */; };
+		C7458ACC1D5A04FC0020A1FC /* VerasonicsFrameJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = C7458ACA1D5A04FC0020A1FC /* VerasonicsFrameJSON.m */; };
 		C74E267F1CA1514000EA8FA0 /* DatasetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C74E267E1CA1514000EA8FA0 /* DatasetManager.swift */; };
-		C76902EA1D1DDDC300ACCBE1 /* VerasonicsFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = C76902E91D1DDDC300ACCBE1 /* VerasonicsFrame.m */; };
 		C77C01E31C64D2CD00600B51 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C77C01E21C64D2CD00600B51 /* Metal.framework */; };
 		C77C01E51C64D31A00600B51 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C77C01E41C64D31A00600B51 /* UIKit.framework */; };
 		C77C01E71C64D32200600B51 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C77C01E61C64D32200600B51 /* QuartzCore.framework */; };
@@ -21,7 +22,7 @@
 		C7B092CB1D53440800B9EB6D /* NSData+Compression.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7B092CA1D53440800B9EB6D /* NSData+Compression.swift */; };
 		C7C283891C6DD68C002AC83A /* Beamformer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7C283871C6DD68C002AC83A /* Beamformer.cpp */; };
 		C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */; };
-		C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959411C19FBEC0075EF90 /* ViewController.swift */; };
+		C7C959421C19FBEC0075EF90 /* UltrasoundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C959411C19FBEC0075EF90 /* UltrasoundViewController.swift */; };
 		C7C959451C19FBEC0075EF90 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959431C19FBEC0075EF90 /* Main.storyboard */; };
 		C7C959471C19FBEC0075EF90 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C7C959461C19FBEC0075EF90 /* Assets.xcassets */; };
 		C7C9594A1C19FBEC0075EF90 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */; };
@@ -29,6 +30,10 @@
 		C7CF50C11C72797000C41C50 /* ComplexNumbers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7CF50BF1C72797000C41C50 /* ComplexNumbers.cpp */; };
 		C7CF50C51C7892F500C41C50 /* VerasonicsFrameProcessorBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7CF50C41C7892F500C41C50 /* VerasonicsFrameProcessorBase.swift */; };
 		C7CF50C71C78933200C41C50 /* VerasonicsFrameProcessorMetal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7CF50C61C78933200C41C50 /* VerasonicsFrameProcessorMetal.swift */; };
+		C7D5485F1D5C912600727F70 /* ServerSelectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D5485E1D5C912600727F70 /* ServerSelectionViewController.swift */; };
+		C7D548611D5C923900727F70 /* ServerBonjourBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D548601D5C923900727F70 /* ServerBonjourBrowser.swift */; };
+		C7D548641D5C968200727F70 /* SHCPopupStoryboardSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = C7D548631D5C968200727F70 /* SHCPopupStoryboardSegue.m */; };
+		C7D548661D5DEC8300727F70 /* NSNetService+String.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D548651D5DEC8300727F70 /* NSNetService+String.swift */; };
 		C7EB50A61C536D480050C582 /* VerasonicsFrame.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50A51C536D480050C582 /* VerasonicsFrame.json */; };
 		C7EB50AD1C556D410050C582 /* ImageAmplitudes.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50AC1C556D410050C582 /* ImageAmplitudes.json */; };
 		C7EB50AF1C5573880050C582 /* ComplexImageVector.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50AE1C5573880050C582 /* ComplexImageVector.json */; };
@@ -65,7 +70,6 @@
 		C7F237801CA007E400363BD9 /* Frame7.ws in Resources */ = {isa = PBXBuildFile; fileRef = C7F237631CA007E400363BD9 /* Frame7.ws */; };
 		C7F237811CA007E400363BD9 /* Frame8.ws in Resources */ = {isa = PBXBuildFile; fileRef = C7F237641CA007E400363BD9 /* Frame8.ws */; };
 		C7F237821CA007E400363BD9 /* Frame9.ws in Resources */ = {isa = PBXBuildFile; fileRef = C7F237651CA007E400363BD9 /* Frame9.ws */; };
-		DB3B131AC92D9144D5E1C3D7 /* Pods_Beamformer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F1AE980CF9DE929883053BF /* Pods_Beamformer.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,12 +95,12 @@
 		68453FC83C16B34314D8C95F /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C727A54D1D534566000A5F90 /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
 		C734E6911C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrameProcessor.swift; sourceTree = "<group>"; };
-		C73CC8141D1FA7A5008887D5 /* VerasonicsFrameJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VerasonicsFrameJSON.h; sourceTree = "<group>"; };
-		C73CC8151D1FA7A5008887D5 /* VerasonicsFrameJSON.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VerasonicsFrameJSON.m; sourceTree = "<group>"; };
 		C73CC8171D1FA7F2008887D5 /* JSONSerializable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONSerializable.h; sourceTree = "<group>"; };
+		C7458AC71D5A04FC0020A1FC /* VerasonicsFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VerasonicsFrame.h; sourceTree = "<group>"; };
+		C7458AC81D5A04FC0020A1FC /* VerasonicsFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VerasonicsFrame.m; sourceTree = "<group>"; };
+		C7458AC91D5A04FC0020A1FC /* VerasonicsFrameJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VerasonicsFrameJSON.h; sourceTree = "<group>"; };
+		C7458ACA1D5A04FC0020A1FC /* VerasonicsFrameJSON.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VerasonicsFrameJSON.m; sourceTree = "<group>"; };
 		C74E267E1CA1514000EA8FA0 /* DatasetManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatasetManager.swift; sourceTree = "<group>"; };
-		C76902E81D1DDDC200ACCBE1 /* VerasonicsFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VerasonicsFrame.h; sourceTree = "<group>"; };
-		C76902E91D1DDDC300ACCBE1 /* VerasonicsFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VerasonicsFrame.m; sourceTree = "<group>"; };
 		C77C01E21C64D2CD00600B51 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		C77C01E41C64D31A00600B51 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		C77C01E61C64D32200600B51 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -109,7 +113,7 @@
 		C7C283881C6DD68C002AC83A /* Beamformer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Beamformer.hpp; sourceTree = "<group>"; };
 		C7C9593C1C19FBEC0075EF90 /* Beamformer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Beamformer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		C7C959411C19FBEC0075EF90 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		C7C959411C19FBEC0075EF90 /* UltrasoundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UltrasoundViewController.swift; sourceTree = "<group>"; };
 		C7C959441C19FBEC0075EF90 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		C7C959461C19FBEC0075EF90 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C7C959491C19FBEC0075EF90 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -125,6 +129,11 @@
 		C7CF50C21C78765F00C41C50 /* VerasonicsFrameProcessorCPU.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrameProcessorCPU.swift; sourceTree = "<group>"; };
 		C7CF50C41C7892F500C41C50 /* VerasonicsFrameProcessorBase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrameProcessorBase.swift; sourceTree = "<group>"; };
 		C7CF50C61C78933200C41C50 /* VerasonicsFrameProcessorMetal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrameProcessorMetal.swift; sourceTree = "<group>"; };
+		C7D5485E1D5C912600727F70 /* ServerSelectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerSelectionViewController.swift; sourceTree = "<group>"; };
+		C7D548601D5C923900727F70 /* ServerBonjourBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerBonjourBrowser.swift; sourceTree = "<group>"; };
+		C7D548621D5C968200727F70 /* SHCPopupStoryboardSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SHCPopupStoryboardSegue.h; sourceTree = "<group>"; };
+		C7D548631D5C968200727F70 /* SHCPopupStoryboardSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SHCPopupStoryboardSegue.m; sourceTree = "<group>"; };
+		C7D548651D5DEC8300727F70 /* NSNetService+String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSNetService+String.swift"; sourceTree = "<group>"; };
 		C7EB50A51C536D480050C582 /* VerasonicsFrame.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = VerasonicsFrame.json; sourceTree = "<group>"; };
 		C7EB50AA1C53832A0050C582 /* ChannelData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelData.swift; sourceTree = "<group>"; };
 		C7EB50AC1C556D410050C582 /* ImageAmplitudes.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = ImageAmplitudes.json; sourceTree = "<group>"; };
@@ -176,7 +185,7 @@
 				C77C01E71C64D32200600B51 /* QuartzCore.framework in Frameworks */,
 				C77C01E51C64D31A00600B51 /* UIKit.framework in Frameworks */,
 				C77C01E31C64D2CD00600B51 /* Metal.framework in Frameworks */,
-				DB3B131AC92D9144D5E1C3D7 /* Pods_Beamformer.framework in Frameworks */,
+				29BEA8288EA69A7671483725 /* Pods_Beamformer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -206,6 +215,18 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		C7458AC61D5A04FC0020A1FC /* VerasonicsFrame */ = {
+			isa = PBXGroup;
+			children = (
+				C7458AC71D5A04FC0020A1FC /* VerasonicsFrame.h */,
+				C7458AC81D5A04FC0020A1FC /* VerasonicsFrame.m */,
+				C7458AC91D5A04FC0020A1FC /* VerasonicsFrameJSON.h */,
+				C7458ACA1D5A04FC0020A1FC /* VerasonicsFrameJSON.m */,
+			);
+			name = VerasonicsFrame;
+			path = Beamformer/VerasonicsFrame;
+			sourceTree = SOURCE_ROOT;
+		};
 		C7C959331C19FBEC0075EF90 = {
 			isa = PBXGroup;
 			children = (
@@ -234,26 +255,28 @@
 				C7F237461CA007E400363BD9 /* Resources */,
 				C7CF50BA1C7278EA00C41C50 /* ComplexNumber */,
 				C7EB50D01C58E50E0050C582 /* Metal */,
+				C7458AC61D5A04FC0020A1FC /* VerasonicsFrame */,
 				C7C9593F1C19FBEC0075EF90 /* AppDelegate.swift */,
 				C74E267E1CA1514000EA8FA0 /* DatasetManager.swift */,
-				C7C959411C19FBEC0075EF90 /* ViewController.swift */,
+				C7C959411C19FBEC0075EF90 /* UltrasoundViewController.swift */,
+				C7D5485E1D5C912600727F70 /* ServerSelectionViewController.swift */,
+				C7D548601D5C923900727F70 /* ServerBonjourBrowser.swift */,
+				C7D548651D5DEC8300727F70 /* NSNetService+String.swift */,
+				C7D548621D5C968200727F70 /* SHCPopupStoryboardSegue.h */,
+				C7D548631D5C968200727F70 /* SHCPopupStoryboardSegue.m */,
 				C7F237441C9ECD8300363BD9 /* Synchronized.swift */,
 				C7C959431C19FBEC0075EF90 /* Main.storyboard */,
 				C7C959461C19FBEC0075EF90 /* Assets.xcassets */,
 				C7C959481C19FBEC0075EF90 /* LaunchScreen.storyboard */,
 				C7C9594B1C19FBEC0075EF90 /* Info.plist */,
-				C76902E81D1DDDC200ACCBE1 /* VerasonicsFrame.h */,
-				C76902E91D1DDDC300ACCBE1 /* VerasonicsFrame.m */,
-				C73CC8141D1FA7A5008887D5 /* VerasonicsFrameJSON.h */,
-				C73CC8151D1FA7A5008887D5 /* VerasonicsFrameJSON.m */,
 				C7B092CA1D53440800B9EB6D /* NSData+Compression.swift */,
-				C73CC8171D1FA7F2008887D5 /* JSONSerializable.h */,
 				C734E6911C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift */,
 				C7CF50C41C7892F500C41C50 /* VerasonicsFrameProcessorBase.swift */,
 				C7CF50C21C78765F00C41C50 /* VerasonicsFrameProcessorCPU.swift */,
 				C7CF50C61C78933200C41C50 /* VerasonicsFrameProcessorMetal.swift */,
 				C7EB50AA1C53832A0050C582 /* ChannelData.swift */,
 				C7EB50B21C560A6C0050C582 /* ChannelDelay.swift */,
+				C73CC8171D1FA7F2008887D5 /* JSONSerializable.h */,
 				C7C2837A1C6A1422002AC83A /* Beamformer-Bridging-Header.h */,
 			);
 			path = Beamformer;
@@ -377,12 +400,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C7C959641C19FBEC0075EF90 /* Build configuration list for PBXNativeTarget "Beamformer" */;
 			buildPhases = (
+				A919234140CD563191554A0D /* [CP] Check Pods Manifest.lock */,
 				1C716471F4EEBDB1E3449F9A /* [CP] Check Pods Manifest.lock */,
 				C7C959381C19FBEC0075EF90 /* Sources */,
 				C7C959391C19FBEC0075EF90 /* Frameworks */,
 				C7C9593A1C19FBEC0075EF90 /* Resources */,
-				B3E0D31D4CC5E32E2C0AA965 /* [CP] Embed Pods Frameworks */,
-				D733ED07D9E0E27ED8141D41 /* [CP] Copy Pods Resources */,
+				9D8A71294448CAF057DB7809 /* [CP] Embed Pods Frameworks */,
+				02E0988AB95BB85E9ED23918 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -441,7 +465,7 @@
 				TargetAttributes = {
 					C7C9593B1C19FBEC0075EF90 = {
 						CreatedOnToolsVersion = 7.2;
-						DevelopmentTeam = PVPYNPBB4A;
+						DevelopmentTeam = U2NS98MY5H;
 					};
 					C7C9594F1C19FBEC0075EF90 = {
 						CreatedOnToolsVersion = 7.2;
@@ -535,6 +559,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		02E0988AB95BB85E9ED23918 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/../Pods/Target Support Files/Pods-Beamformer/Pods-Beamformer-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		1C716471F4EEBDB1E3449F9A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -550,7 +589,7 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		B3E0D31D4CC5E32E2C0AA965 /* [CP] Embed Pods Frameworks */ = {
+		9D8A71294448CAF057DB7809 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -565,19 +604,19 @@
 			shellScript = "\"${SRCROOT}/../Pods/Target Support Files/Pods-Beamformer/Pods-Beamformer-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D733ED07D9E0E27ED8141D41 /* [CP] Copy Pods Resources */ = {
+		A919234140CD563191554A0D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "[CP] Copy Pods Resources";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/../Pods/Target Support Files/Pods-Beamformer/Pods-Beamformer-resources.sh\"\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -588,20 +627,24 @@
 			buildActionMask = 2147483647;
 			files = (
 				C734E6921C2EEEC8006972A0 /* VerasonicsFrameProcessor.swift in Sources */,
-				C76902EA1D1DDDC300ACCBE1 /* VerasonicsFrame.m in Sources */,
+				C7D5485F1D5C912600727F70 /* ServerSelectionViewController.swift in Sources */,
 				C78321201C81C20100890009 /* ComplexNumber.swift in Sources */,
+				C7458ACC1D5A04FC0020A1FC /* VerasonicsFrameJSON.m in Sources */,
 				C7CF50C51C7892F500C41C50 /* VerasonicsFrameProcessorBase.swift in Sources */,
+				C7D548661D5DEC8300727F70 /* NSNetService+String.swift in Sources */,
+				C7D548641D5C968200727F70 /* SHCPopupStoryboardSegue.m in Sources */,
 				C78321241C81ED1F00890009 /* ComplexVector.swift in Sources */,
 				C7882E771C899C5E00104447 /* Beamformer.metal in Sources */,
-				C73CC8161D1FA7A5008887D5 /* VerasonicsFrameJSON.m in Sources */,
 				C7EB50B31C560A6C0050C582 /* ChannelDelay.swift in Sources */,
 				C7CF50C11C72797000C41C50 /* ComplexNumbers.cpp in Sources */,
-				C7C959421C19FBEC0075EF90 /* ViewController.swift in Sources */,
+				C7C959421C19FBEC0075EF90 /* UltrasoundViewController.swift in Sources */,
 				C7CF50C71C78933200C41C50 /* VerasonicsFrameProcessorMetal.swift in Sources */,
 				C7B092CB1D53440800B9EB6D /* NSData+Compression.swift in Sources */,
 				C74E267F1CA1514000EA8FA0 /* DatasetManager.swift in Sources */,
+				C7458ACB1D5A04FC0020A1FC /* VerasonicsFrame.m in Sources */,
 				C7F237451C9ECD8300363BD9 /* Synchronized.swift in Sources */,
 				C7C959401C19FBEC0075EF90 /* AppDelegate.swift in Sources */,
+				C7D548611D5C923900727F70 /* ServerBonjourBrowser.swift in Sources */,
 				C7C283891C6DD68C002AC83A /* Beamformer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
