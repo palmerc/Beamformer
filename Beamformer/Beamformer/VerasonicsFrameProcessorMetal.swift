@@ -214,7 +214,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
         if self.channelDataMetalBuffers == nil {
             var metalBuffers = [MTLBuffer]()
             for index in 0 ..< kInflightCommandBuffers {
-                let byteCount = verasonicsFrame.complexSampleBytes
+                let byteCount = verasonicsFrame.complexSamples.length
                 let options = MTLResourceOptions.StorageModeShared.union(.CPUCacheModeWriteCombined)
                 let channelDataMetalBuffer = self.metalDevice.newBufferWithLength(byteCount, options: options)
                 channelDataMetalBuffer.label = "Channel Data Buffer \(index)"
@@ -301,7 +301,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
             let channelDataMetalBufferPointer = channelDataMetalBuffer.contents()
 
             let complexSamples = verasonicsFrame.complexSamples
-            memcpy(channelDataMetalBufferPointer, complexSamples.bytes, verasonicsFrame.complexSampleBytes)
+            memcpy(channelDataMetalBufferPointer, complexSamples.bytes, verasonicsFrame.complexSamples.length)
             let commandEncoder = metalCommandBuffer.computeCommandEncoder()
 
             if let pipelineState = self.metalChannelDataPipelineState {
