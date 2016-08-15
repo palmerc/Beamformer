@@ -31,6 +31,38 @@ static NSString *const kVerasonicsFrameJSONKeyChannelData = @"channel_data";
     return self;
 }
 
+- (NSData *)JSONData
+{
+    NSDictionary *dictionary = @{kVerasonicsFrameJSONKeyIdentifier: @(self.identifier),
+                                 kVerasonicsFrameJSONKeyTimestamp: @(self.timestamp),
+                                 kVerasonicsFrameJSONKeyLensCorrection: @(self.lensCorrection),
+                                 kVerasonicsFrameJSONKeySamplingFrequency: @(self.samplingFrequency),
+                                 kVerasonicsFrameJSONKeyChannelCount: @(self.numberOfChannels),
+                                 kVerasonicsFrameJSONKeySamplesPerChannelCount: @(self.numberOfSamplesPerChannel),
+                                 kVerasonicsFrameJSONKeyChannelData: @(1)};
+    NSMutableArray *mutableComplexSamples = [[NSMutableArray alloc] initWithCapacity:self.numberOfSamples];
+    NSUInteger length = [self.complexSamples length];
+    NSUInteger chunkSize = sizeof(int16_t);
+    NSUInteger chunkOffset = 0;
+
+    do {
+        chunkSize = MIN(length - chunkOffset, chunkSize);
+
+        NSData *chunk = [self.complexSamples subdataWithRange:NSMakeRange(chunkOffset, chunkSize)];
+        chunkOffset = chunkOffset + chunkSize;
+        int16_t value = (int16_t)chunk.bytes;
+        [mutableComplexSamples addObject:@(value)];
+    } while (chunkOffset < length);
+
+    NSError *error = nil;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:NSJSONWritingPrettyPrinted error:&error];
+    if (error) {
+        NSLog(@"%@", error.localizedDescription);
+    }
+
+    return data;
+}
+
 - (void)deserializeJSONData:(NSData *)JSONData
 {
     NSError *error = nil;

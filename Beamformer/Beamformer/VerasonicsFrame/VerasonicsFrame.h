@@ -9,9 +9,8 @@
 @property (assign, nonatomic) double samplingFrequency;
 @property (assign, nonatomic) int32_t numberOfChannels;
 @property (assign, nonatomic) int32_t numberOfSamplesPerChannel;
-@property (assign, nonatomic, readonly) int32_t numberOfSamples;
-
 @property (strong, nonatomic) NSData *complexSamples;
-@property (assign, nonatomic, readonly) NSInteger complexSampleBytes;
+
+@property (assign, nonatomic, readonly) int32_t numberOfSamples;
 
 @end

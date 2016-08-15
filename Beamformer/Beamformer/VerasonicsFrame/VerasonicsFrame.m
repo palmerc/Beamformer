@@ -13,6 +13,9 @@
     self = [super init];
     if (self) {
         _identifier = -1;
+        _timestamp = 0.f;
+        _lensCorrection = 0.f;
+        _samplingFrequency = 0.f;
         _numberOfChannels = 0;
         _numberOfSamplesPerChannel = 0;
     }
@@ -23,11 +26,6 @@
 - (int32_t)numberOfSamples
 {
     return self.numberOfChannels * self.numberOfSamplesPerChannel;
-}
-
-- (NSInteger)complexSampleBytes
-{
-    return self.numberOfSamples * 2 * sizeof(int16_t);
 }
 
 @end
