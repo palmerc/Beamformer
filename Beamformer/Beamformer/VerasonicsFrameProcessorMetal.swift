@@ -150,7 +150,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
             self.processVerasonicsFrame(verasonicsFrame, withCommandBuffer: metalCommandBuffer)
             self.processDecibelValues(metalCommandBuffer)
             metalCommandBuffer.addCompletedHandler({ _ in
-                let image = self.grayscaleImageFromPixelValues(imageIntensitiesMetalBuffer.contents(), width: self.imageXPixelCount, height: self.imageZPixelCount, imageOrientation: UIImageOrientation.Up)
+                let image = self.grayscaleImageFromPixelValues(imageIntensitiesMetalBuffer.contents(), imageSize: self.imageSize, imageOrientation: UIImageOrientation.Up)
                 dispatch_semaphore_signal(self.inflightSemaphore)
                 if let image = image {
                     handler(image: image)
@@ -160,7 +160,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
         }
     }
 
-    private func grayscaleImageFromPixelValues(pixelValues: UnsafePointer<Void>?, width: Int, height: Int, imageOrientation: UIImageOrientation) -> UIImage?
+    private func grayscaleImageFromPixelValues(pixelValues: UnsafePointer<Void>?, imageSize: CGSize, imageOrientation: UIImageOrientation) -> UIImage?
     {
         var image: UIImage?
 
@@ -170,6 +170,8 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
 
         let colorSpaceRef = CGColorSpaceCreateDeviceGray()
 
+        let width = Int(imageSize.width)
+        let height = Int(imageSize.height)
         let bitsPerComponent = 8
         let bytesPerPixel = 1
         let bitsPerPixel = bytesPerPixel * bitsPerComponent

@@ -103,8 +103,8 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
         var unrolledZs = [Float](count: self.numberOfPixels, repeatedValue: 0)
         var tauSends = [Float](count: self.numberOfPixels, repeatedValue: 0)
         for pixelIndex in 0 ..< self.numberOfPixels {
-            let xIndex = pixelIndex % self.imageXPixelCount
-            let zIndex = pixelIndex / self.imageXPixelCount
+            let xIndex = pixelIndex % Int(self.imageSize.width)
+            let zIndex = pixelIndex / Int(self.imageSize.height)
             let x = self.imageXStartInMM + Float(xIndex) * self.imageXPixelSpacing
             let z = self.imageZStartInMM + Float(zIndex) * self.imageZPixelSpacing
             unrolledXs[pixelIndex] = x

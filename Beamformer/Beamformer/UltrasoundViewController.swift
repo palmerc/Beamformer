@@ -6,7 +6,12 @@ import ObjectMapper
 
 let ultrasoundToServerSelectionSegueIdentifier = "ultrasoundToServerSelectionSegueIdentifier"
 
-
+struct FrameTimeSample
+{
+    let frameNumber: Int
+    let GPUProcessingTime: Double
+    let networkProcessingTime: Double
+}
 
 class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 {
@@ -18,6 +23,7 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 
     let queue: dispatch_queue_t = dispatch_queue_create("no.uio.TestDataQueue", nil)
 
+    var frameTimeSamples = [FrameTimeSample]()
     var GPUTimeMeasurement: Float = 0
     var networkTimeMeasurement: Float = 0
     var framesPerSecondFormatter: NSNumberFormatter!
@@ -39,19 +45,20 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
                 webSocket.close()
             }
 
-            if let service = selectedService,
-                address = service.humanReadableIPAddresses()?.first {
-                let port = service.port
-                let URLString = "ws://\(address):\(port)"
-
-                let webSocket = WebSocket(URLString)
+            if selectedService != nil {
+                let webSocket = WebSocket()
                 webSocket.services = [.Background]
                 webSocket.binaryType = .NSData
                 webSocket.event.open = {
-                    print("Opened WebSocket connection to \(URLString).")
+                    print("Opened WebSocket connection to \(webSocket.url).")
                 }
                 webSocket.event.close = { code, reason, clean in
                     print("Closed WebSocket connection.")
+
+                    if self.frameTimeSamples.count > 0 {
+                        self.recordSamples()
+                        self.frameTimeSamples.removeAll()
+                    }
                 }
                 webSocket.event.error = { error in
                     print("WebSocket error \(error)")
@@ -146,22 +153,27 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 
     private func dispatchFrame(verasonicsFrame: VerasonicsFrame?, withCompletionHandler handler: (() -> ())?)
     {
-        let startTime = CACurrentMediaTime()
+        let GPUProcessingStartTime = CACurrentMediaTime()
         self.verasonicsFrameProcessor.imageFromVerasonicsFrame(verasonicsFrame, withCompletionHandler: {
             (image: UIImage) in
             dispatch_async(dispatch_get_main_queue(), {
                 self.inflightFrames = self.inflightFrames - 1
                 self.ultrasoundImageView.image = image
-                let endTime = CACurrentMediaTime()
-                let elapsedGPUTime = endTime - startTime
-                self.GPUProcessingTime(elapsedGPUTime)
-                if let frameNumber = verasonicsFrame?.identifier {
+
+                if let frameNumber = verasonicsFrame?.identifier,
+                    verasonicsFrameTimestamp = verasonicsFrame?.timestamp {
                     self.frameNumberLabel.text = "Frame \(frameNumber)"
-                }
-                if let verasonicsFrame = verasonicsFrame {
+
+                    let GPUProcessingEndTime = CACurrentMediaTime()
+                    let GPUProcessingTime = GPUProcessingEndTime - GPUProcessingStartTime
+                    self.GPUProcessingTime(GPUProcessingTime)
+
                     let now = NSDate().timeIntervalSince1970
-                    let elapsedNetworkTime = now - verasonicsFrame.timestamp
-                    self.networkProcessingTime(elapsedNetworkTime)
+                    let networkProcessingTime = now - verasonicsFrameTimestamp
+                    self.networkProcessingTime(networkProcessingTime)
+
+                    let frameTimeSample = FrameTimeSample(frameNumber: frameNumber, GPUProcessingTime: GPUProcessingTime, networkProcessingTime: networkProcessingTime)
+                    self.frameTimeSamples.append(frameTimeSample)
                 }
 
                 if let handler = handler {
@@ -185,18 +197,20 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 
     @IBAction func didPressConnectButton(sender: AnyObject)
     {
-        if let webSocket = self.webSocket {
-            webSocket.close()
-        }
-
         self.performSegueWithIdentifier(ultrasoundToServerSelectionSegueIdentifier, sender: nil)
     }
 
     @IBAction func unwindToUltrasoundViewController(segue: UIStoryboardSegue)
     {
         // Intentionally left blank
-        if let webSocket = self.webSocket {
-            webSocket.open()
+        if let webSocket = self.webSocket,
+            service = self.selectedService,
+            address = service.humanReadableIPAddresses()?.first {
+                let port = service.port
+                let URLString = "ws://\(address):\(port)"
+            dispatch_async(dispatch_get_main_queue(), { 
+                webSocket.open(URLString)
+            })
         }
     }
 
@@ -204,16 +218,42 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 
     // MARK: Utility methods
 
+    private func recordSamples()
+    {
+        var lines = [String]()
+        let header = "FRAME_NO, GPU_TIME, NET_TIME"
+        lines.append(header)
+        for frameTimeSample in self.frameTimeSamples {
+            let line = String(format: "%d, %f, %f", frameTimeSample.frameNumber, frameTimeSample.GPUProcessingTime, frameTimeSample.networkProcessingTime)
+            lines.append(line)
+        }
+
+        let imageSize = self.verasonicsFrameProcessor.imageSize
+        let documentsDirectory = DatasetManager.documentsDirectory()
+        let filename = String(format: "samples-%dx%d.csv", Int(imageSize.width), Int(imageSize.height))
+        if let documentURL = documentsDirectory?.URLByAppendingPathComponent(filename),
+        filePath = documentURL.path {
+            let document = lines.joinWithSeparator("\n")
+            do {
+                try document.writeToFile(filePath, atomically: true, encoding: NSUTF8StringEncoding)
+            } catch let error as NSError {
+                print("\(error)")
+            }
+        }
+        print("Samples written to file - \(filename)")
+    }
+
     private func networkProcessingTime(executionTime: CFTimeInterval)
     {
-        print("\(executionTime)")
         if self.networkTimeMeasurement > 0 {
             let smoothing: Float = 0.6
             self.networkTimeMeasurement = (self.networkTimeMeasurement * smoothing) + (Float(executionTime) * (1.0 - smoothing))
             let framesPerSecond = 1.0 / self.networkTimeMeasurement
 
             if let fpsText = self.framesPerSecondFormatter.stringFromNumber(framesPerSecond) {
-                self.networkFramesPerSecondLabel.text = "\(fpsText) NFPS"
+                let labelText = "\(fpsText) Net FPS"
+                self.networkFramesPerSecondLabel.text = labelText
+                print("\(labelText) - \(executionTime)")
             }
         } else {
             self.networkTimeMeasurement = Float(executionTime)
@@ -222,14 +262,15 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 
     private func GPUProcessingTime(executionTime: CFTimeInterval)
     {
-        print("\(executionTime)")
         if self.GPUTimeMeasurement > 0 {
             let smoothing: Float = 0.6
             self.GPUTimeMeasurement = (self.GPUTimeMeasurement * smoothing) + (Float(executionTime) * (1.0 - smoothing))
             let framesPerSecond = 1.0 / self.GPUTimeMeasurement
 
             if let fpsText = self.framesPerSecondFormatter.stringFromNumber(framesPerSecond) {
-                self.GPUFramesPerSecondLabel.text = "\(fpsText) GPUFPS"
+                let labelText = "\(fpsText) GPU FPS"
+                self.GPUFramesPerSecondLabel.text = labelText
+                print("\(labelText) - \(executionTime)")
             }
         } else {
             self.GPUTimeMeasurement = Float(executionTime)

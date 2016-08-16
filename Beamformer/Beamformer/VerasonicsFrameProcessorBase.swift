@@ -1,4 +1,5 @@
 import Foundation
+import CoreGraphics
 
 
 
@@ -16,7 +17,15 @@ public class VerasonicsFrameProcessorBase: NSObject
     var x_ns: [Int]? = nil
     var alphas: [Float]? = nil
     var partAs: [ComplexNumber]? = nil
-    
+
+    var imageSize: CGSize {
+        get {
+            let width = Int(round((self.imageXStopInMM - self.imageXStartInMM) / self.imageXPixelSpacing))
+            let height = Int(round((self.imageZStopInMM - self.imageZStartInMM) / self.imageZPixelSpacing))
+            return CGSize(width: width, height: height)
+        }
+    }
+
     var aperture: Float {
         get {
             return self.elementPitch * (Float(numberOfActiveTransducerElements) - 1);
@@ -37,6 +46,7 @@ public class VerasonicsFrameProcessorBase: NSObject
     
     var imageZStopInMM: Float{
         get {
+//            return (self.imageZPixelSpacing * Float(self.imageSize.height)) + self.imageZStartInMM
             return (pow(self.a, 2) - self.b) / (2 * self.a);
         }
     }
@@ -53,12 +63,15 @@ public class VerasonicsFrameProcessorBase: NSObject
     }
     var imageXPixelSpacing: Float {
         get {
-            return self.lambda / 2.0 // Spacing between pixels in x_direction
+//            return (self.imageXStopInMM - self.imageXStartInMM) / Float(self.imageSize.width)
+            return self.lambda / 2 // Spacing between pixels in x_direction
         }
     }
     var imageZPixelSpacing: Float {
         get {
-            return self.lambda / 2.0  // Spacing between pixels in z_direction
+//            return (self.imageXStopInMM - self.imageXStartInMM) / Float(self.imageSize.width)
+//            return (self.imageZStopInMM - self.imageZStartInMM) / Float(self.imageSize.height)
+            return self.lambda / 2 // Spacing between pixels in z_direction
         }
     }
     
@@ -72,17 +85,7 @@ public class VerasonicsFrameProcessorBase: NSObject
             return VerasonicsFrameProcessor.transducerElementPositionsInMMs.last!
         }
     }
-    var imageXPixelCount: Int {
-        get {
-            return Int(round((self.imageXStopInMM - self.imageXStartInMM) / self.imageXPixelSpacing))
-        }
-    }
-    var imageZPixelCount: Int {
-        get {
-            return Int(round((self.imageZStopInMM - self.imageZStartInMM) / self.imageZPixelSpacing))
-        }
-    }
     var numberOfPixels: Int {
-        return self.imageXPixelCount * self.imageZPixelCount
+        return Int(self.imageSize.width) * Int(self.imageSize.height)
     }
 }

@@ -120,7 +120,7 @@ class DatasetManager
     {
         let mainBundle = NSBundle.mainBundle()
         let bundleWebSocketFileURLs = mainBundle.URLsForResourcesWithExtension(kWebSocketFileExtension, subdirectory: nil)
-        if let webSocketFileURLs = bundleWebSocketFileURLs, documentsDirectory = self.documentsDirectory() {
+        if let webSocketFileURLs = bundleWebSocketFileURLs, documentsDirectory = DatasetManager.documentsDirectory() {
             let datasetsDirectory = documentsDirectory.URLByAppendingPathComponent(kDatasetsDirectory)
             let defaultDatasetDirectory = datasetsDirectory.URLByAppendingPathComponent(kDefaultDatasetName)
             self.createDirectory(defaultDatasetDirectory)
@@ -170,7 +170,7 @@ class DatasetManager
         }
     }
 
-    private func documentsDirectory() -> NSURL?
+    static func documentsDirectory() -> NSURL?
     {
         var documentsDirectory: NSURL?
         if let directory: NSString = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true).first {
@@ -183,7 +183,7 @@ class DatasetManager
     private func datasetDirectory() -> NSURL?
     {
         var datasetDirectory: NSURL?
-        if let documentsDirectory = self.documentsDirectory() {
+        if let documentsDirectory = DatasetManager.documentsDirectory() {
             datasetDirectory = documentsDirectory.URLByAppendingPathComponent(kDatasetsDirectory)
         }
 
