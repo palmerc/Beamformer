@@ -24,6 +24,7 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
     let queue: dispatch_queue_t = dispatch_queue_create("no.uio.TestDataQueue", nil)
 
     var frameTimeSamples = [FrameTimeSample]()
+    var timestamp: NSTimeInterval = 0
     var GPUTimeMeasurement: Float = 0
     var networkTimeMeasurement: Float = 0
     var framesPerSecondFormatter: NSNumberFormatter!
@@ -102,10 +103,10 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
         self.ultrasoundImageView.image = uioSeal
 
 
-//            print("Test data loop starting...")
-//            dispatch_async(dispatch_get_main_queue(), {
-//                self.testDataLoop(0)
-//            })
+//        print("Test data loop starting...")
+//        dispatch_async(dispatch_get_main_queue(), {
+//            self.testDataLoop(0)
+//        })
 
     }
 
@@ -169,7 +170,8 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
                     self.GPUProcessingTime(GPUProcessingTime)
 
                     let now = NSDate().timeIntervalSince1970
-                    let networkProcessingTime = now - verasonicsFrameTimestamp
+                    let networkProcessingTime = now - self.timestamp
+                    self.timestamp = now
                     self.networkProcessingTime(networkProcessingTime)
 
                     let frameTimeSample = FrameTimeSample(frameNumber: frameNumber, GPUProcessingTime: GPUProcessingTime, networkProcessingTime: networkProcessingTime)

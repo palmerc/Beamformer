@@ -17,6 +17,7 @@ public class VerasonicsFrameProcessorBase: NSObject
     var x_ns: [Int]? = nil
     var alphas: [Float]? = nil
     var partAs: [ComplexNumber]? = nil
+    var elementPositions: [Float]?
 
     var imageSize: CGSize {
         get {
@@ -77,12 +78,12 @@ public class VerasonicsFrameProcessorBase: NSObject
     
     var imageXStartInMM: Float {
         get {
-            return VerasonicsFrameProcessor.transducerElementPositionsInMMs.first!
+            return -6.50
         }
     }
     var imageXStopInMM: Float {
         get {
-            return VerasonicsFrameProcessor.transducerElementPositionsInMMs.last!
+            return 18.9
         }
     }
     var numberOfPixels: Int {
