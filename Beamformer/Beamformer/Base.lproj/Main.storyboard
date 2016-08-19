@@ -18,8 +18,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="UiO Seal" translatesAutoresizingMaskIntoConstraints="NO" id="XYv-BP-5dS">
-                                <rect key="frame" x="236" y="20" width="128" height="128"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="UiO Seal" translatesAutoresizingMaskIntoConstraints="NO" id="XYv-BP-5dS">
+                                <rect key="frame" x="0.0" y="20" width="600" height="128"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Frame 0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="znu-hL-ejm">
                                 <rect key="frame" x="20" y="501" width="63" height="21"/>
@@ -51,7 +51,6 @@
                         <constraints>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="9mt-cr-qgy" secondAttribute="bottom" constant="20" id="7GG-vy-zty"/>
                             <constraint firstItem="9mt-cr-qgy" firstAttribute="top" secondItem="cmK-rS-IxY" secondAttribute="bottom" constant="8" id="9a8-gU-UUY"/>
-                            <constraint firstItem="XYv-BP-5dS" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Gsb-m2-UE4"/>
                             <constraint firstItem="jgq-Fk-yKy" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="MNF-vK-Nze"/>
                             <constraint firstItem="cmK-rS-IxY" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="RYS-3j-3cl"/>
                             <constraint firstItem="9mt-cr-qgy" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="SQ0-Am-TDW"/>
@@ -59,7 +58,9 @@
                             <constraint firstItem="9mt-cr-qgy" firstAttribute="top" secondItem="cmK-rS-IxY" secondAttribute="bottom" constant="8" id="aSH-KY-ZKL"/>
                             <constraint firstItem="XYv-BP-5dS" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" constant="20" id="b7z-Wf-ytx"/>
                             <constraint firstItem="znu-hL-ejm" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="bgp-QM-Gty"/>
+                            <constraint firstItem="XYv-BP-5dS" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="n04-Mk-Jbf"/>
                             <constraint firstItem="cmK-rS-IxY" firstAttribute="top" secondItem="znu-hL-ejm" secondAttribute="bottom" constant="8" id="vlI-rc-3yb"/>
+                            <constraint firstAttribute="trailing" secondItem="XYv-BP-5dS" secondAttribute="trailing" id="ytr-4i-dqH"/>
                         </constraints>
                     </view>
                     <connections>
@@ -73,6 +74,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="219" y="275"/>
         </scene>
         <!--Server Selection-->
         <scene sceneID="rWA-rC-tHu">
