@@ -21,6 +21,7 @@ public class VerasonicsFrameProcessorBase: NSObject
 
     var imageSize: CGSize {
         get {
+            // iPhone 6S 375x667 or 750x1334
             let width = Int(round((self.imageXStopInMM - self.imageXStartInMM) / self.imageXPixelSpacing))
             let height = Int(round((self.imageZStopInMM - self.imageZStartInMM) / self.imageZPixelSpacing))
             return CGSize(width: width, height: height)
@@ -64,15 +65,15 @@ public class VerasonicsFrameProcessorBase: NSObject
     }
     var imageXPixelSpacing: Float {
         get {
-//            return (self.imageXStopInMM - self.imageXStartInMM) / Float(self.imageSize.width)
-            return self.lambda / 2 // Spacing between pixels in x_direction
+            return Float(self.imageXStopInMM - self.imageXStartInMM) / 375//Float(self.imageSize.width)
+//            return self.lambda / 2 // Spacing between pixels in x_direction
         }
     }
     var imageZPixelSpacing: Float {
         get {
-//            return (self.imageXStopInMM - self.imageXStartInMM) / Float(self.imageSize.width)
+            return (self.imageXStopInMM - self.imageXStartInMM) / 375//Float(self.imageSize.width)
 //            return (self.imageZStopInMM - self.imageZStartInMM) / Float(self.imageSize.height)
-            return self.lambda / 2 // Spacing between pixels in z_direction
+//            return self.lambda / 2 // Spacing between pixels in z_direction
         }
     }
     

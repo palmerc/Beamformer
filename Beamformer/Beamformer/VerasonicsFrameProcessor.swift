@@ -200,7 +200,7 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
     {
         var image: UIImage?
 
-        if (pixelValues != nil) {
+        if let pixelValues = pixelValues {
             let colorSpaceRef = CGColorSpaceCreateDeviceGray()
 
             let bitsPerComponent = 8
@@ -212,7 +212,7 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
             let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.None.rawValue)
                 .union(CGBitmapInfo.ByteOrderDefault)
 
-            let data = NSData(bytes: pixelValues!, length: totalBytes)
+            let data = NSData(bytes: pixelValues, length: totalBytes)
             let providerRef = CGDataProviderCreateWithCFData(data)
 
             let imageRef = CGImageCreate(width,
@@ -225,9 +225,11 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
                 providerRef,
                 nil,
                 false,
-                CGColorRenderingIntent.RenderingIntentDefault)
+                .RenderingIntentDefault)
 
-            image = UIImage(CGImage: imageRef!, scale: 1.0, orientation: imageOrientation)
+            if let imageRef = imageRef {
+                image = UIImage(CGImage: imageRef, scale: 1.0, orientation: imageOrientation)
+            }
         }
         
         return image

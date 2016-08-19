@@ -65,11 +65,15 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
                     print("WebSocket error \(error)")
                 }
                 webSocket.event.message = { message in
+                    var frameData: NSData?
                     if let compressedData = message as? NSData {
-                        let frameData = compressedData.uncompressedDataUsingCompression(Compression.ZLIB)
-                        let versonicsFrame = VerasonicsFrameJSON(JSONData: frameData)
-                        self.processFrameData(versonicsFrame, withCompletionHandler: nil)
+                        frameData = compressedData.uncompressedDataUsingCompression(Compression.ZLIB)
+                    } else if let message = message as? [UInt8] {
+                        frameData = NSData(bytes: message, length: message.count)
                     }
+                    
+                    let versonicsFrame = VerasonicsFrameJSON(JSONData: frameData)
+                    self.processFrameData(versonicsFrame, withCompletionHandler: nil)
                 }
 
                 self.webSocket = webSocket
@@ -243,6 +247,23 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
             }
         }
         print("Samples written to file - \(filename)")
+    }
+
+    private func bytesPerSecond(executionTime: CFTimeInterval)
+    {
+        if self.networkTimeMeasurement > 0 {
+            let smoothing: Float = 0.6
+            self.networkTimeMeasurement = (self.networkTimeMeasurement * smoothing) + (Float(executionTime) * (1.0 - smoothing))
+            let framesPerSecond = 1.0 / self.networkTimeMeasurement
+
+            if let fpsText = self.framesPerSecondFormatter.stringFromNumber(framesPerSecond) {
+                let labelText = "\(fpsText) Net FPS"
+                self.networkFramesPerSecondLabel.text = labelText
+                print("\(labelText) - \(executionTime)")
+            }
+        } else {
+            self.networkTimeMeasurement = Float(executionTime)
+        }
     }
 
     private func networkProcessingTime(executionTime: CFTimeInterval)
