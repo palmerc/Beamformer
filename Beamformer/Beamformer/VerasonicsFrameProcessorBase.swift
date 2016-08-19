@@ -65,15 +65,15 @@ public class VerasonicsFrameProcessorBase: NSObject
     }
     var imageXPixelSpacing: Float {
         get {
-            return Float(self.imageXStopInMM - self.imageXStartInMM) / 375//Float(self.imageSize.width)
-//            return self.lambda / 2 // Spacing between pixels in x_direction
+//            return Float(self.imageXStopInMM - self.imageXStartInMM) / 375//Float(self.imageSize.width)
+            return self.lambda / 2 // Spacing between pixels in x_direction
         }
     }
     var imageZPixelSpacing: Float {
         get {
-            return (self.imageXStopInMM - self.imageXStartInMM) / 375//Float(self.imageSize.width)
+//            return (self.imageXStopInMM - self.imageXStartInMM) / 375//Float(self.imageSize.width)
 //            return (self.imageZStopInMM - self.imageZStartInMM) / Float(self.imageSize.height)
-//            return self.lambda / 2 // Spacing between pixels in z_direction
+            return self.lambda / 2 // Spacing between pixels in z_direction
         }
     }
     
