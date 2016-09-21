@@ -1,6 +1,9 @@
 import UIKit
+import HockeySDK
 
 
+
+let hockeySDKIndentifier = "f764e6c092f947d8a72af480d1b0684e"
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate
@@ -12,6 +15,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate
     {
         application.idleTimerDisabled = true
         DatasetManager.defaultManager()
+
+        BITHockeyManager.sharedHockeyManager().configureWithIdentifier(hockeySDKIndentifier) // Do additional configuration if needed here
+        BITHockeyManager.sharedHockeyManager().startManager()
+        BITHockeyManager.sharedHockeyManager().authenticator.authenticateInstallation() // This line is obsolete in the crash only builds
 
         return true
     }
