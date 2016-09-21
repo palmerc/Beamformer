@@ -1,15 +1,17 @@
 PODS:
-  - ObjectMapper (1.4.0)
-  - SwiftWebSocket (2.6.3)
+  - HockeySDK (4.1.1):
+    - HockeySDK/DefaultLib (= 4.1.1)
+  - HockeySDK/DefaultLib (4.1.1)
+  - SocketRocket (0.5.1)
 
 DEPENDENCIES:
-  - ObjectMapper
-  - SwiftWebSocket
+  - HockeySDK (~> 4.1.1)
+  - SocketRocket
 
 SPEC CHECKSUMS:
-  ObjectMapper: a07ad0462c5adf014adc0f89ef04c29b626e855e
-  SwiftWebSocket: 76e3ade5d716a80440dbf859b39b05d842f80d03
+  HockeySDK: 364679ba00f3447d014dd75cac57e59cc2574318
+  SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
 
-PODFILE CHECKSUM: f8a4de16b9721df6d1ffb8b05ee0dc1cc6440c53
+PODFILE CHECKSUM: e52ae3634dbca59520bf14d129254b64bf168f43
 
 COCOAPODS: 1.0.1
