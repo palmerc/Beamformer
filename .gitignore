@@ -63,3 +63,8 @@ Carthage/Build
 
 fastlane/report.xml
 fastlane/screenshots
+
+# Apache Thrift
+gen-java
+gen-py
+gen-cocoa

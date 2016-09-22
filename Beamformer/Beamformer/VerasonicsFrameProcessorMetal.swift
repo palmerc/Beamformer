@@ -191,7 +191,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                                         bytesPerRow,
                                         colorSpaceRef,
                                         bitmapInfo,
-                                        providerRef,
+                                        providerRef!,
                                         nil,
                                         false,
                                         CGColorRenderingIntent.RenderingIntentDefault) {

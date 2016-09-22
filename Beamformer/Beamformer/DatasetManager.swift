@@ -122,9 +122,9 @@ class DatasetManager
         let bundleWebSocketFileURLs = mainBundle.URLsForResourcesWithExtension(kWebSocketFileExtension, subdirectory: nil)
         if let webSocketFileURLs = bundleWebSocketFileURLs, documentsDirectory = DatasetManager.documentsDirectory() {
             let datasetsDirectory = documentsDirectory.URLByAppendingPathComponent(kDatasetsDirectory)
-            let defaultDatasetDirectory = datasetsDirectory.URLByAppendingPathComponent(kDefaultDatasetName)
-            self.createDirectory(defaultDatasetDirectory)
-            self.copyFilesToDirectory(webSocketFileURLs, toDestinationDirectory: defaultDatasetDirectory)
+            let defaultDatasetDirectory = datasetsDirectory!.URLByAppendingPathComponent(kDefaultDatasetName)
+            self.createDirectory(defaultDatasetDirectory!)
+            self.copyFilesToDirectory(webSocketFileURLs, toDestinationDirectory: defaultDatasetDirectory!)
         }
     }
 
@@ -150,16 +150,16 @@ class DatasetManager
 
             if let filename = fileURL.lastPathComponent, filePath = fileURL.path {
                 let destinationURL = destinationDirectory.URLByAppendingPathComponent(filename)
-                if let destinationPath = destinationURL.path {
+                if let destinationPath = destinationURL!.path {
                     if fileManager.contentsEqualAtPath(filePath, andPath: destinationPath) == false {
                         do {
-                            try fileManager.removeItemAtURL(destinationURL)
+                            try fileManager.removeItemAtURL(destinationURL!)
                         } catch let error as NSError {
                             print("Unable to delete \(fileURL) - \(error.localizedDescription)")
                         }
 
                         do {
-                            try fileManager.copyItemAtURL(fileURL, toURL: destinationURL)
+                            try fileManager.copyItemAtURL(fileURL, toURL: destinationURL!)
                             print("Copied file \(filename) in \(destinationDirectory) directory")
                         } catch let error as NSError {
                             print("Unable to copy \(fileURL) - \(error.localizedDescription)")
@@ -207,7 +207,7 @@ class DatasetManager
                 let leftHandPath = lhs.absoluteString
                 let rightHandPath = rhs.absoluteString
                 let options = NSStringCompareOptions.CaseInsensitiveSearch.union(.NumericSearch)
-                return leftHandPath.compare(rightHandPath, options: options) == NSComparisonResult.OrderedAscending
+                return leftHandPath!.compare(rightHandPath!, options: options) == NSComparisonResult.OrderedAscending
             })
             if matchingFiles.count > 0 {
                 fileURLs = matchingFiles

@@ -465,7 +465,9 @@
 				TargetAttributes = {
 					C7C9593B1C19FBEC0075EF90 = {
 						CreatedOnToolsVersion = 7.2;
-						DevelopmentTeam = U2NS98MY5H;
+						DevelopmentTeam = TL52GJ9NMH;
+						LastSwiftMigration = 0800;
+						ProvisioningStyle = Automatic;
 					};
 					C7C9594F1C19FBEC0075EF90 = {
 						CreatedOnToolsVersion = 7.2;
@@ -473,6 +475,7 @@
 					};
 					C7C9595A1C19FBEC0075EF90 = {
 						CreatedOnToolsVersion = 7.2;
+						LastSwiftMigration = 0800;
 						TestTargetID = C7C9593B1C19FBEC0075EF90;
 					};
 				};
@@ -790,13 +793,16 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = TL52GJ9NMH;
 				INFOPLIST_FILE = Beamformer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = no.uio.ifi.Beamformer;
+				PRODUCT_BUNDLE_IDENTIFIER = no.uio.ifi.PWBeamformer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Beamformer/Beamformer-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 2.3;
 			};
 			name = Debug;
 		};
@@ -808,13 +814,15 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = TL52GJ9NMH;
 				INFOPLIST_FILE = Beamformer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = no.uio.ifi.Beamformer;
+				PRODUCT_BUNDLE_IDENTIFIER = no.uio.ifi.PWBeamformer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Beamformer/Beamformer-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 2.3;
 			};
 			name = Release;
 		};
@@ -849,6 +857,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 2.3;
 				TEST_TARGET_NAME = Beamformer;
 				USES_XCTRUNNER = YES;
 			};
@@ -861,6 +870,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 2.3;
 				TEST_TARGET_NAME = Beamformer;
 				USES_XCTRUNNER = YES;
 			};

@@ -1,6 +1,5 @@
 import UIKit
-import SwiftWebSocket
-import ObjectMapper
+import SocketRocket
 
 
 
@@ -13,7 +12,7 @@ struct FrameTimeSample
     let networkProcessingTime: Double
 }
 
-class UltrasoundViewController: UIViewController, ServerSelectionDelegate
+class UltrasoundViewController: UIViewController, SRWebSocketDelegate, ServerSelectionDelegate
 {
     @IBOutlet var ultrasoundImageView: UIImageView!
     @IBOutlet var connectButton: UIButton!
@@ -33,7 +32,7 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 
     lazy var verasonicsFrameProcessor = VerasonicsFrameProcessor(withElementPositions: VerasonicsFrameProcessor.transducerElementPositionsInMMs)
 
-    var webSocket: WebSocket?
+    var webSocket: SRWebSocket?
     var _selectedService: NSNetService?
     var selectedService: NSNetService? {
         get {
@@ -44,39 +43,6 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 
             if let webSocket = self.webSocket {
                 webSocket.close()
-            }
-
-            if selectedService != nil {
-                let webSocket = WebSocket()
-                webSocket.services = [.Background]
-                webSocket.binaryType = .NSData
-                webSocket.event.open = {
-                    print("Opened WebSocket connection to \(webSocket.url).")
-                }
-                webSocket.event.close = { code, reason, clean in
-                    print("Closed WebSocket connection.")
-
-                    if self.frameTimeSamples.count > 0 {
-                        self.recordSamples()
-                        self.frameTimeSamples.removeAll()
-                    }
-                }
-                webSocket.event.error = { error in
-                    print("WebSocket error \(error)")
-                }
-                webSocket.event.message = { message in
-                    var frameData: NSData?
-                    if let compressedData = message as? NSData {
-                        frameData = compressedData.uncompressedDataUsingCompression(Compression.ZLIB)
-                    } else if let message = message as? [UInt8] {
-                        frameData = NSData(bytes: message, length: message.count)
-                    }
-                    
-                    let versonicsFrame = VerasonicsFrameJSON(JSONData: frameData)
-                    self.processFrameData(versonicsFrame, withCompletionHandler: nil)
-                }
-
-                self.webSocket = webSocket
             }
 
             self._selectedService = selectedService
@@ -107,10 +73,10 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
         self.ultrasoundImageView.image = uioSeal
 
 
-//        print("Test data loop starting...")
-//        dispatch_async(dispatch_get_main_queue(), {
-//            self.testDataLoop(0)
-//        })
+        print("Test data loop starting...")
+        dispatch_async(dispatch_get_main_queue(), {
+            self.testDataLoop(0)
+        })
 
     }
 
@@ -165,8 +131,7 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
                 self.inflightFrames = self.inflightFrames - 1
                 self.ultrasoundImageView.image = image
 
-                if let frameNumber = verasonicsFrame?.identifier,
-                    verasonicsFrameTimestamp = verasonicsFrame?.timestamp {
+                if let frameNumber = verasonicsFrame?.identifier {
                     self.frameNumberLabel.text = "Frame \(frameNumber)"
 
                     let GPUProcessingEndTime = CACurrentMediaTime()
@@ -199,6 +164,22 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 
 
 
+    // MARK: SRWebSocketDelegate
+    @objc func webSocket(webSocket: SRWebSocket!, didReceiveMessage message: AnyObject!)
+    {
+        var frameData: NSData?
+        if let compressedData = message as? NSData {
+            frameData = compressedData.uncompressedDataUsingCompression(Compression.ZLIB)
+        } else if let message = message as? [UInt8] {
+            frameData = NSData(bytes: UnsafePointer<UInt8>(message), length: message.count)
+        }
+        self.bytesReceived(frameData?.length)
+        let versonicsFrame = VerasonicsFrameJSON(JSONData: frameData)
+        self.processFrameData(versonicsFrame!, withCompletionHandler: nil)
+    }
+
+
+
     // MARK: IBActions
 
     @IBAction func didPressConnectButton(sender: AnyObject)
@@ -208,15 +189,20 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
 
     @IBAction func unwindToUltrasoundViewController(segue: UIStoryboardSegue)
     {
-        // Intentionally left blank
-        if let webSocket = self.webSocket,
-            service = self.selectedService,
-            address = service.humanReadableIPAddresses()?.first {
-                let port = service.port
-                let URLString = "ws://\(address):\(port)"
-            dispatch_async(dispatch_get_main_queue(), { 
-                webSocket.open(URLString)
-            })
+        if let service = self.selectedService,
+            let address = service.humanReadableIPAddresses()?.first {
+            let port = service.port
+            let URLString = "ws://\(address):\(port)"
+            let URL = NSURL(string: URLString)
+            if let webSocket = SRWebSocket(URL: URL) {
+                webSocket.delegate = self
+
+                dispatch_async(dispatch_get_main_queue(), {
+                    webSocket.open()
+                })
+
+                self.webSocket = webSocket
+            }
         }
     }
 
@@ -238,7 +224,7 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
         let documentsDirectory = DatasetManager.documentsDirectory()
         let filename = String(format: "samples-%dx%d.csv", Int(imageSize.width), Int(imageSize.height))
         if let documentURL = documentsDirectory?.URLByAppendingPathComponent(filename),
-        filePath = documentURL.path {
+            let filePath = documentURL.path {
             let document = lines.joinWithSeparator("\n")
             do {
                 try document.writeToFile(filePath, atomically: true, encoding: NSUTF8StringEncoding)
@@ -247,6 +233,16 @@ class UltrasoundViewController: UIViewController, ServerSelectionDelegate
             }
         }
         print("Samples written to file - \(filename)")
+    }
+
+    private func bytesReceived(bytes: Int?)
+    {
+        guard let bytes = bytes else {
+            return
+        }
+
+        let labelText = "\(bytes) bytes"
+        print("\(labelText)")
     }
 
     private func bytesPerSecond(executionTime: CFTimeInterval)

@@ -222,7 +222,7 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
                 bytesPerRow,
                 colorSpaceRef,
                 bitmapInfo,
-                providerRef,
+                providerRef!,
                 nil,
                 false,
                 .RenderingIntentDefault)
