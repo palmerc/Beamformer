@@ -27,6 +27,7 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
     private var partAsMetalBuffer: MTLBuffer?
     private var alphasMetalBuffer: MTLBuffer?
     private var xnsMetalBuffer: MTLBuffer?
+    private var dynamicApertureBuffer: MTLBuffer?
     private var imageAmplitudesMetalBuffer: MTLBuffer?
     private var imageIntensitiesMetalBuffer: MTLBuffer?
 
@@ -228,6 +229,22 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
             }
         }
 
+        if self.dynamicApertureBuffer == nil {
+            let count = self.dynamicAperture!.count
+            let byteCount = count * sizeof(Int32)
+            let options = MTLResourceOptions.StorageModeShared.union(.CPUCacheModeWriteCombined)
+            self.dynamicApertureBuffer = self.metalDevice.newBufferWithLength(byteCount, options: options)
+        }
+
+        if let dynamicAperture = self.dynamicAperture, dynamicApertureBuffer = self.dynamicApertureBuffer {
+            let count = dynamicAperture.count
+            let mutablePointer = UnsafeMutablePointer<Int32>(dynamicApertureBuffer.contents())
+            let buffer = UnsafeMutableBufferPointer<Int32>(start: mutablePointer, count: count)
+            for index in buffer.startIndex ..< buffer.endIndex {
+                buffer[index] = Int32(dynamicAperture[index])
+            }
+        }
+
         if self.partAsMetalBuffer == nil {
             let count = self.partAs!.count
             let byteCount = count * sizeof(ComplexNumber)
@@ -314,8 +331,9 @@ public class VerasonicsFrameProcessorMetal: VerasonicsFrameProcessorBase
                 commandEncoder.setBuffer(channelDataMetalBuffer, offset: 0, atIndex: 1)
                 commandEncoder.setBuffer(self.partAsMetalBuffer, offset: 0, atIndex: 2)
                 commandEncoder.setBuffer(self.alphasMetalBuffer, offset: 0, atIndex: 3)
-                commandEncoder.setBuffer(self.xnsMetalBuffer, offset: 0, atIndex: 4)
-                commandEncoder.setBuffer(self.imageAmplitudesMetalBuffer, offset: 0, atIndex: 5)
+                commandEncoder.setBuffer(self.dynamicApertureBuffer, offset: 0, atIndex: 4)
+                commandEncoder.setBuffer(self.xnsMetalBuffer, offset: 0, atIndex: 5)
+                commandEncoder.setBuffer(self.imageAmplitudesMetalBuffer, offset: 0, atIndex: 6)
 
                 let maxPixelCount = imageAmplitudesMetalBuffer.length / sizeof(Float)
                 let threadExecutionWidth = pipelineState.maxTotalThreadsPerThreadgroup

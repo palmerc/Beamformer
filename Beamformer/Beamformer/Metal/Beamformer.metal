@@ -26,8 +26,9 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
                                const device short2 *IQComplexSampleData [[ buffer(1) ]],
                                const device float2 *IQFrequencyShifts [[ buffer(2) ]],
                                const device float *alphas [[ buffer(3) ]],
-                               const device int *sampleIndices [[ buffer(4) ]],
-                               device float *imageAmplitudes [[ buffer(5) ]],
+                               const device int *dynamicApertures [[ buffer(4) ]],
+                               const device int *sampleIndices [[ buffer(5) ]],
+                               device float *imageAmplitudes [[ buffer(6) ]],
                                uint threadIdentifier [[ thread_position_in_grid ]])
 
 {
@@ -55,8 +56,13 @@ kernel void processChannelData(const device BeamformerParameters *beamformerPara
         float2 upperWeighted = multiply(upperSample, complexOneMinusAlpha);
 
         float2 IQData = add(lowerWeighted, upperWeighted);
-        float2 result = multiply(IQFrequencyShift, IQData);
-        channelSum = add(channelSum, result);
+        float2 channelValue = multiply(IQFrequencyShift, IQData);
+
+        float dynamicAperture = static_cast<float>(dynamicApertures[channelIndex]);
+        float2 complexDynamicAperture(dynamicAperture, 0.f);
+        float2 channelResult = multiply(complexDynamicAperture, channelValue);
+
+        channelSum = add(channelSum, channelResult);
     }
     float epsilon = 0.01f;
     float absoluteValue = absC(channelSum) + epsilon;
