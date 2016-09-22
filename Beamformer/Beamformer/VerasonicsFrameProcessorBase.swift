@@ -13,10 +13,12 @@ public class VerasonicsFrameProcessorBase: NSObject
     let imageZStartInMM: Float = 3.0
     let elementPitch: Float = 0.2; //Distance between elements
     var samplesPerChannel: Int = 512
+    let fNumber: Float = 1.75
     
     var x_ns: [Int]? = nil
     var alphas: [Float]? = nil
     var partAs: [ComplexNumber]? = nil
+    var dynamicAperture: [Int]? = nil
     var elementPositions: [Float]?
 
     var imageSize: CGSize {

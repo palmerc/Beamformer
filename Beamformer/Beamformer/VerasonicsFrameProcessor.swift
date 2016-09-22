@@ -57,13 +57,14 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
         super.init()
 
         self.elementPositions = elementPositions
-        let (sampleLookup, calculatedChannelDelays) = calculatedDelaysWithElementPositions(elementPositions)
+        let (sampleLookup, calculatedChannelDelays, dynamicAperture) = calculatedDelaysWithElementPositions(elementPositions)
         let (alphas, partAs) = self.processCalculatedDelays(calculatedChannelDelays!, numberOfElements: self.numberOfActiveTransducerElements)
 
         self.verasonicsFrameProcessorMetal = VerasonicsFrameProcessorMetal()
         self.verasonicsFrameProcessorMetal.partAs = partAs
         self.verasonicsFrameProcessorMetal.alphas = alphas
         self.verasonicsFrameProcessorMetal.x_ns = sampleLookup
+        self.verasonicsFrameProcessorMetal.dynamicAperture = dynamicAperture
     }
 
 
@@ -96,19 +97,21 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
 
 
     // MARK: Precompute values
-    func calculatedDelaysWithElementPositions(elementPositions: [Float]?) -> ([Int]?, [Float]?)
+    func calculatedDelaysWithElementPositions(elementPositions: [Float]?) -> ([Int]?, [Float]?, [Int]?)
     {
         var calculatedDelays: [Float]?
         var sampleLookup: [Int]?
+        var dynamicAperture: [Int]?
 
         guard let elementPositions = elementPositions else {
             print("Element positions are not initialized.")
-            return (sampleLookup, calculatedDelays)
+            return (sampleLookup, calculatedDelays, dynamicAperture)
         }
 
         let numberOfDelays = self.numberOfActiveTransducerElements * self.numberOfPixels
         var calculatedDelaysInternal = [Float](count: numberOfDelays, repeatedValue: 0)
         var sampleIndices = [Int](count: numberOfDelays, repeatedValue: 0)
+        var dynamicApertureInternal = [Int](count: numberOfDelays, repeatedValue: 0)
 
         let angle: Float = 0
 
@@ -132,6 +135,14 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
 
                 let x = unrolledXs[pixelIndex]
                 let z = unrolledZs[pixelIndex]
+                let receiveAperture = z / self.fNumber
+                let distance = abs(x - elementPosition)
+                if distance > receiveAperture {
+                    dynamicApertureInternal[channelPixelIndex] = 0
+                } else {
+                    dynamicApertureInternal[channelPixelIndex] = 1
+                }
+
                 let xDifferenceSquared = pow(x - elementPosition, 2)
                 let zSquared = pow(z, 2)
 
@@ -154,9 +165,10 @@ public class VerasonicsFrameProcessor: VerasonicsFrameProcessorBase
 
             sampleLookup = sampleIndices
             calculatedDelays = calculatedDelaysInternal
+            dynamicAperture = dynamicApertureInternal
         }
 
-        return (sampleLookup, calculatedDelays)
+        return (sampleLookup, calculatedDelays, dynamicApertureInternal)
     }
 
     func processCalculatedDelays(calculatedDelays: [Float],
