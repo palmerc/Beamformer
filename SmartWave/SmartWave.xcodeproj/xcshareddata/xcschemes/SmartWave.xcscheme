@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C7C9593B1C19FBEC0075EF90"
-               BuildableName = "Beamformer.app"
-               BlueprintName = "Beamformer"
-               ReferencedContainer = "container:Beamformer.xcodeproj">
+               BuildableName = "SmartWave iOS.app"
+               BlueprintName = "SmartWave iOS"
+               ReferencedContainer = "container:SmartWave.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C7C9594F1C19FBEC0075EF90"
-               BuildableName = "BeamformerTests.xctest"
-               BlueprintName = "BeamformerTests"
-               ReferencedContainer = "container:Beamformer.xcodeproj">
+               BuildableName = "SmartWaveTests.xctest"
+               BlueprintName = "SmartWaveTests"
+               ReferencedContainer = "container:SmartWave.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -43,9 +43,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C7C9595A1C19FBEC0075EF90"
-               BuildableName = "BeamformerUITests.xctest"
-               BlueprintName = "BeamformerUITests"
-               ReferencedContainer = "container:Beamformer.xcodeproj">
+               BuildableName = "SmartWaveUITests.xctest"
+               BlueprintName = "SmartWaveUITests"
+               ReferencedContainer = "container:SmartWave.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -53,16 +53,16 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C7C9593B1C19FBEC0075EF90"
-            BuildableName = "Beamformer.app"
-            BlueprintName = "Beamformer"
-            ReferencedContainer = "container:Beamformer.xcodeproj">
+            BuildableName = "SmartWave iOS.app"
+            BlueprintName = "SmartWave iOS"
+            ReferencedContainer = "container:SmartWave.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -76,9 +76,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C7C9593B1C19FBEC0075EF90"
-            BuildableName = "Beamformer.app"
-            BlueprintName = "Beamformer"
-            ReferencedContainer = "container:Beamformer.xcodeproj">
+            BuildableName = "SmartWave iOS.app"
+            BlueprintName = "SmartWave iOS"
+            ReferencedContainer = "container:SmartWave.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -95,9 +95,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C7C9593B1C19FBEC0075EF90"
-            BuildableName = "Beamformer.app"
-            BlueprintName = "Beamformer"
-            ReferencedContainer = "container:Beamformer.xcodeproj">
+            BuildableName = "SmartWave iOS.app"
+            BlueprintName = "SmartWave iOS"
+            ReferencedContainer = "container:SmartWave.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
