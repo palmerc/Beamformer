@@ -32,7 +32,6 @@
 		C7CF50C71C78933200C41C50 /* VerasonicsFrameProcessorMetal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7CF50C61C78933200C41C50 /* VerasonicsFrameProcessorMetal.swift */; };
 		C7D5485F1D5C912600727F70 /* ServerSelectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D5485E1D5C912600727F70 /* ServerSelectionViewController.swift */; };
 		C7D548611D5C923900727F70 /* ServerBonjourBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D548601D5C923900727F70 /* ServerBonjourBrowser.swift */; };
-		C7D548641D5C968200727F70 /* SHCPopupStoryboardSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = C7D548631D5C968200727F70 /* SHCPopupStoryboardSegue.m */; };
 		C7D548661D5DEC8300727F70 /* NSNetService+String.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D548651D5DEC8300727F70 /* NSNetService+String.swift */; };
 		C7EB50A61C536D480050C582 /* VerasonicsFrame.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50A51C536D480050C582 /* VerasonicsFrame.json */; };
 		C7EB50AD1C556D410050C582 /* ImageAmplitudes.json in Resources */ = {isa = PBXBuildFile; fileRef = C7EB50AC1C556D410050C582 /* ImageAmplitudes.json */; };
@@ -131,8 +130,6 @@
 		C7CF50C61C78933200C41C50 /* VerasonicsFrameProcessorMetal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerasonicsFrameProcessorMetal.swift; sourceTree = "<group>"; };
 		C7D5485E1D5C912600727F70 /* ServerSelectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerSelectionViewController.swift; sourceTree = "<group>"; };
 		C7D548601D5C923900727F70 /* ServerBonjourBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerBonjourBrowser.swift; sourceTree = "<group>"; };
-		C7D548621D5C968200727F70 /* SHCPopupStoryboardSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SHCPopupStoryboardSegue.h; sourceTree = "<group>"; };
-		C7D548631D5C968200727F70 /* SHCPopupStoryboardSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SHCPopupStoryboardSegue.m; sourceTree = "<group>"; };
 		C7D548651D5DEC8300727F70 /* NSNetService+String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSNetService+String.swift"; sourceTree = "<group>"; };
 		C7EB50A51C536D480050C582 /* VerasonicsFrame.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = VerasonicsFrame.json; sourceTree = "<group>"; };
 		C7EB50AA1C53832A0050C582 /* ChannelData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelData.swift; sourceTree = "<group>"; };
@@ -262,8 +259,6 @@
 				C7D5485E1D5C912600727F70 /* ServerSelectionViewController.swift */,
 				C7D548601D5C923900727F70 /* ServerBonjourBrowser.swift */,
 				C7D548651D5DEC8300727F70 /* NSNetService+String.swift */,
-				C7D548621D5C968200727F70 /* SHCPopupStoryboardSegue.h */,
-				C7D548631D5C968200727F70 /* SHCPopupStoryboardSegue.m */,
 				C7F237441C9ECD8300363BD9 /* Synchronized.swift */,
 				C7C959431C19FBEC0075EF90 /* Main.storyboard */,
 				C7C959461C19FBEC0075EF90 /* Assets.xcassets */,
@@ -460,7 +455,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0720;
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = NTNU;
 				TargetAttributes = {
 					C7C9593B1C19FBEC0075EF90 = {
@@ -635,7 +630,6 @@
 				C7458ACC1D5A04FC0020A1FC /* VerasonicsFrameJSON.m in Sources */,
 				C7CF50C51C7892F500C41C50 /* VerasonicsFrameProcessorBase.swift in Sources */,
 				C7D548661D5DEC8300727F70 /* NSNetService+String.swift in Sources */,
-				C7D548641D5C968200727F70 /* SHCPopupStoryboardSegue.m in Sources */,
 				C78321241C81ED1F00890009 /* ComplexVector.swift in Sources */,
 				C7882E771C899C5E00104447 /* Beamformer.metal in Sources */,
 				C7EB50B31C560A6C0050C582 /* ChannelDelay.swift in Sources */,
@@ -715,8 +709,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -738,7 +734,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -760,8 +756,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -777,9 +775,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
