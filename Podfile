@@ -1,9 +1,9 @@
-platform :ios, '9.0'
+platform :ios, '10.0'
 use_frameworks!
 
-target 'Beamformer' do
+target 'SmartWave iOS' do
     pod 'HockeySDK', '~> 4.1.1'
     pod 'SocketRocket'
 end
 
-project 'Beamformer/Beamformer.xcodeproj'
+project 'SmartWave/SmartWave.xcodeproj'

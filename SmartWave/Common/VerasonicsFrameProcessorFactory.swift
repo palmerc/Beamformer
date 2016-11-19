@@ -12,7 +12,7 @@ public class VerasonicsFrameProcessorFactory: VerasonicsFrameProcessorBase
     private var verasonicsFrameProcessorMetal: VerasonicsFrameProcessorMetal!
 
     var calculatedChannelDelays: [Float]?
-    var elementPositions: [Float]?
+//    var elementPositions: [Float]?
 
     public init(withElementPositions elementPositions: [Float])
     {
@@ -32,14 +32,14 @@ public class VerasonicsFrameProcessorFactory: VerasonicsFrameProcessorBase
     // MARK: Main
     public func imageFromVerasonicsFrame(verasonicsFrame: VerasonicsFrame?, withCompletionHandler block: (image: UIImage) -> Void)
     {
-        if let channelData: ChannelData? = verasonicsFrame!.channelData {
+        if let verasonicsFrame = verasonicsFrame {
 //            let pixelCount = self.numberOfPixels;
 //            let channelDataSampleCount = channelData!.complexSamples.count
 
 //            var complexImageVector: [ComplexNumber]?
 //            if self.verasonicsFrameProcessorMetal != nil {
 //            self.verasonicsFrameProcessorMetal.samplesPerChannel = channelDataSampleCount
-            self.verasonicsFrameProcessorMetal.complexVectorFromChannelData(channelData, withCompletionHandler: {
+            self.verasonicsFrameProcessorMetal.complexVectorFromVerasonicsFrame(verasonicsFrame, withCompletionHandler: {
                 (image: UIImage) in
                 block(image: image)
             })
@@ -49,7 +49,7 @@ public class VerasonicsFrameProcessorFactory: VerasonicsFrameProcessorBase
 //            }
 
 //            let imageAmplitudes = self.verasonicsFrameProcessorCPU.imageAmplitudesFromComplexImageVector(complexImageVector, numberOfAmplitudes: pixelCount)
-            print("Frame \(verasonicsFrame!.identifier!) complete")
+            print("Frame \(verasonicsFrame.identifier) complete")
         }
     }
 
@@ -73,12 +73,14 @@ public class VerasonicsFrameProcessorFactory: VerasonicsFrameProcessorBase
         var zValues = [Float](count: self.numberOfPixels, repeatedValue: 0)
         var zAngles = [Float](count: self.numberOfPixels, repeatedValue: 0)
         for index in 0 ..< self.numberOfPixels {
-            let xIndex = index % self.imageXPixelCount
-            let zIndex = index / self.imageXPixelCount
+            let imageWidth = Int(self.imageSize.width)
+            let xIndex = index % imageWidth
+            let zIndex = index / imageWidth
 
             xIndices[index] = xIndex
             zIndices[index] = zIndex
-            delayIndices[index] = xIndex * self.imageZPixelCount + zIndex
+            let imageDepth = Int(self.imageSize.height)
+            delayIndices[index] = xIndex * imageDepth + zIndex
 
             let xValue = self.imageXStartInMM + Float(xIndex) * self.imageXPixelSpacing
             let zValue = self.imageZStartInMM + Float(zIndex) * self.imageZPixelSpacing
@@ -188,7 +190,7 @@ public class VerasonicsFrameProcessorFactory: VerasonicsFrameProcessorBase
                 bytesPerRow,
                 colorSpaceRef,
                 bitmapInfo,
-                providerRef,
+                providerRef!,
                 nil,
                 false,
                 CGColorRenderingIntent.RenderingIntentDefault)

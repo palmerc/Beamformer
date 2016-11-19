@@ -1,7 +1,7 @@
 PODS:
-  - HockeySDK (4.1.1):
-    - HockeySDK/DefaultLib (= 4.1.1)
-  - HockeySDK/DefaultLib (4.1.1)
+  - HockeySDK (4.1.2):
+    - HockeySDK/DefaultLib (= 4.1.2)
+  - HockeySDK/DefaultLib (4.1.2)
   - SocketRocket (0.5.1)
 
 DEPENDENCIES:
@@ -9,9 +9,9 @@ DEPENDENCIES:
   - SocketRocket
 
 SPEC CHECKSUMS:
-  HockeySDK: 364679ba00f3447d014dd75cac57e59cc2574318
+  HockeySDK: c7523379550a4305cefc1cdfa7b5f9a5a3538180
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
 
-PODFILE CHECKSUM: e52ae3634dbca59520bf14d129254b64bf168f43
+PODFILE CHECKSUM: 8f93a045336df86cdb5f3a4a1823b0421849b5b8
 
 COCOAPODS: 1.0.1
