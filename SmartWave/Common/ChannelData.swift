@@ -11,7 +11,7 @@ public struct ChannelData
 
 extension ChannelData: CustomStringConvertible {
     public var description: String {
-        let name = String(self.dynamicType)
+        let name = String(describing: type(of: self))
         return String(format: "%s %d samples with %d samples per channel", arguments: [name, self.complexSamples.count, self.numberOfSamplesPerChannel])
     }
 }

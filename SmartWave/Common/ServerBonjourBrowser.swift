@@ -1,31 +1,31 @@
-import UIKit
+import Foundation
 
 
 
-class ServerBonjourBrowser: NSObject, NSNetServiceDelegate, NSNetServiceBrowserDelegate
+class ServerBonjourBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDelegate
 {
-    var browser: NSNetServiceBrowser!
-    var services: [NSNetService]?
+    var browser: NetServiceBrowser!
+    var services: [NetService]?
     var updateCallback: (() -> ())?
 
     override init() {
         super.init()
 
-        let browser = NSNetServiceBrowser()
+        let browser = NetServiceBrowser()
         browser.delegate = self
-        browser.searchForServicesOfType("_verasonics-ws._tcp", inDomain: "")
+        browser.searchForServices(ofType: "_smartwave-ws._tcp", inDomain: "")
         self.browser = browser
     }
 
-    func netServiceBrowser(browser: NSNetServiceBrowser, didFindService service: NSNetService, moreComing: Bool)
+    func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool)
     {
-        var newServices = [NSNetService]()
+        var newServices = [NetService]()
         if let services = self.services {
-            newServices.appendContentsOf(services)
+            newServices.append(contentsOf: services)
         }
 
         service.delegate = self
-        service.resolveWithTimeout(0.0)
+        service.resolve(withTimeout: 0.0)
         newServices.append(service)
 
         self.services = newServices
@@ -36,10 +36,10 @@ class ServerBonjourBrowser: NSObject, NSNetServiceDelegate, NSNetServiceBrowserD
         }
     }
 
-    func netServiceBrowser(browser: NSNetServiceBrowser, didRemoveService service: NSNetService, moreComing: Bool)
+    func netServiceBrowser(_ browser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool)
     {
         self.services = self.services?.filter({
-            (aService: NSNetService) -> Bool in
+            (aService: NetService) -> Bool in
             if aService == service {
                 return false
             } else {
@@ -54,14 +54,14 @@ class ServerBonjourBrowser: NSObject, NSNetServiceDelegate, NSNetServiceBrowserD
         }
     }
 
-    func netServiceDidResolveAddress(service: NSNetService)
+    func netServiceDidResolveAddress(_ service: NetService)
     {
         if let updateCallback = self.updateCallback {
             updateCallback()
         }
     }
 
-    func netService(sender: NSNetService, didNotResolve errorDict: [String : NSNumber])
+    func netService(_ sender: NetService, didNotResolve errorDict: [String : NSNumber])
     {
         print("Error: \(errorDict)")
     }

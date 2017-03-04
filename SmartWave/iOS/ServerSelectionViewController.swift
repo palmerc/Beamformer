@@ -6,7 +6,7 @@ let unwindToUltrasoundViewControllerSegueIdentifer = "unwindToUltrasoundViewCont
 
 protocol ServerSelectionDelegate
 {
-    func didSelectNetService(service: NSNetService?)
+    func didSelectNetService(service: NetService?)
 }
 
 class ServerSelectionViewController: UIViewController, UITableViewDelegate, UITableViewDataSource
@@ -16,8 +16,8 @@ class ServerSelectionViewController: UIViewController, UITableViewDelegate, UITa
     var serverBonjourBrowser: ServerBonjourBrowser!
     var delegate: ServerSelectionDelegate?
 
-    private var _selectedService: NSNetService?
-    var selectedService: NSNetService? {
+    private var _selectedService: NetService?
+    var selectedService: NetService? {
         get {
             return self._selectedService
         }
@@ -31,11 +31,11 @@ class ServerSelectionViewController: UIViewController, UITableViewDelegate, UITa
             }
 
             if let delegate = self.delegate {
-                delegate.didSelectNetService(self._selectedService)
+                delegate.didSelectNetService(service: self._selectedService)
             }
 
             if self.tableView != nil {
-                NSTimer.scheduledTimerWithTimeInterval(0.2, target: self.tableView, selector: #selector(UITableView.reloadData), userInfo: nil, repeats: false)
+                Timer.scheduledTimer(timeInterval: 0.2, target: self.tableView, selector: #selector(UITableView.reloadData), userInfo: nil, repeats: false)
             }
         }
     }
@@ -46,6 +46,7 @@ class ServerSelectionViewController: UIViewController, UITableViewDelegate, UITa
 
         let browser = ServerBonjourBrowser()
         browser.updateCallback = {
+            print("Bonjour browser update")
             self.tableView.reloadData()
         }
         self.serverBonjourBrowser = browser
@@ -56,7 +57,7 @@ class ServerSelectionViewController: UIViewController, UITableViewDelegate, UITa
         return 1
     }
 
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         var numberOfRowsInSection = 0
         if let services = self.serverBonjourBrowser.services {
@@ -66,11 +67,11 @@ class ServerSelectionViewController: UIViewController, UITableViewDelegate, UITa
         return numberOfRowsInSection
     }
 
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
-        var reusableCell = tableView.dequeueReusableCellWithIdentifier(serverSelectionTableViewCellReuseIdentifier)
+        var reusableCell = tableView.dequeueReusableCell(withIdentifier: serverSelectionTableViewCellReuseIdentifier)
         if reusableCell == nil {
-            reusableCell = UITableViewCell(style: .Subtitle, reuseIdentifier: serverSelectionTableViewCellReuseIdentifier)
+            reusableCell = UITableViewCell(style: .subtitle, reuseIdentifier: serverSelectionTableViewCellReuseIdentifier)
         }
 
         if let services = self.serverBonjourBrowser.services {
@@ -80,17 +81,17 @@ class ServerSelectionViewController: UIViewController, UITableViewDelegate, UITa
             var detailText: String?
             let portText = "Port: \(service.port)"
             if let addresses = service.humanReadableIPAddresses() {
-                detailText = addresses.joinWithSeparator(", ")
-                detailText?.appendContentsOf(" - \(portText)")
+                detailText = addresses.joined(separator: ", ")
+                detailText?.append(" - \(portText)")
             } else {
                 detailText = portText
             }
 
             reusableCell?.detailTextLabel?.text = detailText
 
-            var accessoryType = UITableViewCellAccessoryType.None
+            var accessoryType = UITableViewCellAccessoryType.none
             if service == self.selectedService {
-                accessoryType = .Checkmark
+                accessoryType = .checkmark
             }
             reusableCell?.accessoryType = accessoryType
         }
@@ -98,15 +99,15 @@ class ServerSelectionViewController: UIViewController, UITableViewDelegate, UITa
         return reusableCell!
     }
 
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath)
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        tableView.deselectRow(at: indexPath as IndexPath, animated: true)
 
         if let services = self.serverBonjourBrowser.services {
             let service = services[indexPath.row]
             if service == self.selectedService {
                 self.selectedService = nil
-            } else if service.addresses?.count > 0 {
+            } else if (service.addresses?.count)! > 0 {
                 self.selectedService = service
             }
         }

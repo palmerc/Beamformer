@@ -1,67 +1,50 @@
 import Foundation
-
-
-struct Dataset {
-    var name: String
-    var fileURLs: [NSURL]
-}
+import Zip
 
 
 
-let kDatasetsDirectory = "no.ntnu.dmf.isb.Datasets"
-let kDefaultDatasetName = "Default"
-let kWebSocketFileExtension = "ws"
+let kDatasetsDirectory = "no.uio.ifi.smartwave.Datasets"
+let kDatasetsCatalog = "datasets"
+let kDatasetsJSONKeyDatasets = "datasets"
+let kZipFileExtension = "zip"
 
 class DatasetManager
 {
-    private static var sharedInstance = DatasetManager()
-    private var datasets: [Dataset]?
-    private var frameCache: NSCache
-    private var dataCache: NSCache
-
-
+    fileprivate static var sharedInstance = DatasetManager()
+    fileprivate var datasets: Dictionary<String, Dataset>?
+    fileprivate var dataCache: NSCache<AnyObject, AnyObject>
 
     static func defaultManager() -> DatasetManager
     {
         return sharedInstance
     }
-
+    
     func defaultDataset() -> Dataset?
     {
-        var result: Dataset?
-        if let datasets = self.datasets {
-            for dataset in datasets {
-                if dataset.name == kDefaultDatasetName {
-                    result = dataset
-                }
-            }
+        guard let datasetName = self.datasets?.keys.first else {
+            print("No datasets available.")
+            return nil
         }
-
-        return result
+        
+        return self.datasets?[datasetName]
     }
 
-    func cachedVerasonicsFrameWithURL(URL: NSURL) -> VerasonicsFrame?
+    func dataset(named: String) -> Dataset?
     {
-        var verasonicsFrame = self.frameCache.objectForKey(URL) as? VerasonicsFrame
-        if verasonicsFrame == nil {
-            let data = self.cachedDataWithURL(URL)
-            if let data = data {
-                let frame = VerasonicsFrameJSON(JSONData: data)
-                self.frameCache.setObject(frame, forKey: URL)
-                verasonicsFrame = frame
-            }
+        guard let dataset = self.datasets?[named] else {
+            print("No dataset by the name '\(named)'.")
+            return nil
         }
-
-        return verasonicsFrame
+        return dataset
     }
-
-    func cachedDataWithURL(URL: NSURL) -> NSData?
+    
+    func cachedDataWithURL(_ URL: Foundation.URL) -> Data?
     {
-        var data = self.dataCache.objectForKey(URL) as? NSData
+        var data = self.dataCache.object(forKey: URL as AnyObject) as? Data
         if data == nil {
-            let newData = NSData(contentsOfURL: URL)
+            let newData = try? Data(contentsOf: URL)
             if let newData = newData {
-                self.dataCache.setObject(newData, forKey: URL)
+                self.dataCache.setObject(newData as AnyObject, forKey: URL as AnyObject)
                 data = newData
             }
         }
@@ -69,44 +52,80 @@ class DatasetManager
         return data
     }
 
-    private init()
+    fileprivate init()
     {
         self.dataCache = NSCache()
         self.dataCache.removeAllObjects()
-        self.frameCache = NSCache()
-        self.frameCache.removeAllObjects()
-        self.copyDefaultDatasetsToDocumentsDirectory()
+        self.unzipDatasets()
         self.loadDatasets()
     }
-
-    private func loadDatasets()
+    
+    fileprivate func unzipDatasets()
     {
-        let fileManager = NSFileManager.defaultManager()
+        guard let catalogURL = Bundle.main.url(forResource: kDatasetsCatalog, withExtension: "json") else {
+            print("Dataset catalog not found.")
+            return
+        }
+        
+        do {
+            let data = try Data(contentsOf: catalogURL)
+            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                let datasets = json[kDatasetsJSONKeyDatasets] as? [NSString] {
+                for dataset in datasets {
+                    let resourceName = dataset.deletingPathExtension
+                    let resourceExtension = dataset.pathExtension
+                    let datasetURL = Bundle.main.url(forResource: resourceName, withExtension: resourceExtension)
+                    let destinationURL = self.datasetDirectory()?.appendingPathComponent(dataset as String, isDirectory: true)
+                    
+                    try Zip.unzipFile(datasetURL!, destination: destinationURL!, overwrite: true, password: nil, progress: nil)
+                }
+            }
+        } catch let error {
+            print("Failed to unzip bundled datasets -  \(error.localizedDescription)")
+        }
+        
+    }
+
+    fileprivate func loadDatasets()
+    {
+        let fileManager = FileManager.default
         if let datasetDirectory = self.datasetDirectory() {
             do {
-            let subURLs = try fileManager.contentsOfDirectoryAtURL(datasetDirectory, includingPropertiesForKeys: nil, options: .SkipsHiddenFiles)
-                let directories = subURLs.filter({ (aURL: NSURL) -> Bool in
+                let subURLs = try fileManager.contentsOfDirectory(at: datasetDirectory, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+                let directories = subURLs.filter({ (aURL: URL) -> Bool in
                     var result = false
-                    if let path = aURL.path {
-                        var isDirectory = ObjCBool(true)
-                        if fileManager.fileExistsAtPath(path, isDirectory: &isDirectory) {
-                            result = true
-                        }
+                    var isDirectory = ObjCBool(true)
+                    if fileManager.fileExists(atPath: aURL.path, isDirectory: &isDirectory) {
+                        result = true
                     }
 
                     return result
                 })
 
-                var datasets = [Dataset]()
+                var datasets = Dictionary<String, Dataset>()
                 for directory in directories {
-                    if let datasetName = directory.lastPathComponent {
-                        if let fileURLs = self.filesMatchingExtension(kWebSocketFileExtension, inDirectory: directory) {
-                            let dataset = Dataset(name: datasetName, fileURLs: fileURLs)
-                            datasets.append(dataset)
-                        }
+                    let settingsURL = directory.appendingPathComponent("dataset.json")
+                    guard let data = try? Data(contentsOf: settingsURL) else {
+                        print("Unable to read JSON dataset description.")
+                        continue
                     }
+                    guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []) else {
+                        print("Unable to deserialize JSON dataset description.")
+                        continue
+                    }
+                    guard let json = jsonObject as? [String: Any] else {
+                        print("Unable to cast JSON object to JSON dictionary")
+                        continue
+                    }
+                    guard let dataset = try? Dataset(json: json, directory: directory) else {
+                        print("Unable to convert JSON to Dataset")
+                        continue
+                    }
+                    
+                    print("Adding Dataset '\(dataset.name)'")
+                    datasets[dataset.name] = dataset
                 }
-
+                
                 if datasets.count > 0 {
                     self.datasets = datasets
                 }
@@ -116,98 +135,98 @@ class DatasetManager
         }
     }
 
-    private func copyDefaultDatasetsToDocumentsDirectory()
+    fileprivate func copyDefaultDatasetsToDocumentsDirectory()
     {
-        let mainBundle = NSBundle.mainBundle()
-        let bundleWebSocketFileURLs = mainBundle.URLsForResourcesWithExtension(kWebSocketFileExtension, subdirectory: nil)
-        if let webSocketFileURLs = bundleWebSocketFileURLs, documentsDirectory = DatasetManager.documentsDirectory() {
-            let datasetsDirectory = documentsDirectory.URLByAppendingPathComponent(kDatasetsDirectory)
-            let defaultDatasetDirectory = datasetsDirectory!.URLByAppendingPathComponent(kDefaultDatasetName)
-            self.createDirectory(defaultDatasetDirectory!)
-            self.copyFilesToDirectory(webSocketFileURLs, toDestinationDirectory: defaultDatasetDirectory!)
+        let mainBundle = Bundle.main
+        if let documentsDirectory = DatasetManager.documentsDirectory() {
+            self.createDirectory(documentsDirectory)
         }
+        
+//        let bundleWebSocketFileURLs = mainBundle.urls(forResourcesWithExtension: kProtobufFileExtension, subdirectory: nil)
+//        if let webSocketFileURLs = bundleWebSocketFileURLs, let documentsDirectory = DatasetManager.documentsDirectory() {
+//            let datasetsDirectory = documentsDirectory.appendingPathComponent(kDatasetsDirectory)
+//            let defaultDatasetDirectory = datasetsDirectory.appendingPathComponent(kDefaultDatasetName)
+//            self.createDirectory(defaultDatasetDirectory)
+//            self.copyFilesToDirectory(webSocketFileURLs, toDestinationDirectory: defaultDatasetDirectory)
+//        }
     }
-
-    private func createDirectory(directoryURL: NSURL)
+    
+    
+    // MARK: File and directory methods
+    fileprivate func createDirectory(_ directoryURL: URL)
     {
-        if let directoryPath = directoryURL.path {
-            let fileManager = NSFileManager.defaultManager()
-            if fileManager.fileExistsAtPath(directoryPath) == false {
-                do {
-                    try fileManager.createDirectoryAtURL(directoryURL, withIntermediateDirectories: true, attributes: nil)
-                    print("Created directory \(directoryPath)")
-                } catch let error as NSError {
-                    print("Unable to create \(directoryPath) - \(error.localizedDescription)")
-                }
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: directoryURL.path) == false {
+            do {
+                try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+                print("Created directory \(directoryURL.path)")
+            } catch let error as NSError {
+                print("Unable to create \(directoryURL.path) - \(error.localizedDescription)")
             }
         }
     }
 
-    private func copyFilesToDirectory(fileURLs: [NSURL], toDestinationDirectory destinationDirectory: NSURL)
+    fileprivate func copyFilesToDirectory(_ fileURLs: [URL], toDestinationDirectory destinationDirectory: URL)
     {
         for fileURL in fileURLs {
-            let fileManager = NSFileManager.defaultManager()
+            let fileManager = FileManager.default
 
-            if let filename = fileURL.lastPathComponent, filePath = fileURL.path {
-                let destinationURL = destinationDirectory.URLByAppendingPathComponent(filename)
-                if let destinationPath = destinationURL!.path {
-                    if fileManager.contentsEqualAtPath(filePath, andPath: destinationPath) == false {
-                        do {
-                            try fileManager.removeItemAtURL(destinationURL!)
-                        } catch let error as NSError {
-                            print("Unable to delete \(fileURL) - \(error.localizedDescription)")
-                        }
+            let destinationURL = destinationDirectory.appendingPathComponent(fileURL.lastPathComponent)
+            if fileManager.contentsEqual(atPath: fileURL.path, andPath: destinationURL.path) == false {
+                do {
+                    try fileManager.removeItem(at: destinationURL)
+                } catch let error as NSError {
+                    print("Unable to delete \(fileURL) - \(error.localizedDescription)")
+                }
 
-                        do {
-                            try fileManager.copyItemAtURL(fileURL, toURL: destinationURL!)
-                            print("Copied file \(filename) in \(destinationDirectory) directory")
-                        } catch let error as NSError {
-                            print("Unable to copy \(fileURL) - \(error.localizedDescription)")
-                        }
-                    }
+                do {
+                    try fileManager.copyItem(at: fileURL, to: destinationURL)
+                    print("Copied file \(fileURL.lastPathComponent) in \(destinationDirectory) directory")
+                } catch let error as NSError {
+                    print("Unable to copy \(fileURL) - \(error.localizedDescription)")
                 }
             }
         }
     }
 
-    static func documentsDirectory() -> NSURL?
+    static func documentsDirectory() -> URL?
     {
-        var documentsDirectory: NSURL?
-        if let directory: NSString = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true).first {
-            documentsDirectory = NSURL.init(fileURLWithPath: directory as String, isDirectory: true)
+        var documentsDirectory: URL?
+        if let directory: NSString = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first as NSString? {
+            documentsDirectory = URL.init(fileURLWithPath: directory as String, isDirectory: true)
         }
 
         return documentsDirectory
     }
 
-    private func datasetDirectory() -> NSURL?
+    fileprivate func datasetDirectory() -> URL?
     {
-        var datasetDirectory: NSURL?
+        var datasetDirectory: URL?
         if let documentsDirectory = DatasetManager.documentsDirectory() {
-            datasetDirectory = documentsDirectory.URLByAppendingPathComponent(kDatasetsDirectory)
+            datasetDirectory = documentsDirectory.appendingPathComponent(kDatasetsDirectory)
         }
 
         return datasetDirectory
     }
 
-    private func filesMatchingExtension(fileExtension: String, inDirectory directory: NSURL) -> [NSURL]?
+    fileprivate func filesMatchingExtension(_ fileExtension: String, inDirectory directory: URL) -> [URL]?
     {
-        var fileURLs: [NSURL]?
+        var fileURLs: [URL]?
         do {
-            let files = try NSFileManager.defaultManager().contentsOfDirectoryAtURL(directory, includingPropertiesForKeys: nil, options: NSDirectoryEnumerationOptions.init(rawValue: 0))
-            var matchingFiles = [NSURL]()
+            let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil, options: FileManager.DirectoryEnumerationOptions.init(rawValue: 0))
+            var matchingFiles = [URL]()
             for file in files {
                 let pathExtension = file.pathExtension
                 if pathExtension == fileExtension {
                     matchingFiles.append(file)
                 }
             }
-            matchingFiles.sortInPlace({
-                (lhs: NSURL, rhs: NSURL) -> Bool in
+            matchingFiles.sort(by: {
+                (lhs: URL, rhs: URL) -> Bool in
                 let leftHandPath = lhs.absoluteString
                 let rightHandPath = rhs.absoluteString
-                let options = NSStringCompareOptions.CaseInsensitiveSearch.union(.NumericSearch)
-                return leftHandPath!.compare(rightHandPath!, options: options) == NSComparisonResult.OrderedAscending
+                let options = NSString.CompareOptions.caseInsensitive.union(.numeric)
+                return leftHandPath.compare(rightHandPath, options: options) == ComparisonResult.orderedAscending
             })
             if matchingFiles.count > 0 {
                 fileURLs = matchingFiles

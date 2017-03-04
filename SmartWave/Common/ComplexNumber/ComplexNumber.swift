@@ -26,15 +26,15 @@ public func *(lhs: Float, rhs: ComplexNumber) -> ComplexNumber
 {
     return ComplexNumber(real: lhs * rhs.real, imaginary: lhs * rhs.imaginary)
 }
-public func *=(inout lhs: ComplexNumber, rhs: ComplexNumber)
+public func *=(lhs: inout ComplexNumber, rhs: ComplexNumber)
 {
     lhs = lhs * rhs
 }
-public func *=(inout lhs: ComplexNumber, rhs: Float)
+public func *=(lhs: inout ComplexNumber, rhs: Float)
 {
     lhs = lhs * rhs
 }
-public func abs(lhs: ComplexNumber) -> Float
+public func abs(_ lhs: ComplexNumber) -> Float
 {
     return sqrt(lhs.real * lhs.real + lhs.imaginary * lhs.imaginary)
 }
@@ -48,7 +48,7 @@ public func ==(lhs: ComplexNumber, rhs: ComplexNumber) -> Bool
 extension ComplexNumber: CustomStringConvertible
 {
     public var description: String {
-        let name = String(self.dynamicType)
+        let name = String(describing: type(of: self))
         let sign = self.imaginary < 0 ? "-" : "+"
         return String(format: "%s %f %s %fi", arguments: [name, self.real, sign, self.imaginary])
     }

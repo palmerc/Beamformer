@@ -21,8 +21,8 @@ public struct ComplexVector {
 
     public init(reals: [Float], imaginaries: [Float])
     {
-        var complexNumbers = [ComplexNumber](count: reals.count, repeatedValue:(ComplexNumber(real: 0, imaginary: 0)))
-        for (index, real) in reals.enumerate() {
+        var complexNumbers = [ComplexNumber](repeating: (ComplexNumber(real: 0, imaginary: 0)), count: reals.count)
+        for (index, real) in reals.enumerated() {
             complexNumbers[index].real = real
             complexNumbers[index].imaginary = imaginaries[index]
         }
