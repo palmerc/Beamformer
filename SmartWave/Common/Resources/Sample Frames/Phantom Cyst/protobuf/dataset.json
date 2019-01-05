@@ -1,7 +1,7 @@
 
 {
     "type": "protobuf",
-    "name": "Bad Angles",
+    "name": "Phantom Cyst",
     "settings": "Settings.protobuf",
     "frames": ["Frame01.protobuf",
                "Frame02.protobuf",

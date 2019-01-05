@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -51,6 +51,8 @@
 		C7C371D11F9389B100FC8B05 /* ValueRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C371CF1F9389B100FC8B05 /* ValueRange.swift */; };
 		C7D736DC1F5953570097093C /* Ruler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D736DB1F5953570097093C /* Ruler.swift */; };
 		C7DB0BA31F5D34B700114F4C /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7DB0BA21F5D34B700114F4C /* StringExtension.swift */; };
+		C7DC2FB521DE0DDA002D823A /* PhantomCyst.zip in Resources */ = {isa = PBXBuildFile; fileRef = C7DC2FB421DE0DDA002D823A /* PhantomCyst.zip */; };
+		C7DC2FB621DE0DDA002D823A /* PhantomCyst.zip in Resources */ = {isa = PBXBuildFile; fileRef = C7DC2FB421DE0DDA002D823A /* PhantomCyst.zip */; };
 		C7F6078B1E6AC5AF000B2BD8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F607801E6AC59E000B2BD8 /* AppDelegate.swift */; };
 		C7F6078C1E6AC5B3000B2BD8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C7F607811E6AC59E000B2BD8 /* Assets.xcassets */; };
 		C7F607901E6AC880000B2BD8 /* ChannelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C727B0A71DD8A24E00CEA0BA /* ChannelData.swift */; };
@@ -128,6 +130,7 @@
 		C7C9595B1C19FBEC0075EF90 /* SmartWaveUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartWaveUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7D736DB1F5953570097093C /* Ruler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ruler.swift; sourceTree = "<group>"; };
 		C7DB0BA21F5D34B700114F4C /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
+		C7DC2FB421DE0DDA002D823A /* PhantomCyst.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = PhantomCyst.zip; sourceTree = "<group>"; };
 		C7F607701E6AC537000B2BD8 /* SmartWave macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SmartWave macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7F607801E6AC59E000B2BD8 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C7F607811E6AC59E000B2BD8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -247,6 +250,7 @@
 				C76906471F5569A400B3DB88 /* BadAngles.zip */,
 				C76906461F5569A400B3DB88 /* datasets.json */,
 				C76906481F5569A400B3DB88 /* SingleAngle.zip */,
+				C7DC2FB421DE0DDA002D823A /* PhantomCyst.zip */,
 			);
 			path = "Sample Frames";
 			sourceTree = "<group>";
@@ -411,7 +415,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0820;
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = NTNU;
 				TargetAttributes = {
 					C7C9593B1C19FBEC0075EF90 = {
@@ -438,7 +442,7 @@
 				};
 			};
 			buildConfigurationList = C7C959371C19FBEC0075EF90 /* Build configuration list for PBXProject "SmartWave" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -468,6 +472,7 @@
 				C727B11F1DD8A24E00CEA0BA /* Assets.xcassets in Resources */,
 				C769064A1F5569D100B3DB88 /* datasets.json in Resources */,
 				C769064D1F5569D600B3DB88 /* BadAngles.zip in Resources */,
+				C7DC2FB521DE0DDA002D823A /* PhantomCyst.zip in Resources */,
 				C727B1201DD8A24E00CEA0BA /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -492,6 +497,7 @@
 			files = (
 				C769064C1F5569D500B3DB88 /* SingleAngle.zip in Resources */,
 				C7F6078C1E6AC5B3000B2BD8 /* Assets.xcassets in Resources */,
+				C7DC2FB621DE0DDA002D823A /* PhantomCyst.zip in Resources */,
 				C76906491F5569D000B3DB88 /* datasets.json in Resources */,
 				C7527A101E6B102C004B3167 /* Main.storyboard in Resources */,
 				C769064B1F5569D500B3DB88 /* BadAngles.zip in Resources */,
@@ -512,7 +518,7 @@
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/HockeySDK.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -570,11 +576,11 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/../Pods/Target Support Files/Pods-SmartWave iOS/Pods-SmartWave iOS-resources.sh",
-				$PODS_CONFIGURATION_BUILD_DIR/HockeySDK/HockeySDKResources.bundle,
+				"${PODS_CONFIGURATION_BUILD_DIR}/HockeySDK/HockeySDKResources.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/HockeySDKResources.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -746,12 +752,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -800,12 +808,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -830,8 +840,9 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OBJC_BRIDGING_HEADER = "Common/SmartWave-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -867,7 +878,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "no.uio.ifi.SmartWave-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Release;
 		};
@@ -877,7 +889,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				INFOPLIST_FILE = BeamformerTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -889,7 +905,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				INFOPLIST_FILE = BeamformerTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -900,7 +920,11 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = BeamformerUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
@@ -914,7 +938,11 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = BeamformerUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = no.ntnu.dmf.isb.BeamformerUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;

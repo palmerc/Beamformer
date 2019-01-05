@@ -41,7 +41,9 @@ class UltrasoundViewControllerMobile: UIViewController
                 return
             }
             
-            self.framesPerSecondLabel.text = String(format: "%.1f FPS", 1.0 / framesPerSecondValue)
+            let fps = String(format: "%.1f FPS", 1.0 / framesPerSecondValue)
+            print(fps)
+            self.framesPerSecondLabel.text = fps
 
             _framesPerSecond = framesPerSecondValue
         }
@@ -520,16 +522,6 @@ class UltrasoundViewControllerMobile: UIViewController
     
     // MARK: Utility methods
     
-    func bytesReceived(bytes: Int?)
-    {
-        guard let bytes = bytes else {
-            return
-        }
-        
-        let labelText = "Received: \(bytes) bytes"
-        print("\(labelText)")
-    }
-    
     func didTapUltrasoundContainerView(sender: AnyObject)
     {
         guard let tapToggle = self.tapToggle else {
@@ -563,11 +555,26 @@ extension UltrasoundViewControllerMobile: SRWebSocketDelegate
     
     func webSocket(_ webSocket: SRWebSocket!, didReceiveMessage message: Any!)
     {
+        struct Holder {
+            static var timestamp: CFTimeInterval = 0
+            static var byteCount = 0
+            static var frameCount = 0
+        }
+        Holder.frameCount += 1
+        let timestamp = CACurrentMediaTime()
+        let delta = timestamp - Holder.timestamp
+        Holder.timestamp = timestamp
+        
+        var byteCount = 0
         if let protobufData = message as? Data {
-            bytesReceived(bytes: protobufData.count)
-            
+            byteCount = protobufData.count
+
             processProtobuf(protobufData)
         }
+        
+        Holder.byteCount += byteCount
+        print(String(format: "Bytes: %d", byteCount))
+        print(String(format: "Net FPS: %.2f", 1.0/delta))
     }
     
     func webSocket(_ webSocket: SRWebSocket!, didCloseWithCode code: Int, reason: String!, wasClean: Bool)
@@ -577,7 +584,7 @@ extension UltrasoundViewControllerMobile: SRWebSocketDelegate
     
     func webSocket(_ webSocket: SRWebSocket!, didFailWithError error: Error!)
     {
-        print("WebSocket failed. \(error)")
+        print("WebSocket failed. \(String(describing: error))")
     }
     
 }

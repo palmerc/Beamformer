@@ -1,11 +1,11 @@
 PODS:
-  - HockeySDK (4.1.6):
-    - HockeySDK/DefaultLib (= 4.1.6)
-  - HockeySDK-Mac (4.1.4)
-  - HockeySDK/DefaultLib (4.1.6)
+  - HockeySDK (5.1.4):
+    - HockeySDK/DefaultLib (= 5.1.4)
+  - HockeySDK-Mac (5.1.1)
+  - HockeySDK/DefaultLib (5.1.4)
   - SocketRocket (0.5.1)
-  - SwiftProtobuf (0.9.904)
-  - Zip (0.7.0)
+  - SwiftProtobuf (0.9.905)
+  - Zip (0.8.0)
 
 DEPENDENCIES:
   - HockeySDK
@@ -14,13 +14,21 @@ DEPENDENCIES:
   - SwiftProtobuf (~> 0.9.903)
   - Zip (~> 0.7)
 
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - HockeySDK
+    - HockeySDK-Mac
+    - SocketRocket
+    - SwiftProtobuf
+    - Zip
+
 SPEC CHECKSUMS:
-  HockeySDK: 95db557d54489a570dcdefae0d02f98eecc279a3
-  HockeySDK-Mac: 963ce83ffcbc0e0297a63d2a4fc4d84c103f9280
+  HockeySDK: 15afe6bc0a5bfe3a531fd73dbf082095f37dac3b
+  HockeySDK-Mac: 59e49aca86e4ee22c5c6ccc2d66771cfd6087f48
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
-  SwiftProtobuf: b693333b08c804461fe2a5346ccfc2bb501c6838
-  Zip: e34513299ac38c0686d5b24504da7ce343799ab9
+  SwiftProtobuf: 9dfa3d4109cf844241d5d055885d5c24cfa9ccdc
+  Zip: bb7d8370de00e50699633d91e03f2ec84f1ee437
 
 PODFILE CHECKSUM: 494cfef4157635c90c5346890c1a7d5e34f0e984
 
-COCOAPODS: 1.3.0
+COCOAPODS: 1.5.3

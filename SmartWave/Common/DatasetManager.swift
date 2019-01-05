@@ -106,7 +106,7 @@ class DatasetManager
                 for directory in directories {
                     let settingsURL = directory.appendingPathComponent("dataset.json")
                     guard let data = try? Data(contentsOf: settingsURL) else {
-                        print("Unable to read JSON dataset description.")
+                        print("Unable to read JSON dataset description. - \(settingsURL)")
                         continue
                     }
                     guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []) else {
@@ -137,7 +137,7 @@ class DatasetManager
 
     fileprivate func copyDefaultDatasetsToDocumentsDirectory()
     {
-        let mainBundle = Bundle.main
+//        let mainBundle = Bundle.main
         if let documentsDirectory = DatasetManager.documentsDirectory() {
             self.createDirectory(documentsDirectory)
         }

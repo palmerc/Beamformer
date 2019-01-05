@@ -1,7 +1,5 @@
-### Beamformer iOS
+## Realtime plane-wave software beamforming with an iPhone
 
-This is a minimal client to display a beamformed image streaming from the Verasonics research ultrasound system
+This repo contains the iOS client code used in the paper [Realtime plane-wave software beamforming with an iPhone](https://ieeexplore.ieee.org/document/7728408) presented at IEEE IUS 2016 in Tours, France.
 
-## Technologies
-    * Metal
-    * OpenGL
+
